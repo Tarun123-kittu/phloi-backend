@@ -4,8 +4,15 @@
   "description": "This is the phloi backend ",
   "main": "index.js",
   "scripts": {
-    "test": "npm start"
+    "test": "npm start",
+    "start": "nodemon index.js"
   },
   "author": "Hankish,Akshita,Tarun",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "mongoose": "^8.6.2",
+    "nodemon": "^3.1.4"
+  }
 }
