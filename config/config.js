@@ -2,7 +2,7 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 
 const development = {
-    db_url: process.env.PHLOI_DB_URL,
+    db_url: process.env.PHLOI_DB_URL||'mongodb+srv://hankishbawa17:123%40hankish@phloi.kg8i2.mongodb.net/phloi?retryWrites=true&w=majority',
 };
 
 if (!development.db_url) {
