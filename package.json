@@ -1,0 +1,11 @@
+{
+  "name": "phloi-backend",
+  "version": "1.0.0",
+  "description": "This is the phloi backend ",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm start"
+  },
+  "author": "Hankish,Akshita,Tarun",
+  "license": "ISC"
+}
