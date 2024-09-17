@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
     email: { type: String, default: null },
     dob: { type: Date, default: null },
     gender: { type: String, enum: ["women", "men", "other"] },
-    schooling: { type: String, default: null },
+    study: { type: String, default: null },
     intrested_to_see: { type: String, enum: ['men', "women", "everyone"], default: 'everyone' },
     completed_steps:{type:Array,default:null},
     current_step:{type:Number,default:0},
