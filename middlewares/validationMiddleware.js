@@ -136,7 +136,55 @@ const user_registration_steps_validator = [
     }
 ]
 
+const validateLogin = [
+    check('mobile_number', 'Please provide a valid mobile number.').not().isEmpty().isMobilePhone(),
+    (req, res, next) => {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ message: errors.array()[0].msg, type: 'error' });
+      }
+      next();
+    }
+  ];
+
+
+
+  const validateSocialLogin = [
+    check('providerName', 'Provider name is required.').not().isEmpty(),
+    check('providerId', 'Provider ID is required.').not().isEmpty(),
+    check('email', 'Email is required.').not().isEmpty().isEmail(),
+    check('mobile_number', 'Please provide a valid mobile number.').not().isEmpty().isMobilePhone(),
+    (req, res, next) => {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ message: errors.array()[0].msg, type: 'error' });
+      }
+      next();
+    }
+  ];
+
+
+
+
+  const validateVerifyOtp = [
+    check('mobile_number', 'Please provide a valid mobile number.').not().isEmpty().isMobilePhone(),
+    check('otp', 'Please provide OTP.').not().isEmpty(),
+    (req, res, next) => {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ message: errors.array()[0].msg, type: 'error' });
+      }
+      next();
+    }
+  ];
+  
+
+
+
 module.exports = {
     get_user_detail_validator,
-    user_registration_steps_validator
+    user_registration_steps_validator,
+    validateLogin,
+    validateSocialLogin,
+    validateVerifyOtp
 };
