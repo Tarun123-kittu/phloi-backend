@@ -28,13 +28,8 @@ const userSchema = new mongoose.Schema({
     gender: { type: String, enum: ["women", "men", "other"] },
     study: { type: String, default: null },
     intrested_to_see: { type: String, enum: ['men', "women", "everyone"], default: 'everyone' },
-<<<<<<< HEAD
-    completed_steps: { type: Array, default: null },
-    current_step: { type: Number, default: 0 },
-=======
     completed_steps:{type:Array,default:[]},
     current_step:{type:Number,default:0},
->>>>>>> akshitaDev
     socialLogin: [
         {
             providerName: { type: String, enum: ["google", "apple", "facebook"] },
