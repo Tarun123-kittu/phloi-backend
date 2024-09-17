@@ -12,9 +12,9 @@ const UserCharactersticsSchema = new mongoose.Schema({
 
 
 const UserPreferencesSchema = new mongoose.Schema({
-    sexual_orientation_preferece_id: { type: mongoose.Schema.Types.ObjectId, ref: 'sexual_orientation' },
+    sexual_orientation_preference_id: { type: mongoose.Schema.Types.ObjectId, ref: 'sexual_orientation' },
     relationship_type_preference_id: { type: mongoose.Schema.Types.ObjectId, ref: 'relationship_preference' },
-    distance_preference: { type: Number ,default:0}
+    distance_preference: { type: Number, default: 0 }
 });
 
 
@@ -26,8 +26,8 @@ const userSchema = new mongoose.Schema({
     gender: { type: String, enum: ["women", "men", "other"] },
     study: { type: String, default: null },
     intrested_to_see: { type: String, enum: ['men', "women", "everyone"], default: 'everyone' },
-    completed_steps:{type:Array,default:null},
-    current_step:{type:Number,default:0},
+    completed_steps: { type: Array, default: null },
+    current_step: { type: Number, default: 0 },
     socialLogin: [
         {
             providerName: { type: String, enum: ["google", "apple", "facebook"] },
