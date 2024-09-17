@@ -1,29 +1,5 @@
 let userModel = require("../models/userModel")
 
-exports.create_user = async (req, res) => {
-    const { mobile_number } = req.body;
-    if (!mobile_number) return res.status(400).json({ type: "error", message: "Mobile number is required" })
-    try {
-        const is_user_exist = await userModel.findOne({ mobile_number });
-        if (is_user_exist) return res.status(400).json({ type: "error", message: "There ia already a user with this mobile number please try with diffrent one" });
-
-        const user_obj = {
-            mobile_number,
-            completed_steps: [1],
-            current_step: 1
-        }
-
-        const newUser = await userModel.create(user_obj);
-        if (!newUser) return res.status(400).json({ type: "error", message: "error while create user please try again later" })
-        return res.status(201).json({ type: "success", message: "step 1 completed successfully" })
-    } catch (error) {
-        return res.status(400).json({
-            type: "error",
-            message: error.message
-        })
-    }
-}
-
 exports.user_registration_steps = async (req, res) => {
     const {
         username, dob, gender, intrested_to_see,
@@ -158,11 +134,3 @@ exports.get_user_details = async (req, res) => {
         })
     }
 }
-
-
-
-
-
-
-
-
