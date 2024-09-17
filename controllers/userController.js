@@ -38,7 +38,8 @@ exports.login = async (req, res) => {
 
         const smsResponse = await sendTwilioSms(mobile_number, otp);
         if (!smsResponse.success) {
-            return res.status(400).json({ message: 'Error sending verification code via SMS: ' + smsResponse.error, type: 'error' });
+            // return res.status(400).json({ message: 'Error sending verification code via SMS: ' + smsResponse.error, type: 'error' });
+            console.log("error while sending sms")
         }
 
         return res.status(200).json({ message: `Verification code sent to this number ${mobile_number}.Valid for two minuites.`, type: 'success' });
@@ -61,7 +62,7 @@ exports.social_login = async (req, res) => {
         let user = await userModel.findOne({ mobile_number });
 
         if (!user) {
-         
+
             user = new userModel({
                 mobile_number,
                 email,
@@ -73,7 +74,7 @@ exports.social_login = async (req, res) => {
             return res.status(201).json({ message: 'Login successfull', user });
         }
 
-       
+
         const existingProvider = user.socialLogin.find(login =>
             login.providerName === providerName && login.providerId === providerId
         );
@@ -84,10 +85,10 @@ exports.social_login = async (req, res) => {
         }
 
         if (user.current_step === 0) {
-            user.email=email
+            user.email = email
             user.current_step = 1;
             user.completed_steps.push(1);
-           
+
             await user.save();
         }
 
@@ -126,28 +127,28 @@ exports.verify_otp = async (req, res) => {
             return res.status(400).json({ message: 'OTP has expired', type: 'error' });
         }
 
-      
 
-    
+
+
         if (user.current_step === 0) {
 
             await userModel.findOneAndUpdate(
                 { mobile_number },
                 {
-                    $set: { current_step: 1, otp: null }, 
-                    $push: { completed_steps: 1 } 
+                    $set: { current_step: 1, otp: null },
+                    $push: { completed_steps: 1 }
                 },
-                { new: true } 
+                { new: true }
             );
 
         } else {
-       
+
             await userModel.findOneAndUpdate(
                 { mobile_number },
                 {
-                    $set:{otp:null}
+                    $set: { otp: null }
                 }
-                
+
             );
         }
 
