@@ -9,6 +9,10 @@ router.get("/get_user_details/:id?", get_user_detail_validator, userController.g
 
 
 
+//user 
+router.post("/login",userController.login)
+router.post("/social_login",userController.social_login)
+router.post("/verify_otp",userController.verify_otp)
 
 
 module.exports = router
