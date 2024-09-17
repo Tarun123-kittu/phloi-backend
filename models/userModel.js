@@ -22,19 +22,14 @@ const userSchema = new mongoose.Schema({
     username: { type: String, default: null },
     mobile_number: { type: Number, default: null },
     email: { type: String, default: null },
-    otp:{type:String,default:null},
-    otp_sent_at:{type:Date,default:null},
+    otp: { type: String, default: null },
+    otp_sent_at: { type: Date, default: null },
     dob: { type: Date, default: null },
     gender: { type: String, enum: ["women", "men", "other"] },
     study: { type: String, default: null },
     intrested_to_see: { type: String, enum: ['men', "women", "everyone"], default: 'everyone' },
-<<<<<<< HEAD
-    completed_steps: { type: Array, default: null },
+    completed_steps: { type: Array, default: [] },
     current_step: { type: Number, default: 0 },
-=======
-    completed_steps:{type:Array,default:[]},
-    current_step:{type:Number,default:0},
->>>>>>> akshitaDev
     socialLogin: [
         {
             providerName: { type: String, enum: ["google", "apple", "facebook"] },
