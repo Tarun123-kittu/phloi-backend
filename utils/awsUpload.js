@@ -9,7 +9,7 @@ const s3 = new AWS.S3({
 
 
 const uploadFile = (file) => {
-   
+
     if (!file.data) {
         throw new Error('File data is missing.');
     }
@@ -24,4 +24,4 @@ const uploadFile = (file) => {
     return s3.upload(params).promise(); 
 };
 
-module.exports = uploadFile;
+module.exports = {uploadFile,s3};
