@@ -38,6 +38,15 @@ const userSchema = new mongoose.Schema({
     ],
     characteristics: UserCharactersticsSchema,
     preferences: UserPreferencesSchema,
+    location: {
+        type: {
+            type: String,
+            enum: ['Point'],
+        },
+        coordinates: {
+            type: [Number],
+        },
+    },
 
 }, { timestamps: true });
 
