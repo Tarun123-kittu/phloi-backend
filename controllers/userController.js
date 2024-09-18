@@ -277,28 +277,22 @@ exports.user_registration_steps = async (req, res) => {
         }
 
         if (current_step == 13) {
-            // if (!Array.isArray(images)) {
-            //     return res.status(400).json({ type: "error", message: "please select atleast 2 images" })
-            // }
             if (!images?.images || images?.images?.length === 0) {
-                return res.status(400).json({ type: "error", message: "No images provided" });
+                return res.status(400).json(errorResponse("No images provided"));
             }
 
             const imageUrls = [];
             for (const [index, image] of images.images.entries()) {
                 try {
                     if (!image.data) {
-                        return res.status(400).json({ type: "error", message: "File data is missing." });
+                        return res.status(400).json(errorResponse("File data is missing."));
                     }
-                    console.log(`Uploading image: ${image.name}`);
 
                     const uploadResult = await uploadFile({
                         name: image.name,
                         data: image.data,
                         mimetype: image.mimetype
                     });
-
-                    console.log(`Upload result for ${image.name}: ${JSON.stringify(uploadResult)}`);
                     imageUrls.push({
                         url: uploadResult.Location,
                         position: index + 1
@@ -363,7 +357,7 @@ exports.get_user_details = async (req, res) => {
         return res.status(200).json({
             type: "success",
             user_detail: user_detail,
-            profile_completion_percentage: completionPercentage.toFixed(2) 
+            profile_completion_percentage: completionPercentage.toFixed(2)
         });
     } catch (error) {
         console.log('ERROR::', error);
@@ -376,7 +370,7 @@ exports.get_user_details = async (req, res) => {
 exports.update_image_position = async (req, res) => {
 
     const userId = req.result.userId
-    
+
     const { fromPosition, toPosition } = req.body;
 
     try {
