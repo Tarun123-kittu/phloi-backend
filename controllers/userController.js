@@ -2,9 +2,7 @@ let config = require("../config/config")
 let userModel = require("../models/userModel")
 let { errorResponse, successResponse } = require("../utils/responseHandler")
 let { generateToken, generateOtp, sendTwilioSms } = require("../utils/commonFunctions")
-const uploadFile = require("../utils/awsUpload")
-
-
+const {uploadFile,s3} = require("../utils/awsUpload")
 
 
 
@@ -374,26 +372,6 @@ exports.get_user_details = async (req, res) => {
 };
 
 
-exports.upload = async (req, res) => {
-    const { userId, imageUrl } = req.body;
-
-    try {
-        let user = await userModel.findById(userId);
-
-
-        const nextPosition = user.images.length > 0 ? user.images.length : 0;
-
-        user.images.push({ url: imageUrl, position: nextPosition });
-
-        await user.save();
-        res.status(200).json(user.images);
-    } catch (err) {
-        res.status(500).json({ error: 'Error uploading image' });
-    }
-
-
-}
-
 
 exports.update_image_position = async (req, res) => {
 
@@ -461,7 +439,9 @@ const stepFieldMappings = {
 
 
 exports.update_user_profile = async (req, res) => {
+
     let userId = req.result.userId;
+
     const {
         username, dob, gender, intrested_to_see,
         sexual_orientation_preference_id, relationship_type_preference_id,
@@ -572,3 +552,107 @@ exports.update_user_profile = async (req, res) => {
     }
 };
 
+
+exports.add_profile_images = async(req,res)=>{
+    try{
+        
+        const userId = req.result.userId;
+        const newImagesFromFrontend = req.files?.images;
+        
+        
+            const user = await userModel.findById(userId);
+            if (!user) {
+                return res.status(400).json(errorResponse("User does not exist"));
+            }
+    
+           
+            let imagesArray = user.images || [];
+           
+         
+            if (newImagesFromFrontend) {
+                const uploadedImages = Array.isArray(newImagesFromFrontend) ? newImagesFromFrontend : [newImagesFromFrontend];
+                for (const imageFile of uploadedImages) {
+                    const uploadedImage = await uploadFile(imageFile); 
+                    imagesArray.push({
+                        url: uploadedImage.Location, 
+                        position: imagesArray.length + 1,
+                    });
+                }
+            }
+    
+          
+            if (imagesArray.length < 2) {
+                return res.status(400).json(errorResponse("You need to add at least two images."));
+            }
+    
+    
+            user.images = imagesArray;
+            await user.save();
+    
+            return res.status(200).json({
+                type: "success",
+                message: "User images updated successfully",
+                images: user.images,
+            });
+    
+    }catch(error){
+        console.log("ERROR::",error)
+        return res.status(500).json(errorResponse(error.message))
+    }
+}
+
+
+exports.delete_profile_image = async(req,res)=>{
+    try{
+        const userId = req.result.userId;
+        const imageUrl  = req.body.imageUrl;
+
+            const user = await userModel.findById(userId);
+            if (!user) {
+                return res.status(400).json(errorResponse('User does not exist'));
+            }
+
+            let imagesArray = user.images || [];
+            const imageIndex = imagesArray.findIndex(img => img.url === imageUrl);
+    
+            if (imageIndex === -1) {
+                return res.status(404).json(errorResponse("Image not found."));
+            }
+    
+          
+            const [removedImage] = imagesArray.splice(imageIndex, 1);
+    
+          
+            const params = {
+                Bucket: 'phloii', 
+                Key: removedImage.url.split('profile-images/')[1], 
+            };
+    
+            await s3.deleteObject(params).promise(); 
+    
+       
+            imagesArray = imagesArray.map((img, index) => ({
+                ...img,
+                position: index + 1,
+            }));
+    
+         
+            user.images = imagesArray;
+            await user.save();
+    
+          
+            if (user.images.length < 2) {
+                return res.status(400).json(errorResponse("You need to have at least two images in your profile."))
+            }
+    
+            return res.status(200).json({
+                type: "success",
+                message: "Image deleted successfully",
+                images: user.images,
+            });
+    
+    }catch(error){
+        console.log("ERROR::",error)
+        return res.status(500).json(errorResponse(error.message))
+    }
+}
