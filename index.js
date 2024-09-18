@@ -4,6 +4,9 @@ const cors = require('cors')
 const routes = require("./routes/routes")
 const fileUpload = require('express-fileupload')
 const { phloi_db_connection } = require("./config/config")
+const bodyParser = require('body-parser');
+app.use(bodyParser.json());
+
 
 
 app.get('/', (req, res) => {

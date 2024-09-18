@@ -2,6 +2,7 @@ let config = require("../config/config")
 let userModel = require("../models/userModel")
 let { errorResponse, successResponse } = require("../utils/responseHandler")
 let { generateToken, generateOtp, sendTwilioSms } = require("../utils/commonFunctions")
+const uploadFile = require("../utils/aws_s3_image_uploader")
 
 
 
@@ -166,8 +167,19 @@ exports.user_registration_steps = async (req, res) => {
         sexual_orientation_preference_id, relationship_type_preference_id,
         study, distance_preference, communication_style_id, love_receive_id,
         drink_frequency_id, smoke_frequency_id, workout_frequency_id,
-        interests_ids, mobile_number, current_step, location // Add location here
+        interests_ids, mobile_number, current_step, location
     } = req.body;
+
+    let parsedLocation = location;
+    if (typeof location === 'string') {
+        try {
+            parsedLocation = JSON.parse(location);
+        } catch (error) {
+            return res.status(400).json({ type: "error", message: "Location must be a valid JSON object" });
+        }
+    }
+
+    const images = req.files;
 
     if (!mobile_number) return res.status(400).json({ type: "error", message: "Mobile is required" });
 
@@ -177,67 +189,67 @@ exports.user_registration_steps = async (req, res) => {
 
         const userId = find_user_id._id;
         const completed_steps = find_user_id.completed_steps || [];
-        const updatecharacteristics = {}
+        const updatecharacteristics = {};
         const user_obj = {};
         const updateFields = {};
 
         // Steps 2 - 12
-        if (current_step === 2) {
+        if (current_step == 2) {
             user_obj["username"] = username;
             user_obj["current_step"] = current_step;
             completed_steps[1] = 2;
             updateFields["completed_steps"] = completed_steps;
         }
-        if (current_step === 3) {
+        if (current_step == 3) {
             user_obj["dob"] = dob;
             user_obj["current_step"] = current_step;
             completed_steps[2] = 3;
             updateFields["completed_steps"] = completed_steps;
         }
-        if (current_step === 4) {
+        if (current_step == 4) {
             user_obj["gender"] = gender;
             user_obj["current_step"] = current_step;
             completed_steps[3] = 4;
             updateFields["completed_steps"] = completed_steps;
         }
-        if (current_step === 5) {
+        if (current_step == 5) {
             user_obj["intrested_to_see"] = intrested_to_see;
             user_obj["current_step"] = current_step;
             completed_steps[4] = 5;
             updateFields["completed_steps"] = completed_steps;
         }
-        if (current_step === 6) {
+        if (current_step == 6) {
             updateFields["preferences.sexual_orientation_preference_id"] = sexual_orientation_preference_id;
             user_obj["current_step"] = current_step;
             completed_steps[5] = 6;
             updateFields["completed_steps"] = completed_steps;
         }
-        if (current_step === 7) {
+        if (current_step == 7) {
             updateFields["preferences.relationship_type_preference_id"] = relationship_type_preference_id;
             user_obj["current_step"] = current_step;
             completed_steps[6] = 7;
             updateFields["completed_steps"] = completed_steps;
         }
-        if (current_step === 8) {
+        if (current_step == 8) {
             user_obj["study"] = study;
             user_obj["current_step"] = current_step;
             completed_steps[7] = 8;
             updateFields["completed_steps"] = completed_steps;
         }
-        if (current_step === 9) {
+        if (current_step == 9) {
             updateFields["preferences.distance_preference"] = distance_preference;
             user_obj["current_step"] = current_step;
             completed_steps[8] = 9;
             updateFields["completed_steps"] = completed_steps;
         }
-        if (current_step === 10) {
+        if (current_step == 10) {
             updatecharacteristics["characteristics.communication_style_id"] = communication_style_id;
             updatecharacteristics["characteristics.love_receive_id"] = love_receive_id;
             user_obj["current_step"] = current_step;
             completed_steps[9] = 10;
             updateFields["completed_steps"] = completed_steps;
         }
-        if (current_step === 11) {
+        if (current_step == 11) {
             updatecharacteristics["characteristics.drink_frequency_id"] = drink_frequency_id;
             updatecharacteristics["characteristics.smoke_frequency_id"] = smoke_frequency_id;
             updatecharacteristics["characteristics.workout_frequency_id"] = workout_frequency_id;
@@ -245,16 +257,47 @@ exports.user_registration_steps = async (req, res) => {
             completed_steps[10] = 11;
             updateFields["completed_steps"] = completed_steps;
         }
-        if (current_step === 12) {
+        if (current_step == 12) {
             updatecharacteristics["characteristics.interests_ids"] = interests_ids;
             user_obj["current_step"] = current_step;
             completed_steps[11] = 12;
             updateFields["completed_steps"] = completed_steps;
         }
 
-        // Step 14 - Add location
-        if (current_step === 14) {
-            user_obj["location"] = location; // Add location here
+        if (current_step == 13) {
+            if (!images?.images || images?.images?.length === 0) {
+                return res.status(400).json({ type: "error", message: "No images provided" });
+            }
+
+            const imageUrls = [];
+            for (const [index, image] of images.images.entries()) {
+                try {
+                    if (!image.data) {
+                        return res.status(400).json({ type: "error", message: "File data is missing." });
+                    }
+                    console.log(`Uploading image: ${image.name}`);
+
+                    const uploadResult = await uploadFile({
+                        name: image.name,
+                        data: image.data,
+                        mimetype: image.mimetype
+                    });
+
+                    console.log(`Upload result for ${image.name}: ${JSON.stringify(uploadResult)}`);
+                    imageUrls.push({
+                        url: uploadResult.Location,
+                        position: index + 1
+                    });
+                } catch (error) {
+                    console.error(`Error uploading image ${image.name}: ${error.message}`); // Debug log
+                    return res.status(500).json({ type: "error", message: `Error uploading image: ${error.message}` });
+                }
+            }
+            user_obj["images"] = imageUrls;
+        }
+
+        if (current_step == 14) {
+            user_obj["location"] = parsedLocation; // Add location here
             user_obj["current_step"] = current_step;
             completed_steps[13] = 14;
             updateFields["completed_steps"] = completed_steps;
@@ -285,6 +328,7 @@ exports.user_registration_steps = async (req, res) => {
         });
     }
 };
+
 
 
 exports.get_user_details = async (req, res) => {
