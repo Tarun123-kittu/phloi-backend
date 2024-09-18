@@ -191,7 +191,6 @@ exports.user_registration_steps = async (req, res) => {
     }
 
     const images = req.files;
-    console.log(images?.images)
 
     if (!mobile_number) return res.status(400).json({ type: "error", message: "Mobile is required" });
 
@@ -205,7 +204,6 @@ exports.user_registration_steps = async (req, res) => {
         const user_obj = {};
         const updateFields = {};
 
-        console.log(interests_ids, "interests_ids")
 
         // Steps 2 - 12
         if (current_step == 2) {
@@ -565,4 +563,50 @@ exports.update_user_profile = async (req, res) => {
         return res.status(500).json(errorResponse(error.message));
     }
 };
+
+
+exports.update_user_setting = async (req, res) => {
+    try {
+        const { user_id, distance_in, read_receipts } = req.body;
+
+        if (!user_id) {
+            return res.status(400).json({ error: "User ID is required" });
+        }
+
+        if (!distance_in && read_receipts === undefined) {
+            return res.status(400).json({ error: "At least one setting field (distance_in or read_receipts) is required" });
+        }
+
+        const setting_obj = {};
+        if (distance_in) {
+            if (!['km', 'mi'].includes(distance_in)) {
+                return res.status(400).json({ error: "Invalid value for distance_in. Allowed values are 'km' or 'mi'" });
+            }
+            setting_obj["setting.distance_in"] = distance_in;
+        }
+        if (read_receipts !== undefined) {
+            setting_obj["setting.read_receipts"] = read_receipts;
+        }
+
+        // Update the user settings
+        const user_setting = await userModel.findByIdAndUpdate(
+            user_id,
+            { $set: setting_obj },
+            { new: true, runValidators: true }
+        );
+
+        if (!user_setting) {
+            return res.status(404).json({ error: "User not found or could not update settings" });
+        }
+
+        return res.status(200).json({
+            message: "Settings updated successfully"
+        });
+
+    } catch (error) {
+        console.error("Error updating user settings:", error);
+        return res.status(500).json({ error: "An internal server error occurred" });
+    }
+};
+
 
