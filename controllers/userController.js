@@ -2,7 +2,7 @@ let config = require("../config/config")
 let userModel = require("../models/userModel")
 let { errorResponse, successResponse } = require("../utils/responseHandler")
 let { generateToken, generateOtp, sendTwilioSms } = require("../utils/commonFunctions")
-const uploadFile = require("../utils/aws_s3_image_uploader")
+const uploadFile = require("../utils/awsUpload")
 
 
 
