@@ -191,7 +191,6 @@ exports.user_registration_steps = async (req, res) => {
 
     const images = req.files;
 
-    if (!mobile_number) return res.status(400).json({ type: "error", message: "Mobile is required" });
 
     try {
         const find_user_id = await userModel.findById(id);
@@ -290,7 +289,9 @@ exports.user_registration_steps = async (req, res) => {
                     const uploadResult = await uploadFile({
                         name: image.name,
                         data: image.data,
-                        mimetype: image.mimetype
+                        mimetype: image.mimetype,
+                        userId: id
+
                     });
                     imageUrls.push({
                         url: uploadResult.Location,

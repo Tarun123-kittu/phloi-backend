@@ -13,7 +13,7 @@ let authenticateToken = require('../middlewares/authMiddleware')
 
 
 // user routes
-router.put("/user_registration_steps", user_registration_steps_validator, userController.user_registration_steps)
+router.put("/user_registration_steps", authenticateToken, user_registration_steps_validator, userController.user_registration_steps)
 router.get("/get_user_details/:id?", authenticateToken, userController.get_user_details)
 
 
