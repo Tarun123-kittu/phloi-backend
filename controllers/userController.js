@@ -180,6 +180,7 @@ exports.user_registration_steps = async (req, res) => {
     }
 
     const images = req.files;
+    console.log(images?.images)
 
     if (!mobile_number) return res.status(400).json({ type: "error", message: "Mobile is required" });
 
@@ -192,6 +193,8 @@ exports.user_registration_steps = async (req, res) => {
         const updatecharacteristics = {};
         const user_obj = {};
         const updateFields = {};
+
+        console.log(interests_ids, "interests_ids")
 
         // Steps 2 - 12
         if (current_step == 2) {
@@ -265,6 +268,9 @@ exports.user_registration_steps = async (req, res) => {
         }
 
         if (current_step == 13) {
+            // if (!Array.isArray(images)) {
+            //     return res.status(400).json({ type: "error", message: "please select atleast 2 images" })
+            // }
             if (!images?.images || images?.images?.length === 0) {
                 return res.status(400).json({ type: "error", message: "No images provided" });
             }
@@ -297,7 +303,7 @@ exports.user_registration_steps = async (req, res) => {
         }
 
         if (current_step == 14) {
-            user_obj["location"] = parsedLocation; // Add location here
+            user_obj["location"] = parsedLocation;
             user_obj["current_step"] = current_step;
             completed_steps[13] = 14;
             updateFields["completed_steps"] = completed_steps;

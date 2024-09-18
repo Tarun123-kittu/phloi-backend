@@ -178,24 +178,28 @@ const user_registration_steps_validator = [
     }),
 
 
-    // Validate the image field (if provided)
-    check("images").custom((value, { req }) => {
-        if (req.body.current_step === '13') {
-            if (!req.files || req.files.length === 0) {
-                throw new Error("At least one image is required when current_step is 13");
-            }
-        }
-        return true;
-    }),
+    // // Validate the image field (if provided)
+    // check("images").custom((value, { req }) => {
+    //     if (req.body.current_step === '13') {
+    //         const files = req.files;
 
-    (req, res, next) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ message: errors.array()[0].msg, type: 'error' });
-        }
-        next();
-    }
+    //         // Check if files are defined and are an array
+    //         if (!files || !Array.isArray(files) || files.length < 2) {
+    //             throw new Error("You have to select at least 2 images to upload");
+    //         }
+    //     }
+    //     return true;
+    // }),
+
+    // (req, res, next) => {
+    //     const errors = validationResult(req);
+    //     if (!errors.isEmpty()) {
+    //         return res.status(400).json({ message: errors.array()[0].msg, type: 'error' });
+    //     }
+    //     next();
+    // }
 ];
+
 
 const validateLogin = [
     check('mobile_number', 'Please provide a valid mobile number.').not().isEmpty().isMobilePhone(),
