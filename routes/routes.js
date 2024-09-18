@@ -19,9 +19,9 @@ router.get("/get_user_details/:id?", authenticateToken,userController.get_user_d
 
 
 //user 
-router.post("/login",validateLogin,userController.login)
-router.post("/social_login",validateSocialLogin,userController.social_login)
-router.post("/verify_otp",validateVerifyOtp,userController.verify_otp)
+router.post("/login", validateLogin, userController.login)
+router.post("/social_login", validateSocialLogin, userController.social_login)
+router.post("/verify_otp", validateVerifyOtp, userController.verify_otp)
 
 //update user profile
 router.post("/upload",userController.upload)

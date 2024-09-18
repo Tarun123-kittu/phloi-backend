@@ -7,6 +7,9 @@ const development = {
     twilio_account_sid:process.env.ACCOUNT_SID,
     twilio_auth_token:process.env.AUTH_TOKEN,
     twilio_phone_number:process.env.YOUR_TWILIO_PHONE_NUMBER,
+    aws_s3_access_key: process.env.AWS_S3_ACCESS_KEY,
+    aws_s3_secret_key: process.env.AWS_S3_SECRET_KEY
+
 };
 
 if (!development.db_url) {
