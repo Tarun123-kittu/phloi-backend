@@ -36,6 +36,15 @@ const userSchema = new mongoose.Schema({
             providerId: { type: String, default: null }
         },
     ],
+    images: [
+        {
+          url: String,
+          position: Number,  
+        }
+      ],
+
+
+      
     characteristics: UserCharactersticsSchema,
     preferences: UserPreferencesSchema,
     location: {
