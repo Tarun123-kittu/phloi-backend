@@ -18,7 +18,7 @@ const UserPreferencesSchema = new mongoose.Schema({
 });
 
 
-const userSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({    
     username: { type: String, default: null },
     mobile_number: { type: Number, default: null },
     email: { type: String, default: null },

@@ -1,17 +1,6 @@
 const { param, check, body, validationResult } = require('express-validator');
 
-const get_user_detail_validator = [
-    param("id", "Id is required and should not be empty.")
-        .exists().withMessage("Id is required.")
-        .notEmpty().withMessage("Id should not be empty."),
-    (req, res, next) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ message: errors.array()[0].msg, type: 'error' });
-        }
-        next();
-    }
-];
+
 
 const user_registration_steps_validator = [
     check("mobile_number", "Mobile number is required to perform this action").not().isEmpty(),
@@ -153,6 +142,7 @@ const validateLogin = [
     check('providerName', 'Provider name is required.').not().isEmpty(),
     check('providerId', 'Provider ID is required.').not().isEmpty(),
     check('email', 'Email is required.').not().isEmpty().isEmail(),
+    check('email',"Please add a valid email address.").isEmail(),
     check('mobile_number', 'Please provide a valid mobile number.').not().isEmpty().isMobilePhone(),
     (req, res, next) => {
       const errors = validationResult(req);
@@ -180,11 +170,30 @@ const validateLogin = [
   
 
 
+const validateUpdateImagePositions = [
+    
+    check('fromPosition', 'fromPosition is required and must be a non-negative integer.')
+      .not().isEmpty().isInt({ min: 0 }),
+  
+    check('toPosition', 'toPosition is required and must be a non-negative integer.')
+      .not().isEmpty().isInt({ min: 0 }),
+  
+    (req, res, next) => {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ message: errors.array()[0].msg, type: 'error' });
+      }
+      next();
+    }
+  ];
+  
+
+
 
 module.exports = {
-    get_user_detail_validator,
     user_registration_steps_validator,
     validateLogin,
     validateSocialLogin,
-    validateVerifyOtp
+    validateVerifyOtp,
+    validateUpdateImagePositions
 };

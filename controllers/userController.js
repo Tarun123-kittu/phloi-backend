@@ -42,15 +42,13 @@ exports.login = async (req, res) => {
             console.log("error while sending sms")
         }
 
-        return res.status(200).json({ message: `Verification code sent to this number ${mobile_number}.Valid for two minuites.`, type: 'success' });
+        return res.status(200).json(successResponse(`Verification code sent to this number ${mobile_number}.Valid for two minuites.`));
 
     } catch (error) {
         console.error("ERROR::", error);
-        return res.status(500).json({ message: error.message, type: "error" });
+        return res.status(500).json(errorResponse(error.message));
     }
 };
-
-
 
 
 
@@ -59,47 +57,59 @@ exports.social_login = async (req, res) => {
     try {
         const { providerName, providerId, email, mobile_number } = req.body;
 
-        let user = await userModel.findOne({ mobile_number });
+
+        let user = await userModel.findOne({
+            $or: [{ mobile_number }, { email }]
+        });
+
 
         if (!user) {
-
             user = new userModel({
                 mobile_number,
-                email,
+                email: email || null,
                 completed_steps: [1],
                 current_step: 1,
                 socialLogin: [{ providerName, providerId }]
             });
+
             await user.save();
-            return res.status(201).json({ message: 'Login successfull', user });
+            return res.status(201).json(successResponse("Login successfull", user));
         }
 
 
-        const existingProvider = user.socialLogin.find(login =>
-            login.providerName === providerName && login.providerId === providerId
+        if (!user.email && email) {
+            user.email = email;
+            await user.save();
+        }
+
+
+        const existingProvider = user.socialLogin.find(
+            login => login.providerName === providerName && login.providerId === providerId
         );
+
 
         if (!existingProvider) {
             user.socialLogin.push({ providerName, providerId });
             await user.save();
         }
 
-        if (user.current_step === 0) {
-            user.email = email
-            user.current_step = 1;
-            user.completed_steps.push(1);
 
+        if (user.current_step === 0) {
+            user.current_step = 1;
+            if (!user.completed_steps.includes(1)) {
+                user.completed_steps.push(1);
+            }
             await user.save();
         }
 
-        return res.status(200).json({ message: 'Login successful', user });
+
+        return res.status(200).json(successResponse("Login successful", user));
 
     } catch (error) {
-        console.log("ERROR::", error);
-        return res.status(500).json({ message: error.message });
+        console.error("ERROR::", error);
+        return res.status(500).json(errorResponse(error.message));
     }
 };
-
 
 
 
@@ -127,9 +137,6 @@ exports.verify_otp = async (req, res) => {
             return res.status(400).json({ message: 'OTP has expired', type: 'error' });
         }
 
-
-
-
         if (user.current_step === 0) {
 
             await userModel.findOneAndUpdate(
@@ -152,12 +159,16 @@ exports.verify_otp = async (req, res) => {
             );
         }
 
-        return res.status(200).json({ message: 'OTP verified and user updated', type: 'success' });
+        let token = await generateToken(user._id)
+
+        return res.status(200).json(successResponse('Login successful.', token));
     } catch (error) {
         console.error("ERROR::", error);
-        return res.status(500).json({ message: error.message, type: 'error' });
+        return res.status(500).json(errorResponse(error.message));
     }
 };
+
+
 
 
 exports.user_registration_steps = async (req, res) => {
@@ -277,20 +288,229 @@ exports.user_registration_steps = async (req, res) => {
     }
 };
 
+
+
 exports.get_user_details = async (req, res) => {
-    const { id } = req.params;
+    const id = req.result.userId;
+    const TOTAL_STEPS = 14;
+
     try {
-        const user_detail = await userModel.findById(id)
-        if (!user_detail) return res.status(400).json({ type: "error", message: "User not exist" })
+        const user_detail = await userModel.findById(id);
+        if (!user_detail) return res.status(400).json({ type: "error", message: "User does not exist" });
+
+        const { completed_steps = [] } = user_detail;
+        const completedStepCount = completed_steps.length;
+
+
+        const completionPercentage = (completedStepCount / TOTAL_STEPS) * 100;
 
         return res.status(200).json({
             type: "success",
-            user_detail: user_detail
-        })
+            user_detail: user_detail,
+            profile_completion_percentage: completionPercentage.toFixed(2) 
+        });
     } catch (error) {
-        return res.status(400).json({
-            type: "error",
-            message: error.message
-        })
+        console.log('ERROR::', error);
+        return res.status(400).json({ type: "error", message: error.message });
+    }
+};
+
+
+exports.upload = async (req, res) => {
+    const { userId, imageUrl } = req.body;
+
+    try {
+        let user = await userModel.findById(userId);
+
+
+        const nextPosition = user.images.length > 0 ? user.images.length : 0;
+
+        user.images.push({ url: imageUrl, position: nextPosition });
+
+        await user.save();
+        res.status(200).json(user.images);
+    } catch (err) {
+        res.status(500).json({ error: 'Error uploading image' });
+    }
+
+
+}
+
+
+exports.update_image_position = async (req, res) => {
+
+    const userId = req.result.userId
+    
+    const { fromPosition, toPosition } = req.body;
+
+    try {
+        let user = await userModel.findById(userId);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+
+        const fromImage = user.images.find(img => img.position === fromPosition);
+
+        if (!fromImage) {
+            return res.status(400).json({ error: 'Invalid fromPosition' });
+        }
+
+
+        if (fromPosition < toPosition) {
+
+            user.images.forEach(img => {
+                if (img.position > fromPosition && img.position <= toPosition) {
+                    img.position -= 1;
+                }
+            });
+        } else if (fromPosition > toPosition) {
+
+            user.images.forEach(img => {
+                if (img.position >= toPosition && img.position < fromPosition) {
+                    img.position += 1;
+                }
+            });
+        }
+
+        fromImage.position = toPosition;
+
+        await user.save();
+        const sortedImages = user.images.sort((a, b) => a.position - b.position);
+
+        res.status(200).json(sortedImages);
+
+    } catch (err) {
+        console.error('Error updating image positions:', err);
+        res.status(500).json({ error: 'Error updating image positions' });
     }
 }
+
+
+const stepFieldMappings = {
+    2: ['username'],
+    3: ['dob'],
+    4: ['gender'],
+    5: ['intrested_to_see'],
+    6: ['sexual_orientation_preference_id'],
+    7: ['relationship_type_preference_id'],
+    8: ['study'],
+    9: ['distance_preference'],
+    10: ['communication_style_id', 'love_receive_id'],
+    11: ['drink_frequency_id', 'smoke_frequency_id', 'workout_frequency_id'],
+    12: ['interests_ids']
+};
+
+
+exports.update_user_profile = async (req, res) => {
+    let userId = req.result.userId;
+    const {
+        username, dob, gender, intrested_to_see,
+        sexual_orientation_preference_id, relationship_type_preference_id,
+        study, distance_preference, communication_style_id, love_receive_id,
+        drink_frequency_id, smoke_frequency_id, workout_frequency_id,
+        interests_ids, current_step
+    } = req.body;
+
+    try {
+        const user = await userModel.findById(userId);
+        if (!user) return res.status(400).json({ type: "error", message: "User does not exist" });
+
+        const { completed_steps = [] } = user;
+
+        const getLastValidValue = (step) => {
+            const lastValidStep = completed_steps[step - 1];
+            if (lastValidStep) {
+                switch (step) {
+                    case 2: return user.username;
+                    case 3: return user.dob;
+                    case 4: return user.gender;
+                    case 5: return user.intrested_to_see;
+                    case 6: return user.preferences.sexual_orientation_preference_id;
+                    case 7: return user.preferences.relationship_type_preference_id;
+                    case 8: return user.study;
+                    case 9: return user.preferences.distance_preference;
+                    case 10: return { communication_style_id: user.characteristics.communication_style_id, love_receive_id: user.characteristics.love_receive_id };
+                    case 11: return { drink_frequency_id: user.characteristics.drink_frequency_id, smoke_frequency_id: user.characteristics.smoke_frequency_id, workout_frequency_id: user.characteristics.workout_frequency_id };
+                    case 12: return user.characteristics.interests_ids;
+                    default: return null;
+                }
+            }
+            return null;
+        };
+
+
+        if (!stepFieldMappings[current_step]) {
+            return res.status(400).json({ type: "error", message: "Invalid step" });
+        }
+
+
+        const requiredFields = stepFieldMappings[current_step];
+        const providedFields = Object.keys(req.body).filter(key => key !== 'current_step');
+        const invalidFields = providedFields.filter(field => !requiredFields.includes(field));
+        if (invalidFields.length > 0) {
+            return res.status(400).json({ type: "error", message: `Invalid fields for step ${current_step}: ${invalidFields.join(', ')}` });
+        }
+
+        const updateFields = {};
+
+        const updateStep = (step, fieldName, value) => {
+            if (value === undefined) {
+                const lastValidValue = getLastValidValue(step);
+                if (lastValidValue === null) {
+                    return res.status(400).json({ type: "error", message: `${fieldName} is required for step ${step}` });
+                }
+                updateFields[fieldName] = lastValidValue;
+            } else {
+                updateFields[fieldName] = value;
+            }
+        };
+
+        switch (current_step) {
+            case 2: updateStep(2, 'username', username); break;
+            case 3: updateStep(3, 'dob', dob); break;
+            case 4: updateStep(4, 'gender', gender); break;
+            case 5: updateStep(5, 'intrested_to_see', intrested_to_see); break;
+            case 6: updateStep(6, 'preferences.sexual_orientation_preference_id', sexual_orientation_preference_id); break;
+            case 7: updateStep(7, 'preferences.relationship_type_preference_id', relationship_type_preference_id); break;
+            case 8: updateStep(8, 'study', study); break;
+            case 9: updateStep(9, 'preferences.distance_preference', distance_preference); break;
+            case 10:
+                updateStep(10, 'characteristics.communication_style_id', communication_style_id);
+                updateStep(10, 'characteristics.love_receive_id', love_receive_id);
+                break;
+            case 11:
+                updateStep(11, 'characteristics.drink_frequency_id', drink_frequency_id);
+                updateStep(11, 'characteristics.smoke_frequency_id', smoke_frequency_id);
+                updateStep(11, 'characteristics.workout_frequency_id', workout_frequency_id);
+                break;
+            case 12:
+                if (!Array.isArray(interests_ids)) {
+                    const lastInterests = getLastValidValue(12);
+                    if (!lastInterests) return res.status(400).json({ type: "error", message: "Interests IDs must be an array for step 12" });
+                    updateFields['characteristics.interests_ids'] = lastInterests;
+                } else {
+                    updateFields['characteristics.interests_ids'] = interests_ids;
+                }
+                break;
+            default: return res.status(400).json({ type: "error", message: "Invalid step" });
+        }
+
+        const updatedUser = await userModel.findByIdAndUpdate(userId, updateFields, { new: true, runValidators: true });
+
+        if (!updatedUser) {
+            return res.status(400).json({ type: "error", message: `Error while updating step ${current_step}. Please try again later.` });
+        }
+
+        return res.status(200).json({
+            type: "success",
+            message: `Step ${current_step} updated successfully`,
+            user: updatedUser
+        });
+
+    } catch (error) {
+        console.error('ERROR::', error);
+        return res.status(500).json(errorResponse(error.message));
+    }
+};
+

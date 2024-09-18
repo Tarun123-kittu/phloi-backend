@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+require('dotenv').config()
 
 const CommunicationStyle = require('../models/communicationStyleModel');
 const DrinkFrequency = require('../models/drinkFrequencyModel');
@@ -153,7 +154,7 @@ async function seedAllData() {
 
 
 mongoose
-  .connect('mongodb+srv://hankishbawa17:123%40hankish@phloi.kg8i2.mongodb.net/phloi?retryWrites=true&w=majority')
+  .connect(process.env.PHLOI_DB_URL)
   .then(() => {
     console.log('Connected to MongoDB');
     return seedAllData();

@@ -4,7 +4,9 @@ const mongoose = require('mongoose');
 const development = {
     db_url: process.env.PHLOI_DB_URL||'mongodb+srv://hankishbawa17:123%40hankish@phloi.kg8i2.mongodb.net/phloi?retryWrites=true&w=majority',
     jwt_secret_key:process.env.JWT_SECRET_KEY,
-  
+    twilio_account_sid:process.env.ACCOUNT_SID,
+    twilio_auth_token:process.env.AUTH_TOKEN,
+    twilio_phone_number:process.env.YOUR_TWILIO_PHONE_NUMBER,
 };
 
 if (!development.db_url) {
