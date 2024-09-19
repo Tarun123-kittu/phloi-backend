@@ -2,6 +2,7 @@ let config = require("../config/config")
 let userModel = require("../models/userModel")
 let { errorResponse, successResponse } = require("../utils/responseHandler")
 let { generateToken, generateOtp, sendTwilioSms } = require("../utils/commonFunctions")
+let messages = require("../utils/messages")
 const {uploadFile,s3} = require("../utils/awsUpload")
 
 
@@ -45,7 +46,7 @@ exports.login = async (req, res) => {
 
     } catch (error) {
         console.error("ERROR::", error);
-        return res.status(500).json(errorResponse(error.message));
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message));
     }
 };
 
@@ -72,7 +73,7 @@ exports.social_login = async (req, res) => {
             });
 
             await user.save();
-            return res.status(201).json(successResponse("Login successfull", user));
+            return res.status(201).json(successResponse(messages.success.loginSuccessful, user));
         }
 
 
@@ -102,11 +103,11 @@ exports.social_login = async (req, res) => {
         }
 
 
-        return res.status(200).json(successResponse("Login successful", user));
+        return res.status(200).json(successResponse(messages.success.loginSuccessful, user));
 
     } catch (error) {
         console.error("ERROR::", error);
-        return res.status(500).json(errorResponse(error.message));
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message));
     }
 };
 
@@ -120,12 +121,12 @@ exports.verify_otp = async (req, res) => {
         let user = await userModel.findOne({ mobile_number });
 
         if (!user) {
-            return res.status(404).json({ message: 'User not found', type: 'error' });
+            return res.status(404).json({ message:messages.generalError.somethingWentWrong, code:messages.notFound.userNotFound , type: 'error' });
         }
 
 
         if (user.otp !== otp) {
-            return res.status(400).json({ message: 'Invalid OTP', type: 'error' });
+            return res.status(400).json(errorResponse('Invalid OTP'));
         }
 
         const currentTime = new Date();
@@ -133,7 +134,7 @@ exports.verify_otp = async (req, res) => {
         const timeDifference = (currentTime - otpSentAt) / (1000 * 60);
 
         if (timeDifference > 2) {
-            return res.status(400).json({ message: 'OTP has expired', type: 'error' });
+            return res.status(400).json(errorResponse("OTP has expired"));
         }
 
         if (user.current_step === 0) {
@@ -160,12 +161,14 @@ exports.verify_otp = async (req, res) => {
 
         let token = await generateToken(user._id)
 
-        return res.status(200).json(successResponse('Login successful.', token));
+        return res.status(200).json(successResponse(messages.success.loginSuccessful, token));
     } catch (error) {
         console.error("ERROR::", error);
-        return res.status(500).json(errorResponse(error.message));
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message));
     }
 };
+
+
 
 
 
@@ -185,18 +188,18 @@ exports.user_registration_steps = async (req, res) => {
         try {
             parsedLocation = JSON.parse(location);
         } catch (error) {
-            return res.status(400).json({ type: "error", message: "Location must be a valid JSON object" });
+            return res.status(400).json(errorResponse("Location must be a valid JSON object"));
         }
     }
 
     const images = req.files;
     console.log(images?.images)
 
-    if (!mobile_number) return res.status(400).json({ type: "error", message: "Mobile is required" });
+    if (!mobile_number) return res.status(400).json(errorResponse("Mobile is required"));
 
     try {
         const find_user_id = await userModel.findById(id);
-        if (!find_user_id) return res.status(400).json({ type: "error", message: "This mobile number does not exist" });
+        if (!find_user_id) return res.status(400).json({message:messages.generalError.somethingWentWrong,code:messages.notFound.userNotFound,type:"error"});
 
         const userId = find_user_id._id;
         const completed_steps = find_user_id.completed_steps || [];
@@ -299,8 +302,8 @@ exports.user_registration_steps = async (req, res) => {
                         position: index + 1
                     });
                 } catch (error) {
-                    console.error(`Error uploading image ${image.name}: ${error.message}`); // Debug log
-                    return res.status(500).json({ type: "error", message: `Error uploading image: ${error.message}` });
+                    console.error(`Error uploading image ${image.name}: ${error.message}`); 
+                    return res.status(500).json(errorResponse(`Error uploading image: ${error.message}`));
                 }
             }
             user_obj["images"] = imageUrls;
@@ -314,7 +317,7 @@ exports.user_registration_steps = async (req, res) => {
         }
 
         if (current_step > 14) {
-            return res.status(400).json({ type: "error", message: "Invalid step" });
+            return res.status(400).json(errorResponse(messages.validation.invalidStep));
         }
 
         Object.assign(user_obj, updateFields, updatecharacteristics);
@@ -322,20 +325,14 @@ exports.user_registration_steps = async (req, res) => {
         const user_registration_flow = await userModel.findByIdAndUpdate(userId, user_obj, { new: true, runValidators: true });
 
         if (!user_registration_flow) {
-            return res.status(400).json({ type: "error", message: `Error while updating step ${current_step}. Please try again later.` });
+            return res.status(400).json(errorResponse(`Error while updating step ${current_step}. Please try again later.`));
         }
 
-        return res.status(200).json({
-            type: "success",
-            message: `Step ${current_step} updated successfully`
-        });
+        return res.status(200).json(successResponse(`Step ${current_step} updated successfully`));
 
     } catch (error) {
         console.error('Update error:', error);
-        return res.status(400).json({
-            type: "error",
-            message: error.message
-        });
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message));
     }
 };
 
@@ -362,7 +359,7 @@ exports.get_user_details = async (req, res) => {
         });
     } catch (error) {
         console.log('ERROR::', error);
-        return res.status(400).json({ type: "error", message: error.message });
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message));
     }
 };
 
@@ -377,14 +374,14 @@ exports.update_image_position = async (req, res) => {
     try {
         let user = await userModel.findById(userId);
         if (!user) {
-            return res.status(404).json({ error: 'User not found' });
+            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong,messages.notFound.userNotFound));
         }
 
 
         const fromImage = user.images.find(img => img.position === fromPosition);
 
         if (!fromImage) {
-            return res.status(400).json({ error: 'Invalid fromPosition' });
+            return res.status(400).json(errorResponse('Invalid fromPosition'));
         }
 
 
@@ -413,9 +410,11 @@ exports.update_image_position = async (req, res) => {
 
     } catch (err) {
         console.error('Error updating image positions:', err);
-        res.status(500).json({ error: 'Error updating image positions' });
+        res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message));
     }
 }
+
+
 
 
 const stepFieldMappings = {
@@ -447,7 +446,7 @@ exports.update_user_profile = async (req, res) => {
 
     try {
         const user = await userModel.findById(userId);
-        if (!user) return res.status(400).json({ type: "error", message: "User does not exist" });
+        if (!user) return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,messages.notFound.userNotFound));
 
         const { completed_steps = [] } = user;
 
@@ -474,7 +473,7 @@ exports.update_user_profile = async (req, res) => {
 
 
         if (!stepFieldMappings[current_step]) {
-            return res.status(400).json({ type: "error", message: "Invalid step" });
+            return res.status(400).json(errorResponse(messages.validation.invalidStep));
         }
 
 
@@ -482,7 +481,7 @@ exports.update_user_profile = async (req, res) => {
         const providedFields = Object.keys(req.body).filter(key => key !== 'current_step');
         const invalidFields = providedFields.filter(field => !requiredFields.includes(field));
         if (invalidFields.length > 0) {
-            return res.status(400).json({ type: "error", message: `Invalid fields for step ${current_step}: ${invalidFields.join(', ')}` });
+            return res.status(400).json(errorResponse(`Invalid fields for step ${current_step}: ${invalidFields.join(', ')}`));
         }
 
         const updateFields = {};
@@ -491,7 +490,7 @@ exports.update_user_profile = async (req, res) => {
             if (value === undefined) {
                 const lastValidValue = getLastValidValue(step);
                 if (lastValidValue === null) {
-                    return res.status(400).json({ type: "error", message: `${fieldName} is required for step ${step}` });
+                    return res.status(400).json(errorResponse(`${fieldName} is required for step ${step}`));
                 }
                 updateFields[fieldName] = lastValidValue;
             } else {
@@ -520,13 +519,13 @@ exports.update_user_profile = async (req, res) => {
             case 12:
                 if (!Array.isArray(interests_ids)) {
                     const lastInterests = getLastValidValue(12);
-                    if (!lastInterests) return res.status(400).json({ type: "error", message: "Interests IDs must be an array for step 12" });
+                    if (!lastInterests) return res.status(400).json(errorResponse("Interests IDs must be an array for step 12"));
                     updateFields['characteristics.interests_ids'] = lastInterests;
                 } else {
                     updateFields['characteristics.interests_ids'] = interests_ids;
                 }
                 break;
-            default: return res.status(400).json({ type: "error", message: "Invalid step" });
+            default: return res.status(400).json(errorResponse(messages.validation.invalidStep));
         }
 
         const updatedUser = await userModel.findByIdAndUpdate(userId, updateFields, { new: true, runValidators: true });
@@ -535,17 +534,17 @@ exports.update_user_profile = async (req, res) => {
             return res.status(400).json({ type: "error", message: `Error while updating step ${current_step}. Please try again later.` });
         }
 
-        return res.status(200).json({
-            type: "success",
-            message: `Step ${current_step} updated successfully`,
-            user: updatedUser
-        });
+        return res.status(200).json(successResponse(`Step ${current_step} updated successfully`,updatedUser));
 
     } catch (error) {
         console.error('ERROR::', error);
-        return res.status(500).json(errorResponse(error.message));
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message));
     }
 };
+
+
+
+
 
 
 exports.add_profile_images = async(req,res)=>{
@@ -557,7 +556,7 @@ exports.add_profile_images = async(req,res)=>{
         
             const user = await userModel.findById(userId);
             if (!user) {
-                return res.status(400).json(errorResponse("User does not exist"));
+                return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,messages.notFound.userNotFound));
             }
     
            
@@ -577,22 +576,18 @@ exports.add_profile_images = async(req,res)=>{
     
           
             if (imagesArray.length < 2) {
-                return res.status(400).json(errorResponse("You need to add at least two images."));
+                return res.status(400).json(errorResponse(messages.validation.minImagesRequired));
             }
     
     
             user.images = imagesArray;
             await user.save();
     
-            return res.status(200).json({
-                type: "success",
-                message: "User images updated successfully",
-                images: user.images,
-            });
+            return res.status(200).json("User images updated successfully",user.images);
     
     }catch(error){
         console.log("ERROR::",error)
-        return res.status(500).json(errorResponse(error.message))
+        return res.status(500).json(errorResponse(messages.generalError.userNotFound,error.message))
     }
 }
 
@@ -604,7 +599,7 @@ exports.delete_profile_image = async(req,res)=>{
 
             const user = await userModel.findById(userId);
             if (!user) {
-                return res.status(400).json(errorResponse('User does not exist'));
+                return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,messages.notFound.userNotFound));
             }
 
             let imagesArray = user.images || [];
@@ -637,17 +632,13 @@ exports.delete_profile_image = async(req,res)=>{
     
           
             if (user.images.length < 2) {
-                return res.status(400).json(errorResponse("You need to have at least two images in your profile."))
+                return res.status(400).json(errorResponse(messages.validation.minImagesRequired))
             }
     
-            return res.status(200).json({
-                type: "success",
-                message: "Image deleted successfully",
-                images: user.images,
-            });
+            return res.status(200).json("Image deleted successfully",user.images);
     
     }catch(error){
         console.log("ERROR::",error)
-        return res.status(500).json(errorResponse(error.message))
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message))
     }
 }

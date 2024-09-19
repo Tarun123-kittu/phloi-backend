@@ -1,10 +1,12 @@
-exports.successResponse = (message = 'success' , data = null) => ({
+exports.successResponse = (message = 'success', data = null) => ({
     type: "success",
     message,
-    data
+    data,
+
 })
 
-exports.errorResponse = (message) => ({
+exports.errorResponse = (message, code = null) => ({
     type: "error",
-    message
+    message,
+    code
 })

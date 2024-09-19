@@ -3,13 +3,13 @@ const { param, check, body, validationResult } = require('express-validator');
 
 
 const user_registration_steps_validator = [
-    // Check if mobile_number exists in the form data
+  
     check("mobile_number", "Mobile number is required to perform this action").not().isEmpty(),
 
-    // Check if current_step exists in the form data
+  
     check("current_step", "current_step is required to perform this action").not().isEmpty(),
 
-    // Validate the username field
+
     body("username").custom((value, { req }) => {
         if (req.body.current_step === '2') {
             if (!value || value.trim() === "") {
@@ -166,27 +166,6 @@ const user_registration_steps_validator = [
         return true;
     }),
 
-
-    // // Validate the image field (if provided)
-    // check("images").custom((value, { req }) => {
-    //     if (req.body.current_step === '13') {
-    //         const files = req.files;
-
-    //         // Check if files are defined and are an array
-    //         if (!files || !Array.isArray(files) || files.length < 2) {
-    //             throw new Error("You have to select at least 2 images to upload");
-    //         }
-    //     }
-    //     return true;
-    // }),
-
-    // (req, res, next) => {
-    //     const errors = validationResult(req);
-    //     if (!errors.isEmpty()) {
-    //         return res.status(400).json({ message: errors.array()[0].msg, type: 'error' });
-    //     }
-    //     next();
-    // }
 ];
 
 
