@@ -18,7 +18,7 @@ const UserPreferencesSchema = new mongoose.Schema({
 });
 
 
-const userSchema = new mongoose.Schema({    
+const userSchema = new mongoose.Schema({
     username: { type: String, default: null },
     mobile_number: { type: Number, default: null },
     email: { type: String, default: null },
@@ -38,13 +38,13 @@ const userSchema = new mongoose.Schema({
     ],
     images: [
         {
-          url: String,
-          position: Number,  
+            url: String,
+            position: Number,
         }
-      ],
+    ],
 
 
-      
+
     characteristics: UserCharactersticsSchema,
     preferences: UserPreferencesSchema,
     location: {
@@ -56,6 +56,17 @@ const userSchema = new mongoose.Schema({
             type: [Number],
         },
     },
+    setting: {
+        distance_in: {
+            type: String,
+            default: "km",
+            enum: ["km", "mi"]
+        },
+        read_receipts: {
+            type: Boolean,
+            default: true
+        }
+    }
 
 }, { timestamps: true });
 
