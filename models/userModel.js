@@ -42,11 +42,6 @@ const userSchema = new mongoose.Schema({
             position: Number,
         }
     ],
-
-
-
-    characteristics: UserCharactersticsSchema,
-    preferences: UserPreferencesSchema,
     location: {
         type: {
             type: String,
@@ -66,8 +61,16 @@ const userSchema = new mongoose.Schema({
             type: Boolean,
             default: true
         }
-    }
+    },
 
+    likedUsers: [{ type: mongoose.Schema.Types.ObjectId }],
+    dislikedUsers: [{ type: mongoose.Schema.Types.ObjectId }],
+
+    characteristics: UserCharactersticsSchema,
+    preferences: UserPreferencesSchema,
+    
+    token :{type:String,default:null}
+     
 }, { timestamps: true });
 
 

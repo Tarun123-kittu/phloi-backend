@@ -1,9 +1,9 @@
-let config = require("../config/config")
 let userModel = require("../models/userModel")
 let { errorResponse, successResponse } = require("../utils/responseHandler")
 let { generateToken, generateOtp, sendTwilioSms } = require("../utils/commonFunctions")
 let messages = require("../utils/messages")
 const {uploadFile,s3} = require("../utils/awsUpload")
+const io = require("../index")
 
 
 
@@ -31,12 +31,13 @@ exports.login = async (req, res) => {
                 mobile_number,
                 otp,
                 otp_sent_at: currentTime,
+                likedUsers:[],
+                dislikedUsers:[]
 
             });
         }
 
-
-        const smsResponse = await sendTwilioSms(mobile_number, otp);
+        const smsResponse = await sendTwilioSms(`Your phloii verification code is ${otp}`,mobile_number);
         if (!smsResponse.success) {
             // return res.status(400).json({ message: 'Error sending verification code via SMS: ' + smsResponse.error, type: 'error' });
             console.log("error while sending sms")
@@ -161,6 +162,12 @@ exports.verify_otp = async (req, res) => {
 
         let token = await generateToken(user._id)
 
+        await userModel.findOneAndUpdate({mobile_number:mobile_number},{
+            $set:{
+                token:token
+            }
+        })
+
         return res.status(200).json(successResponse(messages.success.loginSuccessful, token));
     } catch (error) {
         console.error("ERROR::", error);
@@ -194,7 +201,7 @@ exports.user_registration_steps = async (req, res) => {
 
     const images = req.files;
 
-    if (!mobile_number) return res.status(400).json(errorResponse("Mobile is required"));
+   
 
     try {
         const find_user_id = await userModel.findById(id);
@@ -565,7 +572,7 @@ exports.update_user_setting = async (req, res) => {
             setting_obj["setting.read_receipts"] = read_receipts;
         }
 
-        // Update the user settings
+       
         const user_setting = await userModel.findByIdAndUpdate(
             user_id,
             { $set: setting_obj },

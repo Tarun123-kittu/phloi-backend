@@ -39,10 +39,10 @@ const generateOtp = () => {
 
 
 
-const sendTwilioSms = async (mobile_number, otp) => {
+const sendTwilioSms = async (message,mobile_number) => {
     try {
         const message = await client.messages.create({
-            body: 'Your phloii verification code is ' + otp,
+            body: message,
             from: config.development.twilio_phone_number,
             to: mobile_number,
         });
