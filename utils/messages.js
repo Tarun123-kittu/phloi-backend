@@ -1,4 +1,3 @@
-
 module.exports = {
     success: {
         userUpdated: "User profile updated successfully",

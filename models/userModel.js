@@ -73,6 +73,6 @@ const userSchema = new mongoose.Schema({
      
 }, { timestamps: true });
 
-
+userSchema.index({ location: '2dsphere' });
 const userModel = mongoose.model('User', userSchema);
 module.exports = userModel;

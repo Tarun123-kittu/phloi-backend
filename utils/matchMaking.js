@@ -1,95 +1,91 @@
-const geolib = require('geolib');
-const userModel = require("../models/userModel");
+let userModel = require('../models/userModel')
+const mongoose = require('mongoose');
 
-const calculateAge = (dob) => {
-    const diff_ms = Date.now() - new Date(dob).getTime();
-    const age_dt = new Date(diff_ms);
-    return Math.abs(age_dt.getUTCFullYear() - 1970);
-};
 
-const isAgeInRange = (userAge, minAge, maxAge) => {
-    return userAge >= minAge && userAge <= maxAge;
-};
+const matchAlgorithm = async (currentUser, page = 1, limit = 10) => {
 
-const matchAlgorithm = async (currentUser, maxDistance = 100) => {
     const { _id, location, gender, intrested_to_see, preferences, characteristics } = currentUser;
     const currentCoordinates = location.coordinates;
-    
-    
-    let users = await userModel.find({
-        _id: { $ne: _id }, // Exclude current user
-        gender: intrested_to_see, // Filter by interested gender
-        // sexual_orientation_preference_id: preferences.sexual_orientation_preference_id,
-    }).lean();
-    
-    console.log("here 0")
-    let scoredUsers =  users.map(user => {
-     console.log("here 1")
-        let matchScore = 0;
-    
-        const sharedInterests = characteristics.interests_ids.filter(interest =>
-            user.characteristics.interests_ids.includes(interest)
-        ).length;
-        matchScore += sharedInterests;
+    const sexual_orientation_preference_id = new mongoose.Types.ObjectId(preferences.sexual_orientation_preference_id);
+    const distanceInKm = preferences.distance_preference; 
+    const distanceInMeters = distanceInKm * 1000; 
 
-      
-        if (user.likedUsers.includes(_id) && currentUser.likedUsers.includes(user._id)) {
-            matchScore += 10;
-        }
-
-  
-        const userAge = calculateAge(user.dob);
-        if (isAgeInRange(userAge, 18, 30)) {
-            matchScore += 1;
-        }
-       
-        return { user, matchScore };
-    });
-
-  
-    scoredUsers.sort((a, b) => b.matchScore - a.matchScore);
-    
-   
-    scoredUsers = scoredUsers.filter(({ user }) => {
-       
-        const distance = geolib.getDistance(
-            { latitude: currentCoordinates[1], longitude: currentCoordinates[0] },
-            { latitude: user.location.coordinates[1], longitude: user.location.coordinates[0] }
-        ) / 1000; 
-        return distance <= maxDistance;
-    });
-
-    
-    if (scoredUsers.length === 0) {
-        users = await userModel.find({
-            _id: { $ne: _id }, 
+    try {
+        let matchQuery = {
+            _id: { $nin: [_id] },
             'location.coordinates': {
                 $geoWithin: {
-                    $centerSphere: [
-                        [currentCoordinates[0], currentCoordinates[1]],
-                        maxDistance / 6378.1,
-                    ]
+                    $centerSphere: [currentCoordinates, distanceInKm / 6378.1] // radius in radians
                 }
+            },
+            'preferences.sexual_orientation_preference_id': sexual_orientation_preference_id
+        };
+
+        if (!(intrested_to_see === 'everyone')) {
+            matchQuery.gender = { $in: [intrested_to_see] }; 
+        }
+        
+        const users = await userModel.aggregate([
+            {
+                $geoNear: {
+                    near: {
+                        type: 'Point',
+                        coordinates: currentCoordinates
+                    },
+                    distanceField: 'distance',
+                    maxDistance: distanceInMeters,
+                    query: matchQuery,
+                    spherical: true
+                }
+            },
+            {
+                $lookup: {
+                    from: 'interests', 
+                    localField: 'characteristics.interests_ids',
+                    foreignField: '_id', 
+                    as: 'interests'
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    username: 1,
+                    images: 1,
+                    gender: 1,
+                    distance: 1,
+                    distanceInKm: { $divide: ['$distance', 1000] },
+                    interests: { $map: { input: '$interests', as: 'interest', in: '$$interest.interest' } }, 
+                    age: {
+                        $subtract: [new Date(), '$dob'] 
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    age: { $floor: { $divide: ['$age', 1000 * 60 * 60 * 24 * 365] } } 
+                }
+            },
+            {
+                $skip: (page - 1) * limit 
+            },
+            {
+                $limit: limit 
             }
-        }).lean();
+        ]).exec();
 
-       
-        scoredUsers = users.map(user => {
-            const distance = geolib.getDistance(
-                { latitude: currentCoordinates[1], longitude: currentCoordinates[0] },
-                { latitude: user.location.coordinates[1], longitude: user.location.coordinates[0] }
-            ) / 1000;
+        console.log("users ------", users.length);
 
-            return {
-                user,
-                matchScore: distance < 20 ? 5 : 1
-            };
-        });
-
-        scoredUsers.sort((a, b) => new Date(b.user.updatedAt) - new Date(a.user.updatedAt));
-    }
-   
-    return scoredUsers.map(match => match.user);
+        return users;
+    } catch (error) {
+        console.error('ERROR::', error);
+        throw new Error('Error while finding matching users.');
+    } 
 };
 
-module.exports = matchAlgorithm;
+
+
+
+
+
+
+module.exports= matchAlgorithm

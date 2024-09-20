@@ -234,6 +234,7 @@ const validateUpdateImagePositions = [
 
 
 
+
 module.exports = {
     user_registration_steps_validator,
     validateLogin,

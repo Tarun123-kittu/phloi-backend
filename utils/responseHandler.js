@@ -2,11 +2,10 @@ exports.successResponse = (message = 'success', data = null) => ({
     type: "success",
     message,
     data,
-
 })
 
-exports.errorResponse = (message, code = null) => ({
+exports.errorResponse = (message, loggedError = null) => ({
     type: "error",
     message,
-    code
+    loggedError
 })
