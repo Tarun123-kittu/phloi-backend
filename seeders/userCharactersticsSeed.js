@@ -9,6 +9,7 @@ const RelationshipPreference = require('../models/relationshipPreferencesModel')
 const SexualOrientation = require('../models/sexualOrientationModel');
 const SmokeFrequency = require('../models/smokeFrequencyModel');
 const WorkoutFrequency = require('../models/workoutFrequencyModel');
+const ExploreRooms = require("../models/exploreRoomsModel")
 
 const communicationStyles = [
   { style: 'I stay on WhatsApp' },
@@ -112,6 +113,13 @@ const workoutFrequencies = [
 ];
 
 
+const exploreRooms =[
+  { room:"Looking for love",image:"https://media.istockphoto.com/id/1451148505/photo/creative-searching-for-love-concept-red-hearts-and-magnifying-glass-on-light-purple.jpg?s=1024x1024&w=is&k=20&c=EcVsoikpJECFhHjBHgqECgpzwhCZJLO0FroNa66A23E="},
+  { room:"Free tonight",image:"https://scontent.fixc1-7.fna.fbcdn.net/v/t1.6435-9/186508507_958937248187091_4731566412721824585_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=833d8c&_nc_ohc=JLZTDg84qqcQ7kNvgEjnLgs&_nc_ht=scontent.fixc1-7.fna&_nc_gid=AY3sBj0A9Vo44cCUdvbiEi8&oh=00_AYCeqUZCjyZQPWKeU5eyP3ikRv6isx9H6xUqXgL8sGBmUA&oe=6719C025"},
+  { room:"Lets be friends",image:"https://static3.bigstockphoto.com/3/1/1/large1500/113126102.jpg"},
+  { room:"Coffee date",image:"https://plus.unsplash.com/premium_photo-1680303989902-84beefe8d9bc?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"}
+]
+
 async function syncCollection(dataArray, Model, modelName, uniqueKey) {
   const existingItems = await Model.find({});
   const existingKeys = new Set(existingItems.map(item => item[uniqueKey]));
@@ -142,7 +150,8 @@ async function seedAllData() {
       syncCollection(preferences, RelationshipPreference, 'Relationship Preference', 'relationship_type'),
       syncCollection(orientation, SexualOrientation, 'Sexual Orientation', 'orientation_type'),
       syncCollection(smokeFrequencies, SmokeFrequency, 'Smoke Frequency', 'frequency'),
-      syncCollection(workoutFrequencies, WorkoutFrequency, 'Workout Frequency', 'frequency')
+      syncCollection(workoutFrequencies, WorkoutFrequency, 'Workout Frequency', 'frequency'),
+      syncCollection(exploreRooms, ExploreRooms, 'Explore Rooms', 'room','image')
     ]);
     console.log('All data synchronized successfully.');
   } catch (error) {
@@ -153,8 +162,9 @@ async function seedAllData() {
 }
 
 
+
 mongoose
-  .connect(process.env.PHLOI_DB_URL)
+  .connect('mongodb+srv://hankishbawa17:123%40hankish@phloi.kg8i2.mongodb.net/phloi?retryWrites=true&w=majority')
   .then(() => {
     console.log('Connected to MongoDB');
     return seedAllData();

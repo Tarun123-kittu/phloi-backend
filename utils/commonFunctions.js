@@ -39,10 +39,10 @@ const generateOtp = () => {
 
 
 
-const sendTwilioSms = async (message,mobile_number) => {
+const sendTwilioSms = async (msg,mobile_number) => {
     try {
         const message = await client.messages.create({
-            body: message,
+            body: msg,
             from: config.development.twilio_phone_number,
             to: mobile_number,
         });

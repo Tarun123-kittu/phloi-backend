@@ -189,6 +189,7 @@ exports.user_registration_steps = async (req, res) => {
         interests_ids, current_step, location
     } = req.body;
 
+
     let parsedLocation = location;
     if (typeof location === 'string') {
         try {
@@ -455,15 +456,17 @@ const stepFieldMappings = {
 exports.update_user_profile = async (req, res) => {
 
     let userId = req.result.userId;
+  
 
-    const {
+    let {
         username, dob, gender, intrested_to_see,
         sexual_orientation_preference_id, relationship_type_preference_id,
         study, distance_preference, communication_style_id, love_receive_id,
         drink_frequency_id, smoke_frequency_id, workout_frequency_id,
-        interests_ids, current_step
+        interests_ids, current_step 
     } = req.body;
-
+    current_step = Number(current_step); 
+  
     try {
         const user = await userModel.findById(userId);
         if (!user) return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,messages.notFound.userNotFound));
@@ -517,6 +520,7 @@ exports.update_user_profile = async (req, res) => {
                 updateFields[fieldName] = value;
             }
         };
+
 
         switch (current_step) {
             case 2: updateStep(2, 'username', username); break;

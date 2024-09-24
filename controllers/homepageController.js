@@ -7,11 +7,15 @@ let workoutFrequencyModel = require("../models/workoutFrequencyModel")
 let communicationStyleModel = require("../models/communicationStyleModel")
 let loveReceiveModel = require("../models/loveReceiveModel")
 let interestModel = require("../models/interestsModel")
-const matchAlgorithm = require("../utils/matchMaking")
+let matchAlgorithm = require("../utils/matchMaking")
+let calculateMatchScore = require("../utils/calculateTopPicks")
 let { sendTwilioSms } = require("../utils/commonFunctions")
-const { errorResponse, successResponse } = require("../utils/responseHandler")
-const messages = require("../utils/messages")
-const io = require('../index')
+let { errorResponse, successResponse } = require("../utils/responseHandler")
+let messages = require("../utils/messages")
+let {io} = require('../index')
+
+
+
 
 
 
@@ -169,14 +173,7 @@ exports.get_users_who_liked_profile = async (req, res) => {
             .lean();
 
         if (usersWhoLikedProfile.length === 0) {
-            return res.status(200).json({
-                type: 'success',
-                message: 'No users have liked your profile.',
-                users: [],
-                total_profiles: 0,
-                current_page: page,
-                total_pages: Math.ceil(totalProfilesCount / limit)
-            });
+            return res.status(200).json(successResponse("No user have liked your profile"));
         }
 
         return res.status(200).json({
@@ -280,3 +277,71 @@ exports.get_profile_details = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
+
+
+
+
+exports.getTopPicks = async (req, res) => {
+    try {
+        const userId = req.result.userId;
+        const user = await userModel.findById(userId);
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
+        if (!user) {
+            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong,"User not found with this user id."));
+        }
+
+        
+        const preferredGender = user.intrested_to_see; 
+        const maxDistance = user.preferences.distance_preference || 50;
+
+        
+        const nearbyUsers = await userModel.find({
+            _id: { $ne: userId }, 
+            gender: preferredGender === 'everyone' ? { $exists: true } : preferredGender,
+            location: {
+                $near: {
+                    $geometry: { type: 'Point', coordinates: user.location.coordinates },
+                    $maxDistance: maxDistance * 1000, 
+                }
+            }
+        });
+
+       
+        const matchedUsers = nearbyUsers.map(nearbyUser => {
+        
+            const score =  calculateMatchScore(user, nearbyUser);
+            const userImage = nearbyUser.images.find(img => img.position === 1) || {};
+            
+            return {
+                _id: nearbyUser._id,
+                username: nearbyUser.username,
+                age: nearbyUser.dob ? new Date().getFullYear() - new Date(nearbyUser.dob).getFullYear() : null, 
+                image: userImage.url || null, 
+                matchScore: score
+            };
+        });
+
+        
+        matchedUsers.sort((a, b) => b.matchScore - a.matchScore);
+
+  
+        const startIndex = (page - 1) * limit;
+        const paginatedResults = matchedUsers.slice(startIndex, startIndex + limit);
+
+        res.status(200).json({
+            totalMatches: matchedUsers.length,
+            currentPage: page,
+            totalPages: Math.ceil(matchedUsers.length / limit),
+            data: paginatedResults
+        });
+    } catch (error) {
+        console.error("ERROR::", error);
+        res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message));
+    }
+}; 
+
+
+
+

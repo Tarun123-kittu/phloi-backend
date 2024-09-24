@@ -30,6 +30,8 @@ const userSchema = new mongoose.Schema({
     intrested_to_see: { type: String, enum: ['men', "women", "everyone"], default: 'everyone' },
     completed_steps: { type: Array, default: [] },
     current_step: { type: Number, default: 0 },
+    room_joined:{type:Boolean,default:false},
+    joined_room_id:{type:mongoose.Types.ObjectId,default:null},
     socialLogin: [
         {
             providerName: { type: String, enum: ["google", "apple", "facebook"] },
@@ -65,11 +67,13 @@ const userSchema = new mongoose.Schema({
 
     likedUsers: [{ type: mongoose.Schema.Types.ObjectId }],
     dislikedUsers: [{ type: mongoose.Schema.Types.ObjectId }],
-
+ 
     characteristics: UserCharactersticsSchema,
     preferences: UserPreferencesSchema,
     
-    token :{type:String,default:null}
+    token :{type:String,default:null},
+    online_status:{type:Boolean,default:true},
+
      
 }, { timestamps: true });
 
