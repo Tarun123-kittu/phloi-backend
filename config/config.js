@@ -1,7 +1,10 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 
+
+
 const development = {
+    port:process.env.PORT,
     db_url: process.env.PHLOI_DB_URL||'mongodb+srv://hankishbawa17:123%40hankish@phloi.kg8i2.mongodb.net/phloi?retryWrites=true&w=majority',
     jwt_secret_key:process.env.JWT_SECRET_KEY,
     twilio_account_sid:process.env.ACCOUNT_SID,

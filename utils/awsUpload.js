@@ -13,9 +13,9 @@ const uploadFile = async (file) => {
     }
 
     const current_time = moment().tz('Asia/Kolkata').format('YYYYMMDD_HHmmss');
-    const userId = file.userId; // Assuming userId is available in the file object
+    const userId = file.userId; 
 
-    // Define the key for the image file
+
     const key = `profile_images/${userId}/${current_time}`;
 
     try {
@@ -26,10 +26,7 @@ const uploadFile = async (file) => {
             ContentType: file.mimetype,
         }).promise();
 
-        // Log the result for debugging
-        console.log('File uploaded successfully:', result);
-
-        // Return the result or relevant information if needed
+        
         return result;
     } catch (error) {
         console.error('Error uploading file:', error);

@@ -3,9 +3,6 @@ let { errorResponse, successResponse } = require("../utils/responseHandler")
 let { generateToken, generateOtp, sendTwilioSms } = require("../utils/commonFunctions")
 let messages = require("../utils/messages")
 const {uploadFile,s3} = require("../utils/awsUpload")
-const io = require("../index")
-
-
 
 
 

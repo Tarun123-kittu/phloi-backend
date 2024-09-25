@@ -9,7 +9,6 @@ let loveReceiveModel = require("../models/loveReceiveModel")
 let interestModel = require("../models/interestsModel")
 let matchAlgorithm = require("../utils/matchMaking")
 let calculateMatchScore = require("../utils/calculateTopPicks")
-let { sendTwilioSms } = require("../utils/commonFunctions")
 let { errorResponse, successResponse } = require("../utils/responseHandler")
 let messages = require("../utils/messages")
 let {io} = require('../index')
@@ -88,15 +87,6 @@ exports.like_profile = async (req, res) => {
                     createdAt: Date.now(),
                 });
                 await newMatch.save();
-            }
-
-            const currentUserPhone = currentUser.mobile_number;
-            const likedUserPhone = likedUser.mobile_number;
-
-            if (currentUserPhone && likedUserPhone) {
-                const message = 'Congratulations! You have a new match!';
-                await sendTwilioSms(message, currentUserPhone);
-                await sendTwilioSms(message, likedUserPhone);
             }
 
             io.emit('its_a_match')

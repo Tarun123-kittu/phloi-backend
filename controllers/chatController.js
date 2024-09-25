@@ -3,7 +3,6 @@ const messageModel = require('../models/messageModel');
 const userModel = require("../models/userModel")
 const { errorResponse, successResponse } = require('../utils/responseHandler');
 const messages = require("../utils/messages")
-const { sendTwilioSms } = require('../utils/commonFunctions')
 const { io } = require("../index")
 
 
@@ -16,31 +15,55 @@ const { io } = require("../index")
 //         const limit = parseInt(req.query.limit) || 10;
 //         const skip = (page - 1) * limit;
 
-//         if (!userId) {  return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User ID is required"));  }
+//         if (!userId) {
+//             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User ID is required"));
+//         }
 
+       
 //         const chats = await chatModel.find({ participants: userId })
-//             .populate({ path: 'lastMessage', populate: { path: 'sender', select: 'username' } })
-//             .sort({ 'lastMessage.createdAt': -1 })
+//             .populate({
+//                 path: 'lastMessage',
+//                 populate: { path: 'sender', select: 'username' }
+//             })
+//             .populate({
+//                 path: 'participants',
+//                 select: 'username images',
+//             })
+//             .sort({ 'lastMessage.createdAt': -1 }) 
 //             .skip(skip)
 //             .limit(limit);
 
+//         if (!chats || chats.length === 0) {
+//             return res.status(200).json(successResponse("No chats found", []));
+//         }
 
-//         if (!chats || chats.length === 0) { return res.status(200).json(successResponse("No chats found", [])); }
-
-
+        
 //         const chatDetails = await Promise.all(chats.map(async chat => {
-//             const unreadCount = await messageModel.countDocuments({ chat: chat._id, receiver: userId, read: false });
+            
+//             const otherParticipant = chat.participants.find(participant => participant._id.toString() !== userId);
+
+            
+//             const imageObj = otherParticipant?.images?.find(img => img.position === 1);
+//             const otherParticipantImage = imageObj ? imageObj.url : null;
+
+           
+//             const unreadCount = await messageModel.countDocuments({
+//                 chat: chat._id,
+//                 receiver: userId,
+//                 read: false
+//             });
 
 //             return {
 //                 chatId: chat._id,
-//                 lastMessage: chat.lastMessage,
-//                 lastMessageSender: chat.lastMessage ? chat.lastMessage.sender.username : null,
-//                 unreadCount: unreadCount,
-//                 totalUnreadMessages: unreadCount
+//                 otherParticipantName: otherParticipant ? otherParticipant.username : null, 
+//                 otherParticipantImage: otherParticipantImage,
+//                 lastMessage: chat.lastMessage ? chat.lastMessage.text : null, 
+//                 lastMessageSender: chat.lastMessage ? chat.lastMessage.sender.username : null, 
+//                 unreadCount: unreadCount 
 //             };
 //         }));
 
-
+        
 //         res.status(200).json(successResponse("Chats retrieved successfully", {
 //             chats: chatDetails,
 //             currentPage: page,
@@ -61,12 +84,13 @@ exports.getChats = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
+        const searchQuery = req.query.search || ""; 
 
         if (!userId) {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User ID is required"));
         }
 
-       
+    
         const chats = await chatModel.find({ participants: userId })
             .populate({
                 path: 'lastMessage',
@@ -84,16 +108,23 @@ exports.getChats = async (req, res) => {
             return res.status(200).json(successResponse("No chats found", []));
         }
 
-        
-        const chatDetails = await Promise.all(chats.map(async chat => {
-            
+    
+        const filteredChats = chats.filter(chat => {
             const otherParticipant = chat.participants.find(participant => participant._id.toString() !== userId);
+            return otherParticipant && otherParticipant.username.toLowerCase().includes(searchQuery.toLowerCase());
+        });
 
-            
+        
+        if (!filteredChats || filteredChats.length === 0) {
+            return res.status(200).json(successResponse("No chats found matching the search query", []));
+        }
+
+      
+        const chatDetails = await Promise.all(filteredChats.map(async chat => {
+            const otherParticipant = chat.participants.find(participant => participant._id.toString() !== userId);
             const imageObj = otherParticipant?.images?.find(img => img.position === 1);
             const otherParticipantImage = imageObj ? imageObj.url : null;
 
-           
             const unreadCount = await messageModel.countDocuments({
                 chat: chat._id,
                 receiver: userId,
@@ -110,12 +141,17 @@ exports.getChats = async (req, res) => {
             };
         }));
 
-        
+       
+        const totalChatsCount = await chatModel.countDocuments({
+            participants: userId,
+            'participants.username': { $regex: searchQuery, $options: "i" } 
+        });
+
         res.status(200).json(successResponse("Chats retrieved successfully", {
             chats: chatDetails,
             currentPage: page,
-            totalChats: await chatModel.countDocuments({ participants: userId }),
-            totalPages: Math.ceil(await chatModel.countDocuments({ participants: userId }) / limit)
+            totalChats: totalChatsCount,
+            totalPages: Math.ceil(totalChatsCount / limit)
         }));
 
     } catch (error) {
@@ -123,7 +159,6 @@ exports.getChats = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
-
 
 
 
@@ -202,11 +237,6 @@ exports.sendMessage = async (req, res) => {
             unreadCount: chat.unreadCount
         });
 
-        const smsResponse = await sendTwilioSms(`New_message from ${sender.username}`, receiver.mobile_number);
-        if (!smsResponse.success) {
-            // return res.status(400).json({ message: 'Error sending verification code via SMS: ' + smsResponse.error, type: 'error' });
-            console.log("error while sending sms")
-        }
         res.status(201).json(successResponse("Message sent successfully", message));
 
 

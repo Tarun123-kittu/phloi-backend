@@ -3,6 +3,7 @@ let app = express();
 let cors = require('cors');
 const fileUpload = require('express-fileupload')
 let { phloi_db_connection } = require("./config/config");
+let config = require('./config/config')
 const http = require('http');
 const socketIo = require('socket.io');
 const server = http.createServer(app);
@@ -52,7 +53,7 @@ app.get('/test_phloii', (req, res) => {
 });
 
 
-const PORT = process.env.PORT || 8000;  
+const PORT = config.development.port || 8000;  
 server.listen(PORT, () => {
   console.log(`App is listening on PORT ${PORT}`);
 });

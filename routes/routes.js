@@ -4,6 +4,8 @@ const userController = require("../controllers/userController")
 const matchMakingController = require("../controllers/homepageController")
 const chatController = require("../controllers/chatController")
 const exploreRoomsController = require("../controllers/exploreRoomsController")
+const preferencesController = require("../controllers/preferences")
+const characteristicsController = require("../controllers/characterstics")
 const {
     user_registration_steps_validator,
     validateLogin,
@@ -56,11 +58,26 @@ router.get('/getMessages',authenticateToken,chatController.getMessages);
 router.put("/markMessagesAsRead",authenticateToken,chatController.markMessagesAsRead)
 
 
-//explore rooms logic
+//explore rooms routes 
 router.get("/get_all_rooms",authenticateToken,exploreRoomsController.get_all_rooms)
 router.post("/join_room",authenticateToken,exploreRoomsController.join_room)
 router.put("/left_room",authenticateToken,exploreRoomsController.left_room)
 router.get("/get_matches_in_explore_rooms",authenticateToken,exploreRoomsController.get_matches_in_explore_rooms)
+
+
+//preferences routes
+router.get("/get_all_sexual_orientations",authenticateToken,preferencesController.get_all_sexual_orientations)
+router.get("/get_all_relationship_types",authenticateToken,preferencesController.get_all_relationship_types)
+
+
+//characterstics controller
+router.get("/get_all_communication_styles",authenticateToken,characteristicsController.get_all_communication_styles)
+router.get("/get_all_love_receives",authenticateToken,characteristicsController.get_all_love_receives)
+router.get("/get_all_drink_frequency",authenticateToken,characteristicsController.get_all_drink_frequency)
+router.get("/get_all_smoke_frequency",authenticateToken,characteristicsController.get_all_smoke_frequency)
+router.get("/get_all_workout_frequency",authenticateToken,characteristicsController.get_all_workout_frequency)
+router.get("/get_all_interests",authenticateToken,characteristicsController.get_all_interests)
+
 
 
 module.exports = router

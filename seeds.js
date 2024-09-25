@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-require('dotenv').config()
 const config = require("./config/config")
 const CommunicationStyle = require('./models/communicationStyleModel');
 const DrinkFrequency = require('./models/drinkFrequencyModel');
@@ -12,7 +11,7 @@ const WorkoutFrequency = require('./models/workoutFrequencyModel');
 const ExploreRooms = require("./models/exploreRoomsModel")
 
 
-console.log("------",config)
+
 
 
 const communicationStyles = [
