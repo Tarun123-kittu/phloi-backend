@@ -1,15 +1,19 @@
 const mongoose = require('mongoose');
 require('dotenv').config()
+const config = require("./config/config")
+const CommunicationStyle = require('./models/communicationStyleModel');
+const DrinkFrequency = require('./models/drinkFrequencyModel');
+const Interests = require('./models/interestsModel');
+const LoveReceive = require('./models/loveReceiveModel');
+const RelationshipPreference = require('./models/relationshipPreferencesModel');
+const SexualOrientation = require('./models/sexualOrientationModel');
+const SmokeFrequency = require('./models/smokeFrequencyModel');
+const WorkoutFrequency = require('./models/workoutFrequencyModel');
+const ExploreRooms = require("./models/exploreRoomsModel")
 
-const CommunicationStyle = require('../models/communicationStyleModel');
-const DrinkFrequency = require('../models/drinkFrequencyModel');
-const Interests = require('../models/interestsModel');
-const LoveReceive = require('../models/loveReceiveModel');
-const RelationshipPreference = require('../models/relationshipPreferencesModel');
-const SexualOrientation = require('../models/sexualOrientationModel');
-const SmokeFrequency = require('../models/smokeFrequencyModel');
-const WorkoutFrequency = require('../models/workoutFrequencyModel');
-const ExploreRooms = require("../models/exploreRoomsModel")
+
+console.log("------",config)
+
 
 const communicationStyles = [
   { style: 'I stay on WhatsApp' },
@@ -163,8 +167,9 @@ async function seedAllData() {
 
 
 
+
 mongoose
-  .connect('mongodb+srv://hankishbawa17:123%40hankish@phloi.kg8i2.mongodb.net/phloi?retryWrites=true&w=majority')
+  .connect(config.development.db_url)
   .then(() => {
     console.log('Connected to MongoDB');
     return seedAllData();

@@ -7,6 +7,11 @@ const io = require("../index")
 
 
 
+
+
+
+
+
 exports.login = async (req, res) => {
     try {
         const { mobile_number } = req.body;
@@ -50,6 +55,10 @@ exports.login = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message));
     }
 };
+
+
+
+
 
 
 
@@ -111,6 +120,10 @@ exports.social_login = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message));
     }
 };
+
+
+
+
 
 
 
@@ -179,6 +192,9 @@ exports.verify_otp = async (req, res) => {
 
 
 
+
+
+
 exports.user_registration_steps = async (req, res) => {
     let id = req.result.userId
     const {
@@ -212,7 +228,7 @@ exports.user_registration_steps = async (req, res) => {
         const updateFields = {};
 
 
-        // Steps 2 - 12
+        // Steps 2 - 14
         if (current_step == 2) {
             if(!username){return res.status(400).json(errorResponse('Username is required.','username is required to complete step 2'))}
             user_obj["username"] = username;
@@ -295,25 +311,28 @@ exports.user_registration_steps = async (req, res) => {
         }
 
         if (current_step == 13) {
-           
-            if (!images?.images || images?.images?.length === 0) {
-                return res.status(400).json(errorResponse("No images provided"));
-            }
 
+            let imageList = images?.images ? (Array.isArray(images.images) ? images.images : [images.images]) : [];
+        
+           
+            if (imageList.length !== 2) {
+                return res.status(400).json(errorResponse("At least two images are required"));
+            }
+        
             const imageUrls = [];
-            for (const [index, image] of images.images.entries()) {
+            for (const [index, image] of imageList.entries()) {
                 try {
                     if (!image.data) {
                         return res.status(400).json(errorResponse("File data is missing."));
                     }
-
+        
                     const uploadResult = await uploadFile({
                         name: image.name,
                         data: image.data,
                         mimetype: image.mimetype,
                         userId: id
-
                     });
+        
                     imageUrls.push({
                         url: uploadResult.Location,
                         position: index + 1
@@ -323,8 +342,13 @@ exports.user_registration_steps = async (req, res) => {
                     return res.status(500).json(errorResponse(`Error uploading image: ${error.message}`));
                 }
             }
+            
             user_obj["images"] = imageUrls;
+            user_obj["current_step"] = current_step;
+            completed_steps[12] = 13;
+            updateFields["completed_steps"] = completed_steps;
         }
+        
 
         if (current_step == 14) {
             if (!parsedLocation) return res.status(400).json(errorResponse("Location in required.","Location is required for step 14"));
@@ -359,6 +383,10 @@ exports.user_registration_steps = async (req, res) => {
 
 
 
+
+
+
+
 exports.get_user_details = async (req, res) => {
     const id = req.result.userId;
     const TOTAL_STEPS = 14;
@@ -383,6 +411,11 @@ exports.get_user_details = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message));
     }
 };
+
+
+
+
+
 
 
 
@@ -438,6 +471,10 @@ exports.update_image_position = async (req, res) => {
 
 
 
+
+
+
+
 const stepFieldMappings = {
     2: ['username'],
     3: ['dob'],
@@ -451,6 +488,12 @@ const stepFieldMappings = {
     11: ['drink_frequency_id', 'smoke_frequency_id', 'workout_frequency_id'],
     12: ['interests_ids']
 };
+
+
+
+
+
+
 
 
 exports.update_user_profile = async (req, res) => {
@@ -566,6 +609,13 @@ exports.update_user_profile = async (req, res) => {
     }
 };
 
+
+
+
+
+
+
+
 exports.update_user_setting = async (req, res) => {
     try {
         const { user_id, distance_in, read_receipts } = req.body;
@@ -609,6 +659,8 @@ exports.update_user_setting = async (req, res) => {
         return res.status(500).json({ error: "An internal server error occurred" });
     }
 };
+
+
 
 
 
