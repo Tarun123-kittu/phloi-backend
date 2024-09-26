@@ -45,7 +45,7 @@ const matchAlgorithm = async (currentUser, page = 1, limit = 10, filter = null) 
                 };
             }
         } else {
-          
+           
             if (intrested_to_see !== 'everyone') {
                 matchQuery.gender = { $in: [intrested_to_see] };
             }

@@ -132,7 +132,7 @@ exports.verify_otp = async (req, res) => {
         let user = await userModel.findOne({ mobile_number });
 
         if (!user) {
-            return res.status(404).json({ message:messages.generalError.somethingWentWrong, code:messages.notFound.userNotFound , type: 'error' });
+            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
         }
 
 
@@ -216,7 +216,7 @@ exports.user_registration_steps = async (req, res) => {
 
     try {
         const find_user_id = await userModel.findById(id);
-        if (!find_user_id) return res.status(400).json({message:messages.generalError.somethingWentWrong,code:messages.notFound.userNotFound,type:"error"});
+        if (!find_user_id) return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,messages.notFound.userNotFound));
 
         const userId = find_user_id._id;
         const completed_steps = find_user_id.completed_steps || [];
@@ -312,7 +312,7 @@ exports.user_registration_steps = async (req, res) => {
             let imageList = images?.images ? (Array.isArray(images.images) ? images.images : [images.images]) : [];
         
            
-            if (imageList.length !== 2) {
+            if (imageList.length < 2) {
                 return res.status(400).json(errorResponse("At least two images are required"));
             }
         
@@ -389,13 +389,22 @@ exports.get_user_details = async (req, res) => {
     const TOTAL_STEPS = 14;
 
     try {
-        const user_detail = await userModel.findById(id);
+        const user_detail = await userModel
+            .findById(id)
+            .populate('preferences.sexual_orientation_preference_id', 'orientation_type') 
+            .populate('preferences.relationship_type_preference_id', 'relationship_type')
+            .populate('characteristics.communication_style_id', 'style') 
+            .populate('characteristics.love_receive_id', 'love_type')  
+            .populate('characteristics.drink_frequency_id', 'frequency')  
+            .populate('characteristics.smoke_frequency_id', 'frequency') 
+            .populate('characteristics.workout_frequency_id', 'frequency')  
+            .populate('characteristics.interests_ids', 'interest')  
+            .lean();  
+
         if (!user_detail) return res.status(400).json({ type: "error", message: "User does not exist" });
 
         const { completed_steps = [] } = user_detail;
         const completedStepCount = completed_steps.length;
-
-
         const completionPercentage = (completedStepCount / TOTAL_STEPS) * 100;
 
         return res.status(200).json({
@@ -405,9 +414,10 @@ exports.get_user_details = async (req, res) => {
         });
     } catch (error) {
         console.log('ERROR::', error);
-        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message));
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
+
 
 
 
@@ -683,6 +693,7 @@ exports.add_profile_images = async(req,res)=>{
             if (newImagesFromFrontend) {
                 const uploadedImages = Array.isArray(newImagesFromFrontend) ? newImagesFromFrontend : [newImagesFromFrontend];
                 for (const imageFile of uploadedImages) {
+                    imageFile.userId = user._id
                     const uploadedImage = await uploadFile(imageFile); 
                     imagesArray.push({
                         url: uploadedImage.Location, 
@@ -700,7 +711,7 @@ exports.add_profile_images = async(req,res)=>{
             user.images = imagesArray;
             await user.save();
     
-            return res.status(200).json("User images updated successfully",user.images);
+            return res.status(200).json(errorResponse("User images updated successfully",user.images));
     
     }catch(error){
         console.log("ERROR::",error)
@@ -720,48 +731,55 @@ exports.delete_profile_image = async (req, res) => {
         const userId = req.result.userId;
         const imageUrl = req.body.imageUrl;
 
-            const user = await userModel.findById(userId);
-            if (!user) {
-                return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,messages.notFound.userNotFound));
-            }
+      
+        const user = await userModel.findById(userId);
+        if (!user) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
+        }
 
-            let imagesArray = user.images || [];
-            const imageIndex = imagesArray.findIndex(img => img.url === imageUrl);
-    
-            if (imageIndex === -1) {
-                return res.status(404).json(errorResponse("Image not found."));
-            }
-    
-          
-            const [removedImage] = imagesArray.splice(imageIndex, 1);
-    
-          
-            const params = {
-                Bucket: 'phloii', 
-                Key: removedImage.url.split('profile-images/')[1], 
-            };
-    
-            await s3.deleteObject(params).promise(); 
-    
+        if (user.images.length <= 2) {
+            return res.status(400).json(errorResponse(messages.validation.minImagesRequired));
+        }
+
        
-            imagesArray = imagesArray.map((img, index) => ({
-                ...img,
-                position: index + 1,
-            }));
+        let imagesArray = user.images || [];
+        const imageIndex = imagesArray.findIndex(img => img.url === imageUrl);
+
+        if (imageIndex === -1) {
+            return res.status(404).json(errorResponse("Image not found."));
+        }
+
+     
+        const [removedImage] = imagesArray.splice(imageIndex, 1);
+
     
-         
-            user.images = imagesArray;
-            await user.save();
+        const params = {
+            Bucket: 'phloii', 
+            Key: removedImage.url.split('profile_images/')[1],
+        };
+
+        await s3.deleteObject(params).promise(); 
+
+       
+        imagesArray = imagesArray.map((img, index) => ({
+            ...img,
+            position: index + 1,
+        }));
+
+        
+        user.images = imagesArray;
+        await user.save();
+
     
-          
-            if (user.images.length < 2) {
-                return res.status(400).json(errorResponse(messages.validation.minImagesRequired))
-            }
-    
-            return res.status(200).json("Image deleted successfully",user.images);
-    
-    }catch(error){
-        console.log("ERROR::",error)
-        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message))
+
+        return res.status(200).json({
+            message: "Image deleted successfully",
+            images: user.images
+        });
+
+    } catch (error) {
+        console.log("ERROR::", error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
-}
+};
+

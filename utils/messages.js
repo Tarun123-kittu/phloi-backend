@@ -17,7 +17,7 @@ module.exports = {
         invalidStep:'Invalid step',
         missingFields: "Missing required fields",
         imageDataMissing: "Image data is missing",
-        minImagesRequired: "You need to add at least two images.",
+        minImagesRequired: "You need  at least two images.",
     },
     auth: {
         unauthorizedAccess: "Unauthorized access",
