@@ -42,7 +42,7 @@ app.use(express.urlencoded({ extended: true }))
 app.use(fileUpload())
 
 let routes = require('./routes/routes');
-app.use(routes);  
+app.use('/api/v1',routes);  
 
 
 phloi_db_connection();
