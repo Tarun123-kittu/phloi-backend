@@ -137,7 +137,7 @@ exports.verify_otp = async (req, res) => {
 
 
         if (user.otp !== otp) {
-            return res.status(400).json(errorResponse('Invalid OTP'));
+            return res.status(400).json(errorResponse('Incorrect OTP'));
         }
 
         const currentTime = new Date();
@@ -255,7 +255,7 @@ exports.user_registration_steps = async (req, res) => {
             updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 6) {
-            if(!sexual_orientation_preference_id){return res.status(400).json(errorResponse('Sexual orientation is required.','sexual orientation to see is required to complete step 6'))}
+            if(!sexual_orientation_preference_id){return res.status(400).json(errorResponse('Sexual orientation is required.','sexual orientation  is required to complete step 6'))}
             updateFields["preferences.sexual_orientation_preference_id"] = sexual_orientation_preference_id;
             user_obj["current_step"] = current_step;
             completed_steps[5] = 6;
@@ -300,7 +300,7 @@ exports.user_registration_steps = async (req, res) => {
             updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 12) {
-            if(!drink_frequency_id||!smoke_frequency_id||!workout_frequency_id){return res.status(400).json(errorResponse('drink, smoke, workout frequency is required.','drink, smoke, workout frequency  is required to complete step 12'))}
+            if(!interests_ids){return res.status(400).json(errorResponse('interests are required.','interest ids are required to complete step 12'))}
             updatecharacteristics["characteristics.interests_ids"] = interests_ids;
             user_obj["current_step"] = current_step;
             completed_steps[11] = 12;

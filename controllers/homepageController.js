@@ -11,7 +11,7 @@ let matchAlgorithm = require("../utils/matchMaking")
 let calculateMatchScore = require("../utils/calculateTopPicks")
 let { errorResponse, successResponse } = require("../utils/responseHandler")
 let messages = require("../utils/messages")
-let {io} = require('../index')
+let { io } = require('../index')
 
 
 
@@ -19,29 +19,46 @@ let {io} = require('../index')
 
 
 exports.recommended_users = async (req, res) => {
- try{
-    const userId = req.result.userId;
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 10;
+    try {
+        const userId = req.result.userId;
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 10;
 
+        const ageMin = parseInt(req.query.age_min, 10) || 20;
+        const ageMax = parseInt(req.query.age_max, 10) || 35;
+        const maxDistance = parseInt(req.query.max_distance, 10) || 70
+        const interestedIn = req.query.interested_in || 'everyone'
+        const applyFilter = req.query.applyFilter || false
 
-    const currentUser = await userModel.findById(userId).lean();
-    if (!currentUser) {
-        return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
+        let filterApplied
+        if (applyFilter === true) {
+            filterApplied = {
+                ageMin: ageMin,
+                ageMax: ageMax,
+                maxDistance: maxDistance,
+                interestedIn: interestedIn
+            }
+        }
+
+        const currentUser = await userModel.findById(userId).lean();
+        if (!currentUser) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
+        }
+
+        const matchedUsers = await matchAlgorithm(currentUser, page, limit, filterApplied);
+
+        return res.status(200).json({
+            type: 'success',
+            message: 'Users matched successfully',
+            currentPage: page,
+            totalDocuments: matchedUsers.allUsers,
+            users: matchedUsers.paginatedUsers
+        });
+
+    } catch (error) {
+        console.log('ERROR:: ', error)
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
     }
-
-    const matchedUsers = await matchAlgorithm(currentUser, page, limit);
-    return res.status(200).json({
-        type: 'success',
-        message: 'Users matched successfully',
-        currentPage: page,
-        users: matchedUsers
-    });
-
- }catch(error){
-    console.log('ERROR:: ', error)
-    return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
- }
 }
 
 
@@ -189,20 +206,21 @@ exports.get_profile_details = async (req, res) => {
         if (!id) {
             return res.status(404).json(errorResponse("Please provide userId"));
         }
-        
+
         let user = await userModel.findById(id).lean();
         if (!user) {
             return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
         }
+        
+    
+        // let relationshipPromise = await relationshipPreferenceModel.findOne({ "preferences.relationship_type_preference_id":user.preferences.relationship_type_preference_id}).lean();
 
-        let relationshipPromise = relationshipPreferenceModel.findById(user.preferences.relationship_type_preference_id).lean();
-
-      
+     
         let interestsPromise = user.characteristics?.interests_ids?.length
             ? interestModel.find({ _id: { $in: user.characteristics.interests_ids } }, 'interest').lean()
             : Promise.resolve(null);
 
-        
+
         let drinkFrequencyPromise = user.characteristics?.drink_frequency_id
             ? drinkFrequencyModel.findById(user.characteristics.drink_frequency_id).lean()
             : Promise.resolve(null);
@@ -219,13 +237,13 @@ exports.get_profile_details = async (req, res) => {
             ? communicationStyleModel.findById(user.characteristics.communication_style_id).lean()
             : Promise.resolve(null);
 
-        let loveReceivePromise = user.characteristics?.love_receive_id
+        let loveReceivePromise =  user.characteristics?.love_receive_id
             ? loveReceiveModel.findById(user.characteristics.love_receive_id).lean()
             : Promise.resolve(null);
 
-       
+           
         const [
-            relationshipPreference,
+            // relationshipPreference,
             interests,
             drinkFrequency,
             smokeFrequency,
@@ -233,7 +251,7 @@ exports.get_profile_details = async (req, res) => {
             communicationStyle,
             loveReceive
         ] = await Promise.all([
-            relationshipPromise,
+            // relationshipPromise,
             interestsPromise,
             drinkFrequencyPromise,
             smokeFrequencyPromise,
@@ -242,10 +260,10 @@ exports.get_profile_details = async (req, res) => {
             loveReceivePromise
         ]);
 
-     
-        if (!relationshipPreference) {
-            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "Relationship preference not found."));
-        }
+        // console.log('--------',relationshipPreference)
+        // if (!relationshipPreference) {
+        //     // return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "Relationship preference not found."));
+        // }
 
 
         let userDetails = {
@@ -274,21 +292,25 @@ exports.get_profile_details = async (req, res) => {
 exports.getTopPicks = async (req, res) => {
     try {
         const userId = req.result.userId;
-        const user = await userModel.findById(userId);
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
 
+        const user = await userModel.findById(userId);
         if (!user) {
-            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong,"User not found with this user id."));
+            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "User not found with this user id."));
         }
 
         
-        const preferredGender = user.intrested_to_see; 
+        const preferredGender = user.intrested_to_see;
         const maxDistance = user.preferences.distance_preference || 50;
+        const likedUsers = user.likedUsers
+        const dislikedUsers = user.dislikedUsers
 
-        
         const nearbyUsers = await userModel.find({
-            _id: { $ne: userId }, 
+            _id: { 
+                $ne: userId, 
+                $nin: [...likedUsers, ...dislikedUsers] 
+            },
             gender: preferredGender === 'everyone' ? { $exists: true } : preferredGender,
             location: {
                 $near: {
@@ -297,26 +319,27 @@ exports.getTopPicks = async (req, res) => {
                 }
             }
         });
-
-       
-        const matchedUsers = nearbyUsers.map(nearbyUser => {
         
-            const score =  calculateMatchScore(user, nearbyUser);
+
+
+        const matchedUsers = nearbyUsers.map(nearbyUser => {
+
+            const score = calculateMatchScore(user, nearbyUser);
             const userImage = nearbyUser.images.find(img => img.position === 1) || {};
-            
+
             return {
                 _id: nearbyUser._id,
                 username: nearbyUser.username,
-                age: nearbyUser.dob ? new Date().getFullYear() - new Date(nearbyUser.dob).getFullYear() : null, 
-                image: userImage.url || null, 
+                age: nearbyUser.dob ? new Date().getFullYear() - new Date(nearbyUser.dob).getFullYear() : null,
+                image: userImage.url || null,
                 matchScore: score
             };
         });
 
-        
+
         matchedUsers.sort((a, b) => b.matchScore - a.matchScore);
 
-  
+
         const startIndex = (page - 1) * limit;
         const paginatedResults = matchedUsers.slice(startIndex, startIndex + limit);
 
@@ -328,9 +351,11 @@ exports.getTopPicks = async (req, res) => {
         });
     } catch (error) {
         console.error("ERROR::", error);
-        res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message));
+        res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
-}; 
+};
+
+
 
 
 

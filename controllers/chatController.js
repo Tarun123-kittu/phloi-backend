@@ -173,10 +173,14 @@ exports.createChat = async (req, res) => {
 
 
         if (participants.length !== 2) {  return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Participants of the chat must be exactly 2.")); }
-
-
+        
+    
         const sortedParticipants = participants.sort();
 
+        const existingUsers = await userModel.find({ _id: { $in: sortedParticipants } });
+        if (existingUsers.length !== 2) { 
+            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "One or both participants do not exist."));
+        }
 
         const existingChat = await chatModel.findOne({
             participants: { $all: sortedParticipants },
