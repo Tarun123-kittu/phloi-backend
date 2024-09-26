@@ -48,7 +48,7 @@ app.use('/api/v1',routes);
 phloi_db_connection();
 
 
-app.get('/test_phloii', (req, res) => {
+app.get('/api/v1/test_phloii', (req, res) => {
   res.send("phloii backend is working...");
 });
 
