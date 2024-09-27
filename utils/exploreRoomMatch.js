@@ -3,29 +3,32 @@ const mongoose = require('mongoose');
 
 
 const exploreRoomMatchAlgorithm = async (currentUser, page = 1, limit = 10) => {
-  
-    const { _id, location, gender, intrested_to_see, preferences, characteristics } = currentUser;
+    const { _id, location, gender, intrested_to_see, preferences, characteristics ,likedUsers, dislikedUsers } = currentUser;
     const currentCoordinates = location.coordinates;
     const sexual_orientation_preference_id = new mongoose.Types.ObjectId(preferences.sexual_orientation_preference_id);
     const distanceInKm = preferences.distance_preference; 
     const distanceInMeters = distanceInKm * 1000; 
-   
+    
     try {
+       
+        const likedUserIds = likedUsers.map(id => new mongoose.Types.ObjectId(id));
+        const dislikedUserIds = dislikedUsers.map(id => new mongoose.Types.ObjectId(id));
+   
         let matchQuery = {
-            _id: { $nin: [_id] },
+            _id: { $nin: [_id, ...likedUserIds, ...dislikedUserIds] },
             'location.coordinates': {
                 $geoWithin: {
-                    $centerSphere: [currentCoordinates, distanceInKm / 6378.1] // radius in radians
+                    $centerSphere: [currentCoordinates, distanceInKm / 6378.1] 
                 }
             },
             'preferences.sexual_orientation_preference_id': sexual_orientation_preference_id,
-            joined_room_id:currentUser.joined_room_id
+            joined_room_id: currentUser.joined_room_id
         };
-
+   
         if (!(intrested_to_see === 'everyone')) {
             matchQuery.gender = { $in: [intrested_to_see] }; 
         }
-        
+   
         const users = await userModel.aggregate([
             {
                 $geoNear: {
@@ -73,19 +76,15 @@ const exploreRoomMatchAlgorithm = async (currentUser, page = 1, limit = 10) => {
                 $limit: limit 
             }
         ]).exec();
-
+   
         console.log("users ------", users.length);
-
+   
         return users;
     } catch (error) {
         console.error('ERROR::', error);
         throw new Error('Error while finding matching users.');
     } 
-};
-
-
-
-
-
+   
+}
 
 module.exports= exploreRoomMatchAlgorithm

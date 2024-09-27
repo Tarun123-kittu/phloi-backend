@@ -1,13 +1,12 @@
 let userModel = require("../models/userModel")
 let matchModel = require("../models/matchesModel")
-let relationshipPreferenceModel = require('../models/relationshipPreferencesModel')
 let smokeFrequencyModel = require("../models/smokeFrequencyModel")
 let drinkFrequencyModel = require("../models/drinkFrequencyModel")
 let workoutFrequencyModel = require("../models/workoutFrequencyModel")
 let communicationStyleModel = require("../models/communicationStyleModel")
 let loveReceiveModel = require("../models/loveReceiveModel")
 let interestModel = require("../models/interestsModel")
-let matchAlgorithm = require("../utils/matchMaking")
+let homepageMatchAlgorithm = require("../utils/homepageMatchMaking")
 let calculateMatchScore = require("../utils/calculateTopPicks")
 let { errorResponse, successResponse } = require("../utils/responseHandler")
 let messages = require("../utils/messages")
@@ -25,7 +24,7 @@ exports.recommended_users = async (req, res) => {
         const limit = parseInt(req.query.limit, 10) || 10;
 
         const ageMin = parseInt(req.query.age_min, 10) || 20;
-        const ageMax = parseInt(req.query.age_max, 10) || 35;
+        const ageMax = parseInt(req.query.age_max, 10) || 40;
         const maxDistance = parseInt(req.query.max_distance, 10) || 70
         const interestedIn = req.query.interested_in || 'everyone'
         const applyFilter = req.query.applyFilter || false
@@ -45,7 +44,7 @@ exports.recommended_users = async (req, res) => {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
         }
 
-        const matchedUsers = await matchAlgorithm(currentUser, page, limit, filterApplied);
+        const matchedUsers = await homepageMatchAlgorithm(currentUser, page, limit, filterApplied);
 
         return res.status(200).json({
             type: 'success',
@@ -212,9 +211,6 @@ exports.get_profile_details = async (req, res) => {
             return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
         }
         
-    
-        // let relationshipPromise = await relationshipPreferenceModel.findOne({ "preferences.relationship_type_preference_id":user.preferences.relationship_type_preference_id}).lean();
-
      
         let interestsPromise = user.characteristics?.interests_ids?.length
             ? interestModel.find({ _id: { $in: user.characteristics.interests_ids } }, 'interest').lean()
@@ -243,7 +239,6 @@ exports.get_profile_details = async (req, res) => {
 
            
         const [
-            // relationshipPreference,
             interests,
             drinkFrequency,
             smokeFrequency,
@@ -251,7 +246,6 @@ exports.get_profile_details = async (req, res) => {
             communicationStyle,
             loveReceive
         ] = await Promise.all([
-            // relationshipPromise,
             interestsPromise,
             drinkFrequencyPromise,
             smokeFrequencyPromise,
@@ -260,10 +254,6 @@ exports.get_profile_details = async (req, res) => {
             loveReceivePromise
         ]);
 
-        // console.log('--------',relationshipPreference)
-        // if (!relationshipPreference) {
-        //     // return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "Relationship preference not found."));
-        // }
 
 
         let userDetails = {
@@ -321,10 +311,10 @@ exports.getTopPicks = async (req, res) => {
         });
         
 
-
+       
         const matchedUsers = nearbyUsers.map(nearbyUser => {
 
-            const score = calculateMatchScore(user, nearbyUser);
+            const score =  calculateMatchScore(user, nearbyUser);
             const userImage = nearbyUser.images.find(img => img.position === 1) || {};
 
             return {
@@ -332,12 +322,12 @@ exports.getTopPicks = async (req, res) => {
                 username: nearbyUser.username,
                 age: nearbyUser.dob ? new Date().getFullYear() - new Date(nearbyUser.dob).getFullYear() : null,
                 image: userImage.url || null,
-                matchScore: score
+                matchScorePercentage: score
             };
-        });
+        }).filter(user => user.matchScorePercentage >= 60); 
 
 
-        matchedUsers.sort((a, b) => b.matchScore - a.matchScore);
+        matchedUsers.sort((a, b) => b.matchScorePercentage - a.matchScorePercentage);
 
 
         const startIndex = (page - 1) * limit;
