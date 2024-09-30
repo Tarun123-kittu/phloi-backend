@@ -74,7 +74,7 @@ const userSchema = new mongoose.Schema({
     
     token :{type:String,default:null},
     online_status:{type:Boolean,default:true},
-
+    show_sexual_orientation:{type:Boolean,default:true}
      
 }, { timestamps: true });
 

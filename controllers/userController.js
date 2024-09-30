@@ -190,52 +190,6 @@ exports.verify_otp = async (req, res) => {
 
 
 
-exports.show_gender = async(req,res)=>{
-    try{
-        let userId = req.result.userId
-        const { show_gender } = req.body;
-
-    
-        if (typeof show_gender !== 'boolean') {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid input: 'show_gender' must be a boolean (true or false).",
-            });
-        }
-
-        const isUserExist = await userModel.findById(userId)
-        if(!isUserExist){return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"User not found"))}
-
-        const updatedUser = await userModel.findByIdAndUpdate(
-            userId, 
-            { show_gender: show_gender }, 
-            { new: true } 
-        );
-
-       
-        if (!updatedUser) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found.",
-            });
-        }
-
-       
-        return res.status(200).json({
-            success: true,
-            message: "User's show_gender updated successfully.",
-            // data: updatedUser,
-        });
-
-
-     } catch (error) {
-        console.error("ERROR::", error);
-        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message));
-    }
-}
-
-
-
 exports.user_registration_steps = async (req, res) => {
     let id = req.result.userId
     const {
@@ -244,7 +198,7 @@ exports.user_registration_steps = async (req, res) => {
         sexual_orientation_preference_id, relationship_type_preference_id,
         study, distance_preference, communication_style_id, love_receive_id,
         drink_frequency_id, smoke_frequency_id, workout_frequency_id,
-        interests_ids, current_step, location
+        interests_ids, current_step, location ,show_gender,show_sexual_orientation 
     } = req.body;
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -301,7 +255,10 @@ exports.user_registration_steps = async (req, res) => {
             updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 5) {
-            if(!gender){return res.status(400).json(errorResponse('Gender is required.','gender is required to complete step 5'))}
+            if (!gender) {
+                return res.status(400).json(errorResponse('Gender is required.', 'gender is required to complete step 5'));
+            }
+            user_obj["show_gender"] = show_gender;
             user_obj["gender"] = gender;
             user_obj["current_step"] = current_step;
             completed_steps[4] = 5;
@@ -315,7 +272,11 @@ exports.user_registration_steps = async (req, res) => {
             updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 7) {
-            if(!sexual_orientation_preference_id){return res.status(400).json(errorResponse('Sexual orientation is required.','sexual orientation  is required to complete step 7'))}
+            if (!sexual_orientation_preference_id) {
+                return res.status(400).json(errorResponse('Sexual orientation is required.', 'sexual orientation is required to complete step 7'));
+            }
+          
+            updateFields["show_sexual_orientation"] = show_sexual_orientation;
             updateFields["preferences.sexual_orientation_preference_id"] = sexual_orientation_preference_id;
             user_obj["current_step"] = current_step;
             completed_steps[6] = 7;
@@ -566,7 +527,6 @@ const stepFieldMappings = {
 exports.update_user_profile = async (req, res) => {
 
     let userId = req.result.userId;
-  
 
     let {
         username, dob, gender, intrested_to_see,

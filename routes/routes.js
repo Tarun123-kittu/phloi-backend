@@ -29,7 +29,7 @@ router.post("/verify_otp", validateVerifyOtp, userController.verify_otp)
 //update user profile routes
 router.put("/update_image_position", authenticateToken, validateUpdateImagePositions, userController.update_image_position)
 router.put("/update_user_profile", authenticateToken, userController.update_user_profile)
-router.put("/show_gender",authenticateToken,userController.show_gender)
+
 
 
 // update user setting routes
