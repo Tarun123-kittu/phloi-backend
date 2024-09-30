@@ -1,4 +1,5 @@
 let userModel = require("../models/userModel")
+let sexualOrientationModel = require("../models/sexualOrientationModel")
 let { errorResponse, successResponse } = require("../utils/responseHandler")
 let { generateToken, generateOtp, sendTwilioSms } = require("../utils/commonFunctions")
 let messages = require("../utils/messages")
@@ -41,8 +42,8 @@ exports.login = async (req, res) => {
 
         const smsResponse = await sendTwilioSms(`Your phloii verification code is ${otp}`,mobile_number);
         if (!smsResponse.success) {
-            // return res.status(400).json({ message: 'Error sending verification code via SMS: ' + smsResponse.error, type: 'error' });
-            console.log("error while sending sms")
+            return res.status(400).json({ message: 'Error sending verification code via SMS: ' + smsResponse.error, type: 'error' });
+            // console.log("error while sending sms")
         }else{
             console.log("Response from twilio:::: success--" +smsResponse.success)
         }
@@ -202,7 +203,7 @@ exports.user_registration_steps = async (req, res) => {
     } = req.body;
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
+  
     
 
     let parsedLocation = location;
@@ -272,12 +273,30 @@ exports.user_registration_steps = async (req, res) => {
             updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 7) {
+           
             if (!sexual_orientation_preference_id) {
-                return res.status(400).json(errorResponse('Sexual orientation is required.', 'sexual orientation is required to complete step 7'));
+                return res.status(400).json(errorResponse('Sexual orientation is required.', 'Sexual orientation is required to complete step 7'));
             }
+            
+            const ids = Array.isArray(sexual_orientation_preference_id) ? sexual_orientation_preference_id : [sexual_orientation_preference_id];
+
           
-            updateFields["show_sexual_orientation"] = show_sexual_orientation;
-            updateFields["preferences.sexual_orientation_preference_id"] = sexual_orientation_preference_id;
+                const orientations = await sexualOrientationModel.find({ _id: { $in: ids } });
+        
+                if (orientations.length !== ids.length) {
+                    return res.status(400).json(errorResponse("Something went wrong pleas try again later.", 'Please provide valid sexual orientation IDs.'));
+                }
+
+            if (Array.isArray(sexual_orientation_preference_id)) {
+               
+                user_obj["show_sexual_orientation"] = show_sexual_orientation;
+                updateFields["preferences.sexual_orientation_preference_id"] = sexual_orientation_preference_id; 
+            } else {
+              
+                user_obj["show_sexual_orientation"] = show_sexual_orientation;
+                updateFields["preferences.sexual_orientation_preference_id"] = [sexual_orientation_preference_id]; 
+            }
+            
             user_obj["current_step"] = current_step;
             completed_steps[6] = 7;
             updateFields["completed_steps"] = completed_steps;
@@ -407,7 +426,7 @@ exports.user_registration_steps = async (req, res) => {
 
 exports.get_user_details = async (req, res) => {
     const id = req.result.userId;
-    const TOTAL_STEPS = 14;
+    const TOTAL_STEPS = 15;
 
     try {
         const user_detail = await userModel
@@ -504,24 +523,19 @@ exports.update_image_position = async (req, res) => {
 
 
 const stepFieldMappings = {
-    2: ['username'],
-    3: ['dob'],
-    4: ['gender'],
-    5: ['intrested_to_see'],
-    6: ['sexual_orientation_preference_id'],
-    7: ['relationship_type_preference_id'],
-    8: ['study'],
-    9: ['distance_preference'],
-    10: ['communication_style_id', 'love_receive_id'],
-    11: ['drink_frequency_id', 'smoke_frequency_id', 'workout_frequency_id'],
-    12: ['interests_ids']
+    2: ['email'],
+    3: ['username'],
+    4: ['dob'],
+    5: ['gender'],
+    6: ['intrested_to_see'],
+    7: ['sexual_orientation_preference_id'],
+    8: ['relationship_type_preference_id'],
+    9: ['study'],
+    10: ['distance_preference'],
+    11: ['communication_style_id', 'love_receive_id'],
+    12: ['drink_frequency_id', 'smoke_frequency_id', 'workout_frequency_id'],
+    13: ['interests_ids']
 };
-
-
-
-
-
-
 
 
 exports.update_user_profile = async (req, res) => {
@@ -635,7 +649,6 @@ exports.update_user_profile = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message));
     }
 };
-
 
 
 

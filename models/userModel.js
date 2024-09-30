@@ -12,7 +12,7 @@ const UserCharactersticsSchema = new mongoose.Schema({
 
 
 const UserPreferencesSchema = new mongoose.Schema({
-    sexual_orientation_preference_id: { type: mongoose.Schema.Types.ObjectId, ref: 'sexual_orientation' },
+    sexual_orientation_preference_id: [{ type: mongoose.Schema.Types.ObjectId, ref: 'sexual_orientation' }],
     relationship_type_preference_id: { type: mongoose.Schema.Types.ObjectId, ref: 'relationship_preference' },
     distance_preference: { type: Number, default: 0 }
 });

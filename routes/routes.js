@@ -29,15 +29,16 @@ router.post("/verify_otp", validateVerifyOtp, userController.verify_otp)
 //update user profile routes
 router.put("/update_image_position", authenticateToken, validateUpdateImagePositions, userController.update_image_position)
 router.put("/update_user_profile", authenticateToken, userController.update_user_profile)
+router.put("/update_image_position", authenticateToken, validateUpdateImagePositions, userController.update_image_position)
+router.put("/add_profile_images", authenticateToken, userController.add_profile_images)
+router.delete("/delete_profile_image", authenticateToken, userController.delete_profile_image)
 
 
 
 // update user setting routes
 router.put("/update_user_setting", userController.update_user_setting)
-router.put("/update_image_position", authenticateToken, validateUpdateImagePositions, userController.update_image_position)
-router.put("/update_user_profile", authenticateToken, userController.update_user_profile)
-router.put("/add_profile_images", authenticateToken, userController.add_profile_images)
-router.delete("/delete_profile_image", authenticateToken, userController.delete_profile_image)
+
+
 
 
 //homepage routes
