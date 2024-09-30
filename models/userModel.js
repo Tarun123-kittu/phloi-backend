@@ -26,6 +26,7 @@ const userSchema = new mongoose.Schema({
     otp_sent_at: { type: Date, default: null },
     dob: { type: Date, default: null },
     gender: { type: String, enum: ["women", "men", "other"] },
+    show_gender:{type:Boolean,default:true},
     study: { type: String, default: null },
     intrested_to_see: { type: String, enum: ['men', "women", "everyone"], default: 'everyone' },
     completed_steps: { type: Array, default: [] },

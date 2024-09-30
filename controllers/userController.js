@@ -190,13 +190,56 @@ exports.verify_otp = async (req, res) => {
 
 
 
+exports.show_gender = async(req,res)=>{
+    try{
+        let userId = req.result.userId
+        const { show_gender } = req.body;
 
+    
+        if (typeof show_gender !== 'boolean') {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid input: 'show_gender' must be a boolean (true or false).",
+            });
+        }
+
+        const isUserExist = await userModel.findById(userId)
+        if(!isUserExist){return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"User not found"))}
+
+        const updatedUser = await userModel.findByIdAndUpdate(
+            userId, 
+            { show_gender: show_gender }, 
+            { new: true } 
+        );
+
+       
+        if (!updatedUser) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found.",
+            });
+        }
+
+       
+        return res.status(200).json({
+            success: true,
+            message: "User's show_gender updated successfully.",
+            // data: updatedUser,
+        });
+
+
+     } catch (error) {
+        console.error("ERROR::", error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message));
+    }
+}
 
 
 
 exports.user_registration_steps = async (req, res) => {
     let id = req.result.userId
     const {
+        email,
         username, dob, gender, intrested_to_see,
         sexual_orientation_preference_id, relationship_type_preference_id,
         study, distance_preference, communication_style_id, love_receive_id,
@@ -204,6 +247,9 @@ exports.user_registration_steps = async (req, res) => {
         interests_ids, current_step, location
     } = req.body;
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    
 
     let parsedLocation = location;
     if (typeof location === 'string') {
@@ -229,87 +275,99 @@ exports.user_registration_steps = async (req, res) => {
 
         // Steps 2 - 14
         if (current_step == 2) {
-            if(!username){return res.status(400).json(errorResponse('Username is required.','username is required to complete step 2'))}
-            user_obj["username"] = username;
+            if(!email){return res.status(400).json(errorResponse('Email is required.','email is required to complete step 2'))}
+            if ( !emailRegex.test(email)) {
+                return res.status(400).json({
+                    error: 'Please provide a valid email address.'
+                });
+            }
+            user_obj["email"] = email;
             user_obj["current_step"] = current_step;
             completed_steps[1] = 2;
             updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 3) {
-            if(!dob){return res.status(400).json(errorResponse('Date of birth is required.','dob is required to complete step 3'))}
-            user_obj["dob"] = dob;
+            if(!username){return res.status(400).json(errorResponse('Username is required.','username is required to complete step 3'))}
+            user_obj["username"] = username;
             user_obj["current_step"] = current_step;
             completed_steps[2] = 3;
             updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 4) {
-            if(!gender){return res.status(400).json(errorResponse('Gender is required.','gender is required to complete step 4'))}
-            user_obj["gender"] = gender;
+            if(!dob){return res.status(400).json(errorResponse('Date of birth is required.','dob is required to complete step 4'))}
+            user_obj["dob"] = dob;
             user_obj["current_step"] = current_step;
             completed_steps[3] = 4;
             updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 5) {
-            if(!intrested_to_see){return res.status(400).json(errorResponse('Interested to see is required.','interested to see is required to complete step 5'))}
-            user_obj["intrested_to_see"] = intrested_to_see;
+            if(!gender){return res.status(400).json(errorResponse('Gender is required.','gender is required to complete step 5'))}
+            user_obj["gender"] = gender;
             user_obj["current_step"] = current_step;
             completed_steps[4] = 5;
             updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 6) {
-            if(!sexual_orientation_preference_id){return res.status(400).json(errorResponse('Sexual orientation is required.','sexual orientation  is required to complete step 6'))}
-            updateFields["preferences.sexual_orientation_preference_id"] = sexual_orientation_preference_id;
+            if(!intrested_to_see){return res.status(400).json(errorResponse('Interested to see is required.','interested to see is required to complete step 6'))}
+            user_obj["intrested_to_see"] = intrested_to_see;
             user_obj["current_step"] = current_step;
             completed_steps[5] = 6;
             updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 7) {
-            if(!relationship_type_preference_id){return res.status(400).json(errorResponse('What are you looking for is required.','relationship preferences is required to complete step 7'))}
-            updateFields["preferences.relationship_type_preference_id"] = relationship_type_preference_id;
+            if(!sexual_orientation_preference_id){return res.status(400).json(errorResponse('Sexual orientation is required.','sexual orientation  is required to complete step 7'))}
+            updateFields["preferences.sexual_orientation_preference_id"] = sexual_orientation_preference_id;
             user_obj["current_step"] = current_step;
             completed_steps[6] = 7;
             updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 8) {
-            if(!study){return res.status(400).json(errorResponse('Studying is your thing is required.','study is required to complete step 8'))}
-            user_obj["study"] = study;
+            if(!relationship_type_preference_id){return res.status(400).json(errorResponse('What are you looking for is required.','relationship preferences is required to complete step 8'))}
+            updateFields["preferences.relationship_type_preference_id"] = relationship_type_preference_id;
             user_obj["current_step"] = current_step;
             completed_steps[7] = 8;
             updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 9) {
-            if(!distance_preference){return res.status(400).json(errorResponse('Distance preference is required.','distance preference is required to complete step 9'))}
-            updateFields["preferences.distance_preference"] = distance_preference;
+            if(!study){return res.status(400).json(errorResponse('Studying is your thing is required.','study is required to complete step 9'))}
+            user_obj["study"] = study;
             user_obj["current_step"] = current_step;
             completed_steps[8] = 9;
             updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 10) {
-            if(!communication_style_id || !love_receive_id){return res.status(400).json(errorResponse('Communication style and love receive preference is required.','Communication style and love receive preference is required to complete step 10'))}
-            updatecharacteristics["characteristics.communication_style_id"] = communication_style_id;
-            updatecharacteristics["characteristics.love_receive_id"] = love_receive_id;
+            if(!distance_preference){return res.status(400).json(errorResponse('Distance preference is required.','distance preference is required to complete step 10'))}
+            updateFields["preferences.distance_preference"] = distance_preference;
             user_obj["current_step"] = current_step;
             completed_steps[9] = 10;
             updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 11) {
-            if(!drink_frequency_id||!smoke_frequency_id||!workout_frequency_id){return res.status(400).json(errorResponse('drink, smoke, workout frequency is required.','drink, smoke, workout frequency  is required to complete step 11'))}
-            updatecharacteristics["characteristics.drink_frequency_id"] = drink_frequency_id;
-            updatecharacteristics["characteristics.smoke_frequency_id"] = smoke_frequency_id;
-            updatecharacteristics["characteristics.workout_frequency_id"] = workout_frequency_id;
+            if(!communication_style_id || !love_receive_id){return res.status(400).json(errorResponse('Communication style and love receive preference is required.','Communication style and love receive preference is required to complete step 11'))}
+            updatecharacteristics["characteristics.communication_style_id"] = communication_style_id;
+            updatecharacteristics["characteristics.love_receive_id"] = love_receive_id;
             user_obj["current_step"] = current_step;
             completed_steps[10] = 11;
             updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 12) {
-            if(!interests_ids){return res.status(400).json(errorResponse('interests are required.','interest ids are required to complete step 12'))}
-            updatecharacteristics["characteristics.interests_ids"] = interests_ids;
+            if(!drink_frequency_id||!smoke_frequency_id||!workout_frequency_id){return res.status(400).json(errorResponse('drink, smoke, workout frequency is required.','drink, smoke, workout frequency  is required to complete step 12'))}
+            updatecharacteristics["characteristics.drink_frequency_id"] = drink_frequency_id;
+            updatecharacteristics["characteristics.smoke_frequency_id"] = smoke_frequency_id;
+            updatecharacteristics["characteristics.workout_frequency_id"] = workout_frequency_id;
             user_obj["current_step"] = current_step;
             completed_steps[11] = 12;
             updateFields["completed_steps"] = completed_steps;
         }
-
         if (current_step == 13) {
+            if(!interests_ids){return res.status(400).json(errorResponse('interests are required.','interest ids are required to complete step 13'))}
+            updatecharacteristics["characteristics.interests_ids"] = interests_ids;
+            user_obj["current_step"] = current_step;
+            completed_steps[12] = 13;
+            updateFields["completed_steps"] = completed_steps;
+        }
+
+        if (current_step == 14) {
 
             let imageList = images?.images ? (Array.isArray(images.images) ? images.images : [images.images]) : [];
         
@@ -344,20 +402,20 @@ exports.user_registration_steps = async (req, res) => {
             
             user_obj["images"] = imageUrls;
             user_obj["current_step"] = current_step;
-            completed_steps[12] = 13;
+            completed_steps[13] = 14;
             updateFields["completed_steps"] = completed_steps;
         }
         
 
-        if (current_step == 14) {
-            if (!parsedLocation) return res.status(400).json(errorResponse("Location in required.","Location is required for step 14"));
+        if (current_step == 15) {
+            if (!parsedLocation) return res.status(400).json(errorResponse("Location in required.","Location is required for step 15"));
             user_obj["location"] = parsedLocation;
             user_obj["current_step"] = current_step;
-            completed_steps[13] = 14;
+            completed_steps[14] = 15;
             updateFields["completed_steps"] = completed_steps;
         }
 
-        if (current_step > 14) {
+        if (current_step > 15) {
             return res.status(400).json(errorResponse(messages.validation.invalidStep));
         }
 

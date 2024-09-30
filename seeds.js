@@ -77,14 +77,14 @@ const loveReceiveTypes = [
 ];
 
 const preferences = [
-  { relationship_type: 'Long-term partner' },
-  { relationship_type: 'Long-term open to short' },
-  { relationship_type: 'Short-term open to long' },
-  { relationship_type: 'Short-term fun' },
-  { relationship_type: 'New friends' },
-  { relationship_type: 'Still figuring it out' },
-  { relationship_type: 'Single with kids' },
-  { relationship_type: 'Single no kids' }
+  { relationship_type: 'Long-term partner',emoji: '❤'},
+  { relationship_type: 'Long-term open to short' ,emoji:"😍"},
+  { relationship_type: 'Short-term open to long' ,emoji:"🥂"},
+  { relationship_type: 'Short-term fun' ,emoji:"🎉"},
+  { relationship_type: 'New friends' ,emoji:"👋"},
+  { relationship_type: 'Still figuring it out' ,emoji:"🤔"},
+  { relationship_type: 'Single with kids',emoji:"🙋‍♀️" },
+  { relationship_type: 'Single no kids' ,emoji:"👩‍🦰"}
 ];
 
 const orientation = [

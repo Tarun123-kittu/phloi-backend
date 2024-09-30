@@ -30,7 +30,7 @@ exports.get_all_sexual_orientations = async (req, res) => {
 
 exports.get_all_relationship_types = async (req, res) => {
     try {
-        let relationshipTypes = await relationshipPreferenceModel.find().select('_id relationship_type').lean()
+        let relationshipTypes = await relationshipPreferenceModel.find().select('_id relationship_type emoji').lean()
 
         if(relationshipTypes.length<1){
             return res.status(200).json(successResponse("Not a single relationship type added yet"))
