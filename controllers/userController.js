@@ -43,6 +43,8 @@ exports.login = async (req, res) => {
         if (!smsResponse.success) {
             // return res.status(400).json({ message: 'Error sending verification code via SMS: ' + smsResponse.error, type: 'error' });
             console.log("error while sending sms")
+        }else{
+            console.log("Response from twilio:::: success--" +smsResponse.success)
         }
 
         return res.status(200).json(successResponse(`Verification code sent to this number ${mobile_number}.Valid for two minuites.`));
