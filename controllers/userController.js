@@ -204,7 +204,10 @@ exports.user_registration_steps = async (req, res) => {
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-
+    if(current_step < 2 ||current_step === undefined){
+        return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"Please enter correct step"))
+    }
+ 
 
     let parsedLocation = location;
     if (typeof location === 'string') {
