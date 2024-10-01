@@ -6,7 +6,6 @@ const calculateMatchScore = (currentUser, potentialMatch) => {
 
     const preferenceFields = [
         'relationship_type_preference_id',
-        'sexual_orientation_preference_id',
     ];
 
     const characteristicFields = [
@@ -30,7 +29,7 @@ const calculateMatchScore = (currentUser, potentialMatch) => {
             }
         }
     });
-
+  
    
     characteristicFields.forEach(field => {
         const currentValue = currentUser.characteristics[field];
@@ -44,28 +43,42 @@ const calculateMatchScore = (currentUser, potentialMatch) => {
             }
         }
     });
+ 
 
  
     const currentUserInterests = currentUser.characteristics.interests_ids || [];
-  
     const potentialMatchInterests = potentialMatch.characteristics.interests_ids || [];
 
     if (currentUserInterests.length > 0 && potentialMatchInterests.length > 0) {
         
-        totalComparisons++;   
+        totalComparisons += currentUserInterests.length;    
 
+       
         const matchingInterests = currentUserInterests.filter(interestId =>
             potentialMatchInterests.includes(interestId.toString())
         );
-
        
         score += matchingInterests.length;  
+       
+    }
+
+
+
+    const currentUserOrientation = currentUser.preferences.sexual_orientation_preference_id || [];
+    const potentialMatchOrientation = potentialMatch.preferences.sexual_orientation_preference_id || [];
+
+    if (currentUserOrientation.length > 0 && potentialMatchOrientation.length > 0) {
+        totalComparisons += currentUserOrientation.length;    
+
+        const matchingOrientations = currentUserOrientation.filter(orientationId =>
+            potentialMatchOrientation.includes(orientationId.toString())
+        );
+
+        score += matchingOrientations.length;  
     }
 
    
     if (totalComparisons === 0) return 0;
-    
-   
 
     const matchPercentage = (score / totalComparisons) * 100;
 
