@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter = null) => {
     const { _id, location, gender, intrested_to_see, preferences, characteristics, likedUsers, dislikedUsers } = currentUser;
     const currentCoordinates = location.coordinates;
-    const sexual_orientation_preference_id = new mongoose.Types.ObjectId(preferences.sexual_orientation_preference_id);
+    // const sexual_orientation_preference_id = new mongoose.Types.ObjectId(preferences.sexual_orientation_preference_id);
     const distanceInKm = preferences.distance_preference;
     const distanceInMeters = distanceInKm * 1000;
 
@@ -18,7 +18,9 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
                     $centerSphere: [currentCoordinates, distanceInKm / 6378.1] 
                 }
             },
-            'preferences.sexual_orientation_preference_id': sexual_orientation_preference_id
+            'preferences.sexual_orientation_preference_id': {
+                $in: preferences.sexual_orientation_preference_id
+            }
         };
 
         if (filter) {

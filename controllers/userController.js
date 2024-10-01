@@ -3,7 +3,7 @@ let sexualOrientationModel = require("../models/sexualOrientationModel")
 let { errorResponse, successResponse } = require("../utils/responseHandler")
 let { generateToken, generateOtp, sendTwilioSms } = require("../utils/commonFunctions")
 let messages = require("../utils/messages")
-const {uploadFile,s3} = require("../utils/awsUpload")
+const { uploadFile, s3 } = require("../utils/awsUpload")
 
 
 
@@ -34,25 +34,25 @@ exports.login = async (req, res) => {
                 mobile_number,
                 otp,
                 otp_sent_at: currentTime,
-                likedUsers:[],
-                dislikedUsers:[]
+                likedUsers: [],
+                dislikedUsers: []
 
             });
         }
 
-        const smsResponse = await sendTwilioSms(`Your phloii verification code is ${otp}`,mobile_number);
+        const smsResponse = await sendTwilioSms(`Your phloii verification code is ${otp}`, mobile_number);
         if (!smsResponse.success) {
             return res.status(400).json({ message: 'Error sending verification code via SMS: ' + smsResponse.error, type: 'error' });
             // console.log("error while sending sms")
-        }else{
-            console.log("Response from twilio:::: success--" +smsResponse.success)
+        } else {
+            console.log("Response from twilio:::: success--" + smsResponse.success)
         }
 
         return res.status(200).json(successResponse(`Verification code sent to this number ${mobile_number}.Valid for two minuites.`));
 
     } catch (error) {
         console.error("ERROR::", error);
-        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message));
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
 
@@ -117,7 +117,7 @@ exports.social_login = async (req, res) => {
 
     } catch (error) {
         console.error("ERROR::", error);
-        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message));
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
 
@@ -175,16 +175,16 @@ exports.verify_otp = async (req, res) => {
 
         let token = await generateToken(user._id)
 
-        await userModel.findOneAndUpdate({mobile_number:mobile_number},{
-            $set:{
-                token:token
+        await userModel.findOneAndUpdate({ mobile_number: mobile_number }, {
+            $set: {
+                token: token
             }
         })
 
         return res.status(200).json(successResponse(messages.success.loginSuccessful, token));
     } catch (error) {
         console.error("ERROR::", error);
-        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message));
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
 
@@ -199,12 +199,12 @@ exports.user_registration_steps = async (req, res) => {
         sexual_orientation_preference_id, relationship_type_preference_id,
         study, distance_preference, communication_style_id, love_receive_id,
         drink_frequency_id, smoke_frequency_id, workout_frequency_id,
-        interests_ids, current_step, location ,show_gender,show_sexual_orientation 
+        interests_ids, current_step, location, show_gender, show_sexual_orientation
     } = req.body;
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  
-    
+
+
 
     let parsedLocation = location;
     if (typeof location === 'string') {
@@ -219,7 +219,7 @@ exports.user_registration_steps = async (req, res) => {
 
     try {
         const find_user_id = await userModel.findById(id);
-        if (!find_user_id) return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,messages.notFound.userNotFound));
+        if (!find_user_id) return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
 
         const userId = find_user_id._id;
         const completed_steps = find_user_id.completed_steps || [];
@@ -230,8 +230,8 @@ exports.user_registration_steps = async (req, res) => {
 
         // Steps 2 - 14
         if (current_step == 2) {
-            if(!email){return res.status(400).json(errorResponse('Email is required.','email is required to complete step 2'))}
-            if ( !emailRegex.test(email)) {
+            if (!email) { return res.status(400).json(errorResponse('Email is required.', 'email is required to complete step 2')) }
+            if (!emailRegex.test(email)) {
                 return res.status(400).json({
                     error: 'Please provide a valid email address.'
                 });
@@ -242,14 +242,14 @@ exports.user_registration_steps = async (req, res) => {
             updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 3) {
-            if(!username){return res.status(400).json(errorResponse('Username is required.','username is required to complete step 3'))}
+            if (!username) { return res.status(400).json(errorResponse('Username is required.', 'username is required to complete step 3')) }
             user_obj["username"] = username;
             user_obj["current_step"] = current_step;
             completed_steps[2] = 3;
             updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 4) {
-            if(!dob){return res.status(400).json(errorResponse('Date of birth is required.','dob is required to complete step 4'))}
+            if (!dob) { return res.status(400).json(errorResponse('Date of birth is required.', 'dob is required to complete step 4')) }
             user_obj["dob"] = dob;
             user_obj["current_step"] = current_step;
             completed_steps[3] = 4;
@@ -266,64 +266,64 @@ exports.user_registration_steps = async (req, res) => {
             updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 6) {
-            if(!intrested_to_see){return res.status(400).json(errorResponse('Interested to see is required.','interested to see is required to complete step 6'))}
+            if (!intrested_to_see) { return res.status(400).json(errorResponse('Interested to see is required.', 'interested to see is required to complete step 6')) }
             user_obj["intrested_to_see"] = intrested_to_see;
             user_obj["current_step"] = current_step;
             completed_steps[5] = 6;
             updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 7) {
-           
+
             if (!sexual_orientation_preference_id) {
                 return res.status(400).json(errorResponse('Sexual orientation is required.', 'Sexual orientation is required to complete step 7'));
             }
-            
+
             const ids = Array.isArray(sexual_orientation_preference_id) ? sexual_orientation_preference_id : [sexual_orientation_preference_id];
 
-          
-                const orientations = await sexualOrientationModel.find({ _id: { $in: ids } });
-        
-                if (orientations.length !== ids.length) {
-                    return res.status(400).json(errorResponse("Something went wrong pleas try again later.", 'Please provide valid sexual orientation IDs.'));
-                }
+
+            const orientations = await sexualOrientationModel.find({ _id: { $in: ids } });
+
+            if (orientations.length !== ids.length) {
+                return res.status(400).json(errorResponse("Something went wrong pleas try again later.", 'Please provide valid sexual orientation IDs.'));
+            }
 
             if (Array.isArray(sexual_orientation_preference_id)) {
-               
+
                 user_obj["show_sexual_orientation"] = show_sexual_orientation;
-                updateFields["preferences.sexual_orientation_preference_id"] = sexual_orientation_preference_id; 
+                updateFields["preferences.sexual_orientation_preference_id"] = sexual_orientation_preference_id;
             } else {
-              
+
                 user_obj["show_sexual_orientation"] = show_sexual_orientation;
-                updateFields["preferences.sexual_orientation_preference_id"] = [sexual_orientation_preference_id]; 
+                updateFields["preferences.sexual_orientation_preference_id"] = [sexual_orientation_preference_id];
             }
-            
+
             user_obj["current_step"] = current_step;
             completed_steps[6] = 7;
             updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 8) {
-            if(!relationship_type_preference_id){return res.status(400).json(errorResponse('What are you looking for is required.','relationship preferences is required to complete step 8'))}
+            if (!relationship_type_preference_id) { return res.status(400).json(errorResponse('What are you looking for is required.', 'relationship preferences is required to complete step 8')) }
             updateFields["preferences.relationship_type_preference_id"] = relationship_type_preference_id;
             user_obj["current_step"] = current_step;
             completed_steps[7] = 8;
             updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 9) {
-            if(!study){return res.status(400).json(errorResponse('Studying is your thing is required.','study is required to complete step 9'))}
+            if (!study) { return res.status(400).json(errorResponse('Studying is your thing is required.', 'study is required to complete step 9')) }
             user_obj["study"] = study;
             user_obj["current_step"] = current_step;
             completed_steps[8] = 9;
             updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 10) {
-            if(!distance_preference){return res.status(400).json(errorResponse('Distance preference is required.','distance preference is required to complete step 10'))}
+            if (!distance_preference) { return res.status(400).json(errorResponse('Distance preference is required.', 'distance preference is required to complete step 10')) }
             updateFields["preferences.distance_preference"] = distance_preference;
             user_obj["current_step"] = current_step;
             completed_steps[9] = 10;
             updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 11) {
-            if(!communication_style_id || !love_receive_id){return res.status(400).json(errorResponse('Communication style and love receive preference is required.','Communication style and love receive preference is required to complete step 11'))}
+            if (!communication_style_id || !love_receive_id) { return res.status(400).json(errorResponse('Communication style and love receive preference is required.', 'Communication style and love receive preference is required to complete step 11')) }
             updatecharacteristics["characteristics.communication_style_id"] = communication_style_id;
             updatecharacteristics["characteristics.love_receive_id"] = love_receive_id;
             user_obj["current_step"] = current_step;
@@ -331,7 +331,7 @@ exports.user_registration_steps = async (req, res) => {
             updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 12) {
-            if(!drink_frequency_id||!smoke_frequency_id||!workout_frequency_id){return res.status(400).json(errorResponse('drink, smoke, workout frequency is required.','drink, smoke, workout frequency  is required to complete step 12'))}
+            if (!drink_frequency_id || !smoke_frequency_id || !workout_frequency_id) { return res.status(400).json(errorResponse('drink, smoke, workout frequency is required.', 'drink, smoke, workout frequency  is required to complete step 12')) }
             updatecharacteristics["characteristics.drink_frequency_id"] = drink_frequency_id;
             updatecharacteristics["characteristics.smoke_frequency_id"] = smoke_frequency_id;
             updatecharacteristics["characteristics.workout_frequency_id"] = workout_frequency_id;
@@ -340,7 +340,7 @@ exports.user_registration_steps = async (req, res) => {
             updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 13) {
-            if(!interests_ids){return res.status(400).json(errorResponse('interests are required.','interest ids are required to complete step 13'))}
+            if (!interests_ids) { return res.status(400).json(errorResponse('interests are required.', 'interest ids are required to complete step 13')) }
             updatecharacteristics["characteristics.interests_ids"] = interests_ids;
             user_obj["current_step"] = current_step;
             completed_steps[12] = 13;
@@ -350,45 +350,45 @@ exports.user_registration_steps = async (req, res) => {
         if (current_step == 14) {
 
             let imageList = images?.images ? (Array.isArray(images.images) ? images.images : [images.images]) : [];
-        
-           
+
+
             if (imageList.length < 2) {
                 return res.status(400).json(errorResponse("At least two images are required"));
             }
-        
+
             const imageUrls = [];
             for (const [index, image] of imageList.entries()) {
                 try {
                     if (!image.data) {
                         return res.status(400).json(errorResponse("File data is missing."));
                     }
-        
+
                     const uploadResult = await uploadFile({
                         name: image.name,
                         data: image.data,
                         mimetype: image.mimetype,
                         userId: id
                     });
-        
+
                     imageUrls.push({
                         url: uploadResult.Location,
                         position: index + 1
                     });
                 } catch (error) {
-                    console.error(`Error uploading image ${image.name}: ${error.message}`); 
+                    console.error(`Error uploading image ${image.name}: ${error.message}`);
                     return res.status(500).json(errorResponse(`Error uploading image: ${error.message}`));
                 }
             }
-            
+
             user_obj["images"] = imageUrls;
             user_obj["current_step"] = current_step;
             completed_steps[13] = 14;
             updateFields["completed_steps"] = completed_steps;
         }
-        
+
 
         if (current_step == 15) {
-            if (!parsedLocation) return res.status(400).json(errorResponse("Location in required.","Location is required for step 15"));
+            if (!parsedLocation) return res.status(400).json(errorResponse("Location in required.", "Location is required for step 15"));
             user_obj["location"] = parsedLocation;
             user_obj["current_step"] = current_step;
             completed_steps[14] = 15;
@@ -411,9 +411,9 @@ exports.user_registration_steps = async (req, res) => {
 
     } catch (error) {
         console.error('Update error:', error);
-        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message));
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
-}; 
+};
 
 
 
@@ -431,15 +431,15 @@ exports.get_user_details = async (req, res) => {
     try {
         const user_detail = await userModel
             .findById(id)
-            .populate('preferences.sexual_orientation_preference_id', 'orientation_type') 
+            .populate('preferences.sexual_orientation_preference_id', 'orientation_type')
             .populate('preferences.relationship_type_preference_id', 'relationship_type')
-            .populate('characteristics.communication_style_id', 'style') 
-            .populate('characteristics.love_receive_id', 'love_type')  
-            .populate('characteristics.drink_frequency_id', 'frequency')  
-            .populate('characteristics.smoke_frequency_id', 'frequency') 
-            .populate('characteristics.workout_frequency_id', 'frequency')  
-            .populate('characteristics.interests_ids', 'interest')  
-            .lean();  
+            .populate('characteristics.communication_style_id', 'style')
+            .populate('characteristics.love_receive_id', 'love_type')
+            .populate('characteristics.drink_frequency_id', 'frequency')
+            .populate('characteristics.smoke_frequency_id', 'frequency')
+            .populate('characteristics.workout_frequency_id', 'frequency')
+            .populate('characteristics.interests_ids', 'interest')
+            .lean();
 
         if (!user_detail) return res.status(400).json({ type: "error", message: "User does not exist" });
 
@@ -475,7 +475,7 @@ exports.update_image_position = async (req, res) => {
     try {
         let user = await userModel.findById(userId);
         if (!user) {
-            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong,messages.notFound.userNotFound));
+            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
         }
 
 
@@ -511,7 +511,7 @@ exports.update_image_position = async (req, res) => {
 
     } catch (err) {
         console.error('Error updating image positions:', err);
-        res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message));
+        res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 }
 
@@ -526,9 +526,9 @@ const stepFieldMappings = {
     2: ['email'],
     3: ['username'],
     4: ['dob'],
-    5: ['gender'],
+    5: ['gender', 'show_gender'],
     6: ['intrested_to_see'],
-    7: ['sexual_orientation_preference_id'],
+    7: ['sexual_orientation_preference_id', 'show_sexual_orientation'],
     8: ['relationship_type_preference_id'],
     9: ['study'],
     10: ['distance_preference'],
@@ -543,17 +543,18 @@ exports.update_user_profile = async (req, res) => {
     let userId = req.result.userId;
 
     let {
+        email,
         username, dob, gender, intrested_to_see,
         sexual_orientation_preference_id, relationship_type_preference_id,
         study, distance_preference, communication_style_id, love_receive_id,
         drink_frequency_id, smoke_frequency_id, workout_frequency_id,
-        interests_ids, current_step 
+        interests_ids, current_step, show_gender, show_sexual_orientation
     } = req.body;
-    current_step = Number(current_step); 
-  
+    current_step = Number(current_step);
+
     try {
         const user = await userModel.findById(userId);
-        if (!user) return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,messages.notFound.userNotFound));
+        if (!user) return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
 
         const { completed_steps = [] } = user;
 
@@ -561,17 +562,22 @@ exports.update_user_profile = async (req, res) => {
             const lastValidStep = completed_steps[step - 1];
             if (lastValidStep) {
                 switch (step) {
-                    case 2: return user.username;
-                    case 3: return user.dob;
-                    case 4: return user.gender;
-                    case 5: return user.intrested_to_see;
-                    case 6: return user.preferences.sexual_orientation_preference_id;
-                    case 7: return user.preferences.relationship_type_preference_id;
-                    case 8: return user.study;
-                    case 9: return user.preferences.distance_preference;
-                    case 10: return { communication_style_id: user.characteristics.communication_style_id, love_receive_id: user.characteristics.love_receive_id };
-                    case 11: return { drink_frequency_id: user.characteristics.drink_frequency_id, smoke_frequency_id: user.characteristics.smoke_frequency_id, workout_frequency_id: user.characteristics.workout_frequency_id };
-                    case 12: return user.characteristics.interests_ids;
+                    case 2: return user.email
+                    case 3: return user.username;
+                    case 4: return user.dob;
+                    case 5: return { gender: user.gender, show_gender: user.show_gender };
+                    case 6: return user.intrested_to_see;
+                    case 7:
+                        return {
+                            sexual_orientation_preference_id: user.preferences.sexual_orientation_preference_id,
+                            show_sexual_orientation: user.show_sexual_orientation
+                        };
+                    case 8: return user.preferences.relationship_type_preference_id;
+                    case 9: return user.study;
+                    case 10: return user.preferences.distance_preference;
+                    case 11: return { communication_style_id: user.characteristics.communication_style_id, love_receive_id: user.characteristics.love_receive_id };
+                    case 12: return { drink_frequency_id: user.characteristics.drink_frequency_id, smoke_frequency_id: user.characteristics.smoke_frequency_id, workout_frequency_id: user.characteristics.workout_frequency_id };
+                    case 13: return user.characteristics.interests_ids;
                     default: return null;
                 }
             }
@@ -594,6 +600,7 @@ exports.update_user_profile = async (req, res) => {
         const updateFields = {};
 
         const updateStep = (step, fieldName, value) => {
+        
             if (value === undefined) {
                 const lastValidValue = getLastValidValue(step);
                 if (lastValidValue === null) {
@@ -606,27 +613,47 @@ exports.update_user_profile = async (req, res) => {
         };
 
 
+
         switch (current_step) {
-            case 2: updateStep(2, 'username', username); break;
-            case 3: updateStep(3, 'dob', dob); break;
-            case 4: updateStep(4, 'gender', gender); break;
-            case 5: updateStep(5, 'intrested_to_see', intrested_to_see); break;
-            case 6: updateStep(6, 'preferences.sexual_orientation_preference_id', sexual_orientation_preference_id); break;
-            case 7: updateStep(7, 'preferences.relationship_type_preference_id', relationship_type_preference_id); break;
-            case 8: updateStep(8, 'study', study); break;
-            case 9: updateStep(9, 'preferences.distance_preference', distance_preference); break;
-            case 10:
-                updateStep(10, 'characteristics.communication_style_id', communication_style_id);
-                updateStep(10, 'characteristics.love_receive_id', love_receive_id);
+
+            case 2: updateStep(2, 'email', email); break;
+            case 3: updateStep(3, 'username', username); break;
+            case 4: updateStep(4, 'dob', dob); break;
+            case 5:
+             
+                updateStep(5, 'gender', gender); 
+                updateStep(5, 'show_gender', show_gender); 
                 break;
+
+            case 6: updateStep(6, 'intrested_to_see', intrested_to_see); break;
+            case 7:
+
+                if (!Array.isArray(sexual_orientation_preference_id)) {
+                    const lastOrientaions = getLastValidValue(7);
+
+                    if (!lastOrientaions) return res.status(400).json(errorResponse("Something went wrong please try again later", "sexual orientaion ids must be an array for step 7"));
+                    updateFields['preferences.sexual_orientation_preference_id'] = lastOrientaions
+                } else {
+                    updateFields['preferences.sexual_orientation_preference_id'] = sexual_orientation_preference_id;
+                }
+                updateStep(7, 'show_sexual_orientation', show_sexual_orientation);
+
+                break;
+            case 8: updateStep(8, 'preferences.relationship_type_preference_id', relationship_type_preference_id); break;
+            case 9: updateStep(9, 'study', study); break;
+            case 10: updateStep(10, 'preferences.distance_preference', distance_preference); break;
             case 11:
-                updateStep(11, 'characteristics.drink_frequency_id', drink_frequency_id);
-                updateStep(11, 'characteristics.smoke_frequency_id', smoke_frequency_id);
-                updateStep(11, 'characteristics.workout_frequency_id', workout_frequency_id);
+                updateStep(11, 'characteristics.communication_style_id', communication_style_id);
+                updateStep(11, 'characteristics.love_receive_id', love_receive_id);
                 break;
             case 12:
+                updateStep(12, 'characteristics.drink_frequency_id', drink_frequency_id);
+                updateStep(12, 'characteristics.smoke_frequency_id', smoke_frequency_id);
+                updateStep(12, 'characteristics.workout_frequency_id', workout_frequency_id);
+                break;
+            case 13:
                 if (!Array.isArray(interests_ids)) {
-                    const lastInterests = getLastValidValue(12);
+                    const lastInterests = getLastValidValue(13);
                     if (!lastInterests) return res.status(400).json(errorResponse("Interests IDs must be an array for step 12"));
                     updateFields['characteristics.interests_ids'] = lastInterests;
                 } else {
@@ -642,13 +669,16 @@ exports.update_user_profile = async (req, res) => {
             return res.status(400).json({ type: "error", message: `Error while updating step ${current_step}. Please try again later.` });
         }
 
-        return res.status(200).json(successResponse(`Step ${current_step} updated successfully`,updatedUser));
+        return res.status(200).json(successResponse(`Step ${current_step} updated successfully`, updatedUser));
 
     } catch (error) {
         console.error('ERROR::', error);
-        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message));
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
+
+
+
 
 
 
@@ -679,7 +709,7 @@ exports.update_user_setting = async (req, res) => {
             setting_obj["setting.read_receipts"] = read_receipts;
         }
 
-       
+
         const user_setting = await userModel.findByIdAndUpdate(
             user_id,
             { $set: setting_obj },
@@ -704,51 +734,48 @@ exports.update_user_setting = async (req, res) => {
 
 
 
+exports.add_profile_images = async (req, res) => {
+    try {
 
-
-
-exports.add_profile_images = async(req,res)=>{
-    try{
-        
         const userId = req.result.userId;
         const newImagesFromFrontend = req.files?.images;
-        
-        
-            const user = await userModel.findById(userId);
-            if (!user) {
-                return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,messages.notFound.userNotFound));
+
+
+        const user = await userModel.findById(userId);
+        if (!user) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
+        }
+
+
+        let imagesArray = user.images || [];
+
+
+        if (newImagesFromFrontend) {
+            const uploadedImages = Array.isArray(newImagesFromFrontend) ? newImagesFromFrontend : [newImagesFromFrontend];
+            for (const imageFile of uploadedImages) {
+                imageFile.userId = user._id
+                const uploadedImage = await uploadFile(imageFile);
+                imagesArray.push({
+                    url: uploadedImage.Location,
+                    position: imagesArray.length + 1,
+                });
             }
-    
-           
-            let imagesArray = user.images || [];
-           
-         
-            if (newImagesFromFrontend) {
-                const uploadedImages = Array.isArray(newImagesFromFrontend) ? newImagesFromFrontend : [newImagesFromFrontend];
-                for (const imageFile of uploadedImages) {
-                    imageFile.userId = user._id
-                    const uploadedImage = await uploadFile(imageFile); 
-                    imagesArray.push({
-                        url: uploadedImage.Location, 
-                        position: imagesArray.length + 1,
-                    });
-                }
-            }
-    
-          
-            if (imagesArray.length < 2) {
-                return res.status(400).json(errorResponse(messages.validation.minImagesRequired));
-            }
-    
-    
-            user.images = imagesArray;
-            await user.save();
-    
-            return res.status(200).json(errorResponse("User images updated successfully",user.images));
-    
-    }catch(error){
-        console.log("ERROR::",error)
-        return res.status(500).json(errorResponse(messages.generalError.userNotFound,error.message))
+        }
+
+
+        if (imagesArray.length < 2) {
+            return res.status(400).json(errorResponse(messages.validation.minImagesRequired));
+        }
+
+
+        user.images = imagesArray;
+        await user.save();
+
+        return res.status(200).json(errorResponse("User images updated successfully", user.images));
+
+    } catch (error) {
+        console.log("ERROR::", error)
+        return res.status(500).json(errorResponse(messages.generalError.userNotFound, error.message))
     }
 }
 
@@ -764,7 +791,7 @@ exports.delete_profile_image = async (req, res) => {
         const userId = req.result.userId;
         const imageUrl = req.body.imageUrl;
 
-      
+
         const user = await userModel.findById(userId);
         if (!user) {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
@@ -774,7 +801,7 @@ exports.delete_profile_image = async (req, res) => {
             return res.status(400).json(errorResponse(messages.validation.minImagesRequired));
         }
 
-       
+
         let imagesArray = user.images || [];
         const imageIndex = imagesArray.findIndex(img => img.url === imageUrl);
 
@@ -782,28 +809,28 @@ exports.delete_profile_image = async (req, res) => {
             return res.status(404).json(errorResponse("Image not found."));
         }
 
-     
+
         const [removedImage] = imagesArray.splice(imageIndex, 1);
 
-    
+
         const params = {
-            Bucket: 'phloii', 
+            Bucket: 'phloii',
             Key: removedImage.url.split('profile_images/')[1],
         };
 
-        await s3.deleteObject(params).promise(); 
+        await s3.deleteObject(params).promise();
 
-       
+
         imagesArray = imagesArray.map((img, index) => ({
             ...img,
             position: index + 1,
         }));
 
-        
+
         user.images = imagesArray;
         await user.save();
 
-    
+
 
         return res.status(200).json({
             message: "Image deleted successfully",
