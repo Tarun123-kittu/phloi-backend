@@ -4,8 +4,6 @@ const userController = require("../controllers/userController")
 const matchMakingController = require("../controllers/homepageController")
 const chatController = require("../controllers/chatController")
 const exploreRoomsController = require("../controllers/exploreRoomsController")
-const preferencesController = require("../controllers/preferences")
-const characteristicsController = require("../controllers/characterstics")
 const {
     user_registration_steps_validator,
     validateLogin,
@@ -32,6 +30,9 @@ router.put("/update_user_profile", authenticateToken, userController.update_user
 router.put("/update_image_position", authenticateToken, validateUpdateImagePositions, userController.update_image_position)
 router.put("/add_profile_images", authenticateToken, userController.add_profile_images)
 router.delete("/delete_profile_image", authenticateToken, userController.delete_profile_image)
+router.get("/get_options", authenticateToken, userController.get_options)
+
+
 
 
 
@@ -69,17 +70,19 @@ router.get("/get_matches_in_explore_rooms",authenticateToken,exploreRoomsControl
 
 
 //preferences routes
-router.get("/get_all_sexual_orientations",authenticateToken,preferencesController.get_all_sexual_orientations)
-router.get("/get_all_relationship_types",authenticateToken,preferencesController.get_all_relationship_types)
+// router.get("/get_all_sexual_orientations",authenticateToken,preferencesController.get_all_sexual_orientations)
+// router.get("/get_all_relationship_types",authenticateToken,preferencesController.get_all_relationship_types)
 
 
-//characterstics controller
-router.get("/get_all_communication_styles",authenticateToken,characteristicsController.get_all_communication_styles)
-router.get("/get_all_love_receives",authenticateToken,characteristicsController.get_all_love_receives)
-router.get("/get_all_drink_frequency",authenticateToken,characteristicsController.get_all_drink_frequency)
-router.get("/get_all_smoke_frequency",authenticateToken,characteristicsController.get_all_smoke_frequency)
-router.get("/get_all_workout_frequency",authenticateToken,characteristicsController.get_all_workout_frequency)
-router.get("/get_all_interests",authenticateToken,characteristicsController.get_all_interests)
+// //characterstics controller
+// router.get("/get_all_communication_styles",authenticateToken,characteristicsController.get_all_communication_styles)
+// router.get("/get_all_love_receives",authenticateToken,characteristicsController.get_all_love_receives)
+// router.get("/get_all_drink_frequency",authenticateToken,characteristicsController.get_all_drink_frequency)
+// router.get("/get_all_smoke_frequency",authenticateToken,characteristicsController.get_all_smoke_frequency)
+// router.get("/get_all_workout_frequency",authenticateToken,characteristicsController.get_all_workout_frequency)
+// router.get("/get_all_interests",authenticateToken,characteristicsController.get_all_interests)
+
+
 
 
 

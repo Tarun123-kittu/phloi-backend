@@ -1,23 +1,6 @@
 const mongoose = require('mongoose');
 
 
-const UserCharactersticsSchema = new mongoose.Schema({
-    communication_style_id: { type: mongoose.Schema.Types.ObjectId, ref: 'communication_style' },
-    love_receive_id: { type: mongoose.Schema.Types.ObjectId, ref: 'love_receive' },
-    drink_frequency_id: { type: mongoose.Schema.Types.ObjectId, ref: 'drink_frequency' },
-    smoke_frequency_id: { type: mongoose.Schema.Types.ObjectId, ref: 'smoke_frequency' },
-    workout_frequency_id: { type: mongoose.Schema.Types.ObjectId, ref: 'workout_frequency' },
-    interests_ids: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Interests' }],
-});
-
-
-const UserPreferencesSchema = new mongoose.Schema({
-    sexual_orientation_preference_id: [{ type: mongoose.Schema.Types.ObjectId, ref: 'sexual_orientation' }],
-    relationship_type_preference_id: { type: mongoose.Schema.Types.ObjectId, ref: 'relationship_preference' },
-    distance_preference: { type: Number, default: 0 }
-});
-
-
 const userSchema = new mongoose.Schema({
     username: { type: String, default: null },
     mobile_number: { type: Number, default: null },
@@ -92,13 +75,28 @@ const userSchema = new mongoose.Schema({
 
     likedUsers: [{ type: mongoose.Schema.Types.ObjectId }],
     dislikedUsers: [{ type: mongoose.Schema.Types.ObjectId }],
- 
-    characteristics: UserCharactersticsSchema,
-    preferences: UserPreferencesSchema,
-    
     token :{type:String,default:null},
     online_status:{type:Boolean,default:true},
-    show_sexual_orientation:{type:Boolean,default:true}
+
+    sexual_orientation_preference_id:[{ type: mongoose.Schema.Types.ObjectId, ref: 'Options' }],
+    show_sexual_orientation:{type:Boolean,default:true},
+    relationship_type_preference_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Options' },
+    distance_preference: { type: Number, default: 0 },
+    
+    user_characterstics: {
+      step_11: [{
+        questionId: mongoose.Schema.Types.ObjectId,  
+        answerId: mongoose.Schema.Types.ObjectId
+      }],
+      step_12: [{
+        questionId: mongoose.Schema.Types.ObjectId,  
+        answerId: mongoose.Schema.Types.ObjectId  
+      }],
+      step_13: [{
+        questionId: mongoose.Schema.Types.ObjectId,  
+        answerIds: [mongoose.Schema.Types.ObjectId]  
+      }]
+    }
      
 }, { timestamps: true });
 
