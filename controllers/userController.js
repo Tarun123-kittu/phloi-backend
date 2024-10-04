@@ -700,9 +700,6 @@ exports.update_image_position = async (req, res) => {
 
 
 
-
-
-
 const stepFieldMappings = {
     2: ['email'],
     3: ['username'],
@@ -713,24 +710,32 @@ const stepFieldMappings = {
     8: ['relationship_type_preference_id'],
     9: ['study'],
     10: ['distance_preference'],
-    11: ['communication_style_id', 'love_receive_id'],
-    12: ['drink_frequency_id', 'smoke_frequency_id', 'workout_frequency_id'],
-    13: ['interests_ids']
+    11: ['step_11'], // Changed to single field for new logic
+    12: ['step_12'], // Changed to single field for new logic
+    13: ['step_13']  // Changed to single field for new logic
 };
 
-
 exports.update_user_profile = async (req, res) => {
-
     let userId = req.result.userId;
 
     let {
         email,
-        username, dob, gender, intrested_to_see,
-        sexual_orientation_preference_id, relationship_type_preference_id,
-        study, distance_preference, communication_style_id, love_receive_id,
-        drink_frequency_id, smoke_frequency_id, workout_frequency_id,
-        interests_ids, current_step, show_gender, show_sexual_orientation
+        username, 
+        dob, 
+        gender, 
+        intrested_to_see,
+        sexual_orientation_preference_id, 
+        relationship_type_preference_id,
+        study, 
+        distance_preference, 
+        current_step, 
+        show_gender, 
+        show_sexual_orientation,
+        step_11_answer, 
+        step_12_answer,
+        step_13_answers  
     } = req.body;
+
     current_step = Number(current_step);
 
     try {
@@ -743,47 +748,43 @@ exports.update_user_profile = async (req, res) => {
             const lastValidStep = completed_steps[step - 1];
             if (lastValidStep) {
                 switch (step) {
-                    case 2: return user.email
+                    case 2: return user.email;
                     case 3: return user.username;
                     case 4: return user.dob;
                     case 5: return { gender: user.gender, show_gender: user.show_gender };
                     case 6: return user.intrested_to_see;
-                    case 7:
-                        return {
-                            sexual_orientation_preference_id: user.preferences.sexual_orientation_preference_id,
-                            show_sexual_orientation: user.show_sexual_orientation
-                        };
-                    case 8: return user.preferences.relationship_type_preference_id;
+                    case 7: return { sexual_orientation_preference_id: user.sexual_orientation_preference_id, show_sexual_orientation: user.show_sexual_orientation };
+                    case 8: return user.relationship_type_preference_id;
                     case 9: return user.study;
-                    case 10: return user.preferences.distance_preference;
-                    case 11: return { communication_style_id: user.characteristics.communication_style_id, love_receive_id: user.characteristics.love_receive_id };
-                    case 12: return { drink_frequency_id: user.characteristics.drink_frequency_id, smoke_frequency_id: user.characteristics.smoke_frequency_id, workout_frequency_id: user.characteristics.workout_frequency_id };
-                    case 13: return user.characteristics.interests_ids;
+                    case 10: return user.distance_preference;
+                    case 11: return user.step_11 || []; 
+                    case 12: return user.step_12 || []; 
+                    case 13: return user.step_13 || [];
                     default: return null;
                 }
             }
             return null;
         };
 
-
         if (!stepFieldMappings[current_step]) {
-            return res.status(400).json(errorResponse(messages.validation.invalidStep));
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,messages.validation.invalidStep));
         }
-
 
         const requiredFields = stepFieldMappings[current_step];
         const providedFields = Object.keys(req.body).filter(key => key !== 'current_step');
         const invalidFields = providedFields.filter(field => !requiredFields.includes(field));
         if (invalidFields.length > 0) {
-            return res.status(400).json(errorResponse(`Invalid fields for step ${current_step}: ${invalidFields.join(', ')}`));
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,`Invalid fields for step ${current_step}: ${invalidFields.join(', ')}`));
         }
 
         const updateFields = {};
 
         const updateStep = (step, fieldName, value) => {
-
+            console.log("0---",step,fieldName,value)
             if (value === undefined) {
+               
                 const lastValidValue = getLastValidValue(step);
+                console.log('last valid value ----',lastValidValue)
                 if (lastValidValue === null) {
                     return res.status(400).json(errorResponse(`${fieldName} is required for step ${step}`));
                 }
@@ -793,52 +794,41 @@ exports.update_user_profile = async (req, res) => {
             }
         };
 
-
-
         switch (current_step) {
-
             case 2: updateStep(2, 'email', email); break;
             case 3: updateStep(3, 'username', username); break;
             case 4: updateStep(4, 'dob', dob); break;
             case 5:
-
                 updateStep(5, 'gender', gender);
                 updateStep(5, 'show_gender', show_gender);
                 break;
-
             case 6: updateStep(6, 'intrested_to_see', intrested_to_see); break;
-            case 7:
-
-                if (!Array.isArray(sexual_orientation_preference_id)) {
-                    const lastOrientaions = getLastValidValue(7);
-
-                    if (!lastOrientaions) return res.status(400).json(errorResponse("Something went wrong please try again later", "sexual orientaion ids must be an array for step 7"));
-                    updateFields['preferences.sexual_orientation_preference_id'] = lastOrientaions
-                } else {
-                    updateFields['preferences.sexual_orientation_preference_id'] = sexual_orientation_preference_id;
-                }
+            case 7: 
+                updateStep(7, 'sexual_orientation_preference_id', sexual_orientation_preference_id); 
                 updateStep(7, 'show_sexual_orientation', show_sexual_orientation);
-
                 break;
-            case 8: updateStep(8, 'preferences.relationship_type_preference_id', relationship_type_preference_id); break;
+            case 8: updateStep(8, 'relationship_type_preference_id', relationship_type_preference_id); break;
             case 9: updateStep(9, 'study', study); break;
-            case 10: updateStep(10, 'preferences.distance_preference', distance_preference); break;
-            case 11:
-                updateStep(11, 'characteristics.communication_style_id', communication_style_id);
-                updateStep(11, 'characteristics.love_receive_id', love_receive_id);
-                break;
-            case 12:
-                updateStep(12, 'characteristics.drink_frequency_id', drink_frequency_id);
-                updateStep(12, 'characteristics.smoke_frequency_id', smoke_frequency_id);
-                updateStep(12, 'characteristics.workout_frequency_id', workout_frequency_id);
-                break;
-            case 13:
-                if (!Array.isArray(interests_ids)) {
-                    const lastInterests = getLastValidValue(13);
-                    if (!lastInterests) return res.status(400).json(errorResponse("Interests IDs must be an array for step 12"));
-                    updateFields['characteristics.interests_ids'] = lastInterests;
+            case 10: updateStep(10, 'distance_preference', distance_preference); break;
+            case 11: 
+                if (Array.isArray(step_11_answer) && step_11_answer.length > 0) {
+                    updateFields['step_11'] = step_11_answer;
                 } else {
-                    updateFields['characteristics.interests_ids'] = interests_ids;
+                    updateFields['step_11'] = getLastValidValue(11);
+                }
+                break;
+            case 12: 
+                if (Array.isArray(step_12_answer) && step_12_answer.length > 0) {
+                    updateFields['step_12'] = step_12_answer;
+                } else {
+                    updateFields['step_12'] = getLastValidValue(12);
+                }
+                break;
+            case 13: 
+                if (Array.isArray(step_13_answers) && step_13_answers.length > 0) {
+                    updateFields['step_13'] = step_13_answers;
+                } else {
+                    updateFields['step_13'] = getLastValidValue(13);
                 }
                 break;
             default: return res.status(400).json(errorResponse(messages.validation.invalidStep));
@@ -857,7 +847,6 @@ exports.update_user_profile = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
-
 
 
 

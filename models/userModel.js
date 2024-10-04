@@ -13,24 +13,7 @@ const userSchema = new mongoose.Schema({
         enum: [
           "women", 
           "men", 
-          "Agender", 
-          "Androgyne", 
-          "Androgynous", 
-          "Bigender", 
-          "Genderfluid", 
-          "Gender Nonconforming", 
-          "Genderqueer", 
-          "Neutrois", 
-          "Non-binary", 
-          "Other", 
-          "Pangender", 
-          "Trans", 
-          "Trans Man", 
-          "Trans Woman", 
-          "Transfeminine", 
-          "Transgender", 
-          "Transmasculine", 
-          "Two-Spirit"
+          "other"
         ] 
       },
     show_gender:{type:Boolean,default:true},
