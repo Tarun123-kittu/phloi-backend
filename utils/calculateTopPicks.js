@@ -2,88 +2,117 @@
 
 const calculateMatchScore = (currentUser, potentialMatch) => {
     let score = 0;
-    let totalComparisons = 0;  
-
-    const preferenceFields = [
-        'relationship_type_preference_id',
-    ];
-
-    const characteristicFields = [
-        'communication_style_id',
-        'love_receive_id',
-        'drink_frequency_id',
-        'smoke_frequency_id',
-        'workout_frequency_id',
-    ];
+    let totalComparisons = 0;
 
   
-    preferenceFields.forEach(field => {
-        const currentValue = currentUser.preferences[field];
-        const potentialValue = potentialMatch.preferences[field];
+    const countTotalComparisons = () => {
+        let count = 0;
+
+        
+        if (currentUser.user_characterstics.step_11) {
+            count += currentUser.user_characterstics.step_11.length;
+        }
 
     
-        if (currentValue && potentialValue) {
-            totalComparisons++; 
-            if (currentValue.toString() === potentialValue.toString()) {
-                score += 1; 
-            }
+        if (currentUser.user_characterstics.step_12) {
+            count += currentUser.user_characterstics.step_12.length;
         }
-    });
-  
+
+      
+        if (currentUser.user_characterstics.step_13) {
+            currentUser.user_characterstics.step_13.forEach(step => {
+                count += step.answerIds.length; 
+            });
+        }
+
+        
+        if (currentUser.sexual_orientation_preference_id) {
+            count += currentUser.sexual_orientation_preference_id.length;
+        }
+
+       
+        if (currentUser.love_receive_id) {
+            count += 1; 
+        }
+
+        return count;
+    };
+
+    totalComparisons = countTotalComparisons();
+
    
-    characteristicFields.forEach(field => {
-        const currentValue = currentUser.characteristics[field];
-        const potentialValue = potentialMatch.characteristics[field];
+    const compareStepAnswers = (currentStep, potentialStep) => {
+        currentStep.forEach(currentAnswer => {
+            const potentialAnswer = potentialStep.find(potential => 
+                potential.questionId.toString() === currentAnswer.questionId.toString()
+            );
 
-        
-        if (currentValue && potentialValue) {
-            totalComparisons++; 
-            if (currentValue.toString() === potentialValue.toString()) {
-                score += 1;  
+       
+            if (potentialAnswer) {
+              
+                if (currentAnswer.answerId.toString() === potentialAnswer.answerId.toString()) {
+                    score++;
+                }
             }
-        }
-    });
- 
+        });
+    };
 
- 
-    const currentUserInterests = currentUser.characteristics.interests_ids || [];
-    const potentialMatchInterests = potentialMatch.characteristics.interests_ids || [];
-
-    if (currentUserInterests.length > 0 && potentialMatchInterests.length > 0) {
-        
-        totalComparisons += currentUserInterests.length;    
-
-       
-        const matchingInterests = currentUserInterests.filter(interestId =>
-            potentialMatchInterests.includes(interestId.toString())
-        );
-       
-        score += matchingInterests.length;  
-       
+   
+    if (currentUser.user_characterstics.step_11 && potentialMatch.user_characterstics.step_11) {
+        compareStepAnswers(currentUser.user_characterstics.step_11, potentialMatch.user_characterstics.step_11);
     }
 
 
+    if (currentUser.user_characterstics.step_12 && potentialMatch.user_characterstics.step_12) {
+        compareStepAnswers(currentUser.user_characterstics.step_12, potentialMatch.user_characterstics.step_12);
+    }
 
-    const currentUserOrientation = currentUser.preferences.sexual_orientation_preference_id || [];
-    const potentialMatchOrientation = potentialMatch.preferences.sexual_orientation_preference_id || [];
+ 
+    if (currentUser.user_characterstics.step_13 && potentialMatch.user_characterstics.step_13) {
+        currentUser.user_characterstics.step_13.forEach(currentStep => {
+            const potentialStep = potentialMatch.user_characterstics.step_13.find(potential => 
+                potential.questionId.toString() === currentStep.questionId.toString()
+            );
+
+            if (potentialStep) {
+               
+                const matchingAnswerIds = currentStep.answerIds.filter(answerId => 
+                    potentialStep.answerIds.includes(answerId.toString())
+                );
+                score += matchingAnswerIds.length; 
+            }
+        });
+    }
+
+    
+    const currentUserOrientation = currentUser.sexual_orientation_preference_id || [];
+    const potentialMatchOrientation = potentialMatch.sexual_orientation_preference_id || [];
 
     if (currentUserOrientation.length > 0 && potentialMatchOrientation.length > 0) {
-        totalComparisons += currentUserOrientation.length;    
-
         const matchingOrientations = currentUserOrientation.filter(orientationId =>
             potentialMatchOrientation.includes(orientationId.toString())
         );
 
-        score += matchingOrientations.length;  
+        score += matchingOrientations.length; 
     }
 
-   
-    if (totalComparisons === 0) return 0;
+  
+    const currentUserLoveReceive = currentUser.love_receive_id;
+    const potentialMatchLoveReceive = potentialMatch.love_receive_id;
 
+    if (currentUserLoveReceive && potentialMatchLoveReceive) {
+        if (currentUserLoveReceive.toString() === potentialMatchLoveReceive.toString()) {
+            score++;
+        }
+    }
+
+    
+    if (totalComparisons === 0) return 0; 
     const matchPercentage = (score / totalComparisons) * 100;
 
     return matchPercentage;
 };
+
 
 
 

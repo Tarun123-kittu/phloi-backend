@@ -3,10 +3,10 @@ const mongoose = require('mongoose');
 
 
 const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter = null) => {
-    const { _id, location, gender, intrested_to_see, preferences, characteristics, likedUsers, dislikedUsers } = currentUser;
+    const { _id, location, gender, intrested_to_see, distance_preference, characteristics, likedUsers, dislikedUsers ,sexual_orientation_preference_id} = currentUser;
     const currentCoordinates = location.coordinates;
     // const sexual_orientation_preference_id = new mongoose.Types.ObjectId(preferences.sexual_orientation_preference_id);
-    const distanceInKm = preferences.distance_preference;
+    const distanceInKm = distance_preference;
     const distanceInMeters = distanceInKm * 1000;
 
     try {
@@ -18,8 +18,8 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
                     $centerSphere: [currentCoordinates, distanceInKm / 6378.1] 
                 }
             },
-            'preferences.sexual_orientation_preference_id': {
-                $in: preferences.sexual_orientation_preference_id
+            'sexual_orientation_preference_id': {
+                $in: sexual_orientation_preference_id
             }
         };
 
@@ -83,14 +83,20 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
                     spherical: true
                 }
             },
-            {
-                $lookup: {
-                    from: 'interests',
-                    localField: 'characteristics.interests_ids',
-                    foreignField: '_id',
-                    as: 'interests'
-                }
-            },
+               
+           {
+               $unwind: "$user_characterstics.step_13"
+           },
+           {
+               $lookup: {
+                   from: 'options', 
+                   localField: 'user_characterstics.step_13.answerIds', 
+                   foreignField: '_id', 
+                   as: 'interests'
+               }
+           },
+
+
             {
                 $project: {
                     _id: 1,
@@ -99,7 +105,7 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
                     gender: 1,
                     distance: 1,
                     distanceInKm: { $divide: ['$distance', 1000] },
-                    interests: { $map: { input: '$interests', as: 'interest', in: '$$interest.interest' } },
+                    interests: { $map: { input: '$interests', as: 'interest', in: '$$interest.text' } },
                     age: {
                         $subtract: [new Date(), '$dob']
                     }

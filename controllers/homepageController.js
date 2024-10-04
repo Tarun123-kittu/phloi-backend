@@ -1,16 +1,13 @@
 let userModel = require("../models/userModel")
 let matchModel = require("../models/matchesModel")
-// let smokeFrequencyModel = require("../models/smokeFrequencyModel")
-// let drinkFrequencyModel = require("../models/drinkFrequencyModel")
-// let workoutFrequencyModel = require("../models/workoutFrequencyModel")
-// let communicationStyleModel = require("../models/communicationStyleModel")
-// let loveReceiveModel = require("../models/loveReceiveModel")
-// let interestModel = require("../models/interestsModel")
+const QuestionModel = require('../models/questionsModel'); 
+const AnswerModel = require('../models/optionsModel');
 let homepageMatchAlgorithm = require("../utils/homepageMatchMaking")
 let calculateMatchScore = require("../utils/calculateTopPicks")
 let { errorResponse, successResponse } = require("../utils/responseHandler")
 let messages = require("../utils/messages")
 let { io } = require('../index')
+
 
 
 
@@ -210,62 +207,67 @@ exports.get_profile_details = async (req, res) => {
         if (!user) {
             return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
         }
+
+       
+        const groupedAnswers = {};
+
         
+        for (const step of user.user_characterstics.step_11 || []) {
+            const question = await QuestionModel.findById(step.questionId).lean();
+            const answer = await AnswerModel.findById(step.answerId).lean();
+
+            if (question && answer) {
+                if (!groupedAnswers[question.identify_text]) {
+                    groupedAnswers[question.identify_text] = {
+                        question: question.identify_text,
+                        answers: []
+                    };
+                }
+                groupedAnswers[question.identify_text].answers.push(answer.text); 
+            }
+        }
+
+        for (const step of user.user_characterstics.step_12 || []) {
+            const question = await QuestionModel.findById(step.questionId).lean();
+            const answer = await AnswerModel.findById(step.answerId).lean();
+
+            if (question && answer) {
+                if (!groupedAnswers[question.identify_text]) {
+                    groupedAnswers[question.identify_text] = {
+                        question: question.identify_text,
+                        answers: []
+                    };
+                }
+                groupedAnswers[question.identify_text].answers.push(answer.text);
+            }
+        }
+
      
-        let interestsPromise = user.characteristics?.interests_ids?.length
-            ? interestModel.find({ _id: { $in: user.characteristics.interests_ids } }, 'interest').lean()
-            : Promise.resolve(null);
+        for (const step of user.user_characterstics.step_13 || []) {
+            const question = await QuestionModel.findById(step.questionId).lean();
+            const answers = await AnswerModel.find({ _id: { $in: step.answerIds } }).lean();
 
+            if (question) {
+                if (!groupedAnswers[question.identify_text]) {
+                    groupedAnswers[question.identify_text] = {
+                        question: question.identify_text,
+                        answers: []
+                    };
+                }
+                for (const answer of answers) {
+                    groupedAnswers[question.identify_text].answers.push(answer.text);
+                }
+            }
+        }
 
-        let drinkFrequencyPromise = user.characteristics?.drink_frequency_id
-            ? drinkFrequencyModel.findById(user.characteristics.drink_frequency_id).lean()
-            : Promise.resolve(null);
-
-        let smokeFrequencyPromise = user.characteristics?.smoke_frequency_id
-            ? smokeFrequencyModel.findById(user.characteristics.smoke_frequency_id).lean()
-            : Promise.resolve(null);
-
-        let workoutFrequencyPromise = user.characteristics?.workout_frequency_id
-            ? workoutFrequencyModel.findById(user.characteristics.workout_frequency_id).lean()
-            : Promise.resolve(null);
-
-        let communicationStylePromise = user.characteristics?.communication_style_id
-            ? communicationStyleModel.findById(user.characteristics.communication_style_id).lean()
-            : Promise.resolve(null);
-
-        let loveReceivePromise =  user.characteristics?.love_receive_id
-            ? loveReceiveModel.findById(user.characteristics.love_receive_id).lean()
-            : Promise.resolve(null);
-
-           
-        const [
-            interests,
-            drinkFrequency,
-            smokeFrequency,
-            workoutFrequency,
-            communicationStyle,
-            loveReceive
-        ] = await Promise.all([
-            interestsPromise,
-            drinkFrequencyPromise,
-            smokeFrequencyPromise,
-            workoutFrequencyPromise,
-            communicationStylePromise,
-            loveReceivePromise
-        ]);
-
-
+        
+        const groupedAnswersArray = Object.values(groupedAnswers);
 
         let userDetails = {
             username: user.username,
             age: user.dob,
             images: user.images,
-            interests: interests?.map(i => i.interest) || null,
-            drinkFrequency: drinkFrequency?.frequency || null,
-            smokeFrequency: smokeFrequency?.frequency || null,
-            workoutFrequency: workoutFrequency?.frequency || null,
-            communicationStyle: communicationStyle?.style || null,
-            loveReceive: loveReceive?.love_type || null
+            user_characterstics: groupedAnswersArray 
         };
 
         return res.status(200).json(successResponse("Details fetched successfully", userDetails));
@@ -292,7 +294,7 @@ exports.getTopPicks = async (req, res) => {
 
         
         const preferredGender = user.intrested_to_see;
-        const maxDistance = user.preferences.distance_preference || 50;
+        const maxDistance = user.distance_preference || 50;
         const likedUsers = user.likedUsers
         const dislikedUsers = user.dislikedUsers
 

@@ -6,6 +6,7 @@ const { uploadFile, s3 } = require("../utils/awsUpload")
 let userCharactersticsOptionsModel = require('../models/optionsModel')
 const headingsModel = require("../models/headingsModel")
 const questionsModel = require("../models/questionsModel")
+const { get } = require("mongoose")
 
 
 
@@ -45,8 +46,8 @@ exports.login = async (req, res) => {
 
         const smsResponse = await sendTwilioSms(`Your phloii verification code is ${otp}`, mobile_number);
         if (!smsResponse.success) {
-            return res.status(400).json({ message: 'Error sending verification code via SMS: ' + smsResponse.error, type: 'error' });
-            // console.log("error while sending sms")
+            // return res.status(400).json({ message: 'Error sending verification code via SMS: ' + smsResponse.error, type: 'error' });
+            console.log("error while sending sms")
         } else {
             console.log("Response from twilio:::: success--" + smsResponse.success)
         }
@@ -710,9 +711,9 @@ const stepFieldMappings = {
     8: ['relationship_type_preference_id'],
     9: ['study'],
     10: ['distance_preference'],
-    11: ['step_11'], // Changed to single field for new logic
-    12: ['step_12'], // Changed to single field for new logic
-    13: ['step_13']  // Changed to single field for new logic
+    11: ['step_11_answer'], 
+    12: ['step_12_answer'], 
+    13: ['step_13_answers']  
 };
 
 exports.update_user_profile = async (req, res) => {
@@ -740,26 +741,32 @@ exports.update_user_profile = async (req, res) => {
 
     try {
         const user = await userModel.findById(userId);
+        console.log(user)
         if (!user) return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
 
         const { completed_steps = [] } = user;
 
-        const getLastValidValue = (step) => {
+        const getLastValidValue = (step,fieldName) => {
             const lastValidStep = completed_steps[step - 1];
             if (lastValidStep) {
                 switch (step) {
                     case 2: return user.email;
                     case 3: return user.username;
                     case 4: return user.dob;
-                    case 5: return { gender: user.gender, show_gender: user.show_gender };
+                    case 5:
+                        if (fieldName === 'gender') return user.gender;
+                        if (fieldName === 'show_gender') return user.show_gender;
                     case 6: return user.intrested_to_see;
-                    case 7: return { sexual_orientation_preference_id: user.sexual_orientation_preference_id, show_sexual_orientation: user.show_sexual_orientation };
+                    case 7:
+                        if (fieldName === 'sexual_orientation_preference_id') return user.sexual_orientation_preference_id;
+                        if (fieldName === 'show_sexual_orientation') return user.show_sexual_orientation;
+                        break;
                     case 8: return user.relationship_type_preference_id;
                     case 9: return user.study;
                     case 10: return user.distance_preference;
-                    case 11: return user.step_11 || []; 
-                    case 12: return user.step_12 || []; 
-                    case 13: return user.step_13 || [];
+                    case 11: return user.user_characterstics.step_11 || []; 
+                    case 12: return user.user_characterstics.step_12 || []; 
+                    case 13: return user.user_characterstics.step_13 || [];
                     default: return null;
                 }
             }
@@ -771,6 +778,8 @@ exports.update_user_profile = async (req, res) => {
         }
 
         const requiredFields = stepFieldMappings[current_step];
+
+        
         const providedFields = Object.keys(req.body).filter(key => key !== 'current_step');
         const invalidFields = providedFields.filter(field => !requiredFields.includes(field));
         if (invalidFields.length > 0) {
@@ -779,12 +788,12 @@ exports.update_user_profile = async (req, res) => {
 
         const updateFields = {};
 
-        const updateStep = (step, fieldName, value) => {
-            console.log("0---",step,fieldName,value)
+        const updateStep =  (step, fieldName, value) => {
+         
             if (value === undefined) {
                
-                const lastValidValue = getLastValidValue(step);
-                console.log('last valid value ----',lastValidValue)
+                const lastValidValue = getLastValidValue(step,fieldName);
+             
                 if (lastValidValue === null) {
                     return res.status(400).json(errorResponse(`${fieldName} is required for step ${step}`));
                 }
@@ -812,23 +821,85 @@ exports.update_user_profile = async (req, res) => {
             case 10: updateStep(10, 'distance_preference', distance_preference); break;
             case 11: 
                 if (Array.isArray(step_11_answer) && step_11_answer.length > 0) {
-                    updateFields['step_11'] = step_11_answer;
+                    const validOptions = await userCharactersticsOptionsModel.find({}, 'question_id _id').lean();
+           
+                    const validPairs = validOptions.map(option => ({
+                        questionId: option.question_id.toString(),
+                        answerId: option._id.toString() 
+                    }));
+        
+                    const invalidAnswers = step_11_answer.filter(answer => 
+                        !validPairs.some(validPair => 
+                            
+                            validPair.questionId === answer.questionId && validPair.answerId === answer.answerId
+                        )
+                    );
+        
+                    if (invalidAnswers.length > 0) {
+                        return res.status(400).json(errorResponse('Invalid questionId or answerId', 'One or more questionId-answerId pairs are invalid.'));
+                    }
+                    updateFields['user_characterstics.step_11'] = step_11_answer;
                 } else {
-                    updateFields['step_11'] = getLastValidValue(11);
+                    updateFields['user_characterstics.step_11'] = getLastValidValue(11);
                 }
                 break;
             case 12: 
                 if (Array.isArray(step_12_answer) && step_12_answer.length > 0) {
-                    updateFields['step_12'] = step_12_answer;
+                 
+
+                    const validOptions = await userCharactersticsOptionsModel.find({}, 'question_id _id').lean();
+                    const validPairs = validOptions.map(option => ({
+                        questionId: option.question_id.toString(),
+                        answerId: option._id.toString() 
+                    }));
+                
+                    
+                    const invalidAnswers = step_12_answer.filter(answer => 
+                        !validPairs.some(validPair => 
+                            validPair.questionId === answer.questionId && validPair.answerId === answer.answerId
+                        )
+                    );
+               
+                   
+                    if (invalidAnswers.length > 0) {
+                        return res.status(400).json(errorResponse('Invalid questionId or answerId', 'One or more questionId-answerId pairs are invalid.'));
+                    }
+
+                    updateFields['user_characterstics.step_12'] = step_12_answer;
                 } else {
-                    updateFields['step_12'] = getLastValidValue(12);
+                    
+                    updateFields['user_characterstics.step_12'] = getLastValidValue(12);
                 }
                 break;
             case 13: 
                 if (Array.isArray(step_13_answers) && step_13_answers.length > 0) {
-                    updateFields['step_13'] = step_13_answers;
+
+                    const validOptions = await userCharactersticsOptionsModel.find({}, 'question_id _id').lean();
+            
+      
+                    const validPairs = validOptions.map(option => ({
+                        questionId: option.question_id.toString(),
+                        answerId: option._id.toString()
+                    }));
+                
+               
+                    const invalidAnswers = step_13_answers.filter(answer => {
+            
+                        const validForQuestion = validPairs.filter(pair => pair.questionId === answer.questionId);
+                
+                
+                        return answer.answerIds.some(answerId => !validForQuestion.some(pair => pair.answerId === answerId));
+                    });
+                
+          
+                    if (invalidAnswers.length > 0) {
+                        return res.status(400).json(errorResponse('Invalid question or answerId(s)', 'One or more questionId or answerId(s) are invalid.'));
+                    }
+                
+
+                    updateFields['user_characterstics.step_13'] = step_13_answers;
                 } else {
-                    updateFields['step_13'] = getLastValidValue(13);
+                    updateFields['user_characterstics.step_13'] = getLastValidValue(13);
                 }
                 break;
             default: return res.status(400).json(errorResponse(messages.validation.invalidStep));

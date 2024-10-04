@@ -3,10 +3,10 @@ const mongoose = require('mongoose');
 
 
 const exploreRoomMatchAlgorithm = async (currentUser, page = 1, limit = 10) => {
-    const { _id, location, gender, intrested_to_see, preferences, characteristics ,likedUsers, dislikedUsers } = currentUser;
+    const { _id, location, gender, intrested_to_see,distance_preference,sexual_orientation_preference_id ,likedUsers, dislikedUsers } = currentUser;
     const currentCoordinates = location.coordinates;
     // const sexual_orientation_preference_id = new mongoose.Types.ObjectId(preferences.sexual_orientation_preference_id);
-    const distanceInKm = preferences.distance_preference; 
+    const distanceInKm = distance_preference; 
     const distanceInMeters = distanceInKm * 1000; 
     
     try {
@@ -21,8 +21,8 @@ const exploreRoomMatchAlgorithm = async (currentUser, page = 1, limit = 10) => {
                     $centerSphere: [currentCoordinates, distanceInKm / 6378.1] 
                 }
             },
-            'preferences.sexual_orientation_preference_id': {
-                $in: preferences.sexual_orientation_preference_id
+            'sexual_orientation_preference_id': {
+                $in: sexual_orientation_preference_id
             },
             joined_room_id: currentUser.joined_room_id
         };
@@ -45,9 +45,12 @@ const exploreRoomMatchAlgorithm = async (currentUser, page = 1, limit = 10) => {
                 }
             },
             {
+                $unwind: "$user_characterstics.step_13"
+            },
+            {
                 $lookup: {
-                    from: 'interests', 
-                    localField: 'characteristics.interests_ids',
+                    from: 'options', 
+                    localField: 'user_characterstics.step_13.answerIds', 
                     foreignField: '_id', 
                     as: 'interests'
                 }
@@ -60,7 +63,7 @@ const exploreRoomMatchAlgorithm = async (currentUser, page = 1, limit = 10) => {
                     gender: 1,
                     distance: 1,
                     distanceInKm: { $divide: ['$distance', 1000] },
-                    interests: { $map: { input: '$interests', as: 'interest', in: '$$interest.interest' } }, 
+                    interests: { $map: { input: '$interests', as: 'interest', in: '$$interest.text' } }, 
                     age: {
                         $subtract: [new Date(), '$dob'] 
                     }
