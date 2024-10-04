@@ -13,14 +13,14 @@ const headings = [
 ];
 
 const questions = [
-  { step: 7, text: 'sexual orientatioins' },
-  { step: 8, text: 'relationship type' },
-  { step: 11, text: 'What is your communication style?' },
-  { step: 11, text: 'How do you receive love?' },
-  { step: 12, text: 'How often do you drink?' },
-  { step: 12, text: 'How often do you smoke?' },
-  { step: 12, text: 'Do you work out?' },
-  { step: 13, text: 'What are you into?' }
+  {identify_text:"sexual_orientation", step: 7, text: 'sexual orientatioins' },
+  {identify_text:"relationship_type", step: 8, text: 'relationship type' },
+  {identify_text:"communication_style", step: 11, text: 'What is your communication style?' },
+  {identify_text:"love_receive", step: 11, text: 'How do you receive love?' },
+  {identify_text:"drink_frequency", step: 12, text: 'How often do you drink?' },
+  {identify_text:"smoke_frequency", step: 12, text: 'How often do you smoke?' },
+  {identify_text:"workout_frequency", step: 12, text: 'Do you work out?' },
+  {identify_text:"interests", step: 13, text: 'What are you into?' }
 ];
 
 async function syncCollection(dataArray, Model, modelName) {

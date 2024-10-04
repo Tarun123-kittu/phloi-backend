@@ -7,6 +7,7 @@ const options = [
     // sexual orientation
     {
         question_id: '66fe594f05a11c463087a34a',
+    
         options: [
             { text: 'Straight' },
             { text: 'Gay' },
@@ -22,6 +23,7 @@ const options = [
     // relationship type preference
     {
         question_id: '66fe594f05a11c463087a34c',
+   
         options: [
             { text: 'Long-term partner', emoji: '❤' },
             { text: 'Long-term open to short', emoji: '😍' },
@@ -36,6 +38,7 @@ const options = [
     // communication
     {
         question_id: '66fe595005a11c463087a34e',
+     
         options: [
             { text: 'I stay on WhatsApp' },
             { text: 'Big-time texter' },
@@ -49,6 +52,7 @@ const options = [
     // love receive
     {
         question_id: '66fe595005a11c463087a350',
+   
         options: [
             { text: 'Thoughtful gesture' },
             { text: 'Presents' },
@@ -60,6 +64,7 @@ const options = [
     // drink
     {
         question_id: '66fe595005a11c463087a354',
+
         options: [
             { text: 'Not for me' },
             { text: 'Sober' },
@@ -72,6 +77,7 @@ const options = [
     // smoke
     {
         question_id: '66fe595005a11c463087a358',
+
         options: [
             { text: 'Social smoker' },
             { text: 'Smoke when drinking' },
@@ -83,6 +89,7 @@ const options = [
     // workout  
     {
         question_id: '66fe595005a11c463087a35c',
+   
         options: [
             { text: 'Everyday' },
             { text: 'Often' },
@@ -93,6 +100,7 @@ const options = [
     // interest
     {
         question_id: '66fe595005a11c463087a360',
+       
         options: [
             { text: 'Harry Potter' },
             { text: 'Spa' },
@@ -134,18 +142,18 @@ async function seedOptions(optionsArray) {
         const { question_id, options } = optionData;
 
         for (const option of options) {
-            // Check if the option already exists in the database
+       
             const existingOption = await Option.findOne({
                 question_id: question_id,
-                text: option.text, // Ensure that you're checking for duplicates by text or _id
+                text: option.text, 
             });
 
             if (!existingOption) {
-                // If it doesn't exist, create a new option document
+              
                 const optionDocument = new Option({
                     question_id: question_id,
                     text: option.text,
-                    emoji: option.emoji || null, // If the emoji is optional
+                    emoji: option.emoji || null, 
                 });
 
                 await optionDocument.save()

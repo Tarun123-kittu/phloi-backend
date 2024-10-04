@@ -1,12 +1,12 @@
 let userModel = require("../models/userModel")
-let userCharactersticsOptionsModel = require('../models/optionsModel')
 let { errorResponse, successResponse } = require("../utils/responseHandler")
 let { generateToken, generateOtp, sendTwilioSms } = require("../utils/commonFunctions")
 let messages = require("../utils/messages")
 const { uploadFile, s3 } = require("../utils/awsUpload")
+let userCharactersticsOptionsModel = require('../models/optionsModel')
 const headingsModel = require("../models/headingsModel")
 const questionsModel = require("../models/questionsModel")
-const optionsModel = require("../models/optionsModel")
+
 
 
 
@@ -347,7 +347,28 @@ exports.user_registration_steps = async (req, res) => {
                 return res.status(400).json(errorResponse('Please add fields', 'Step 11 answers are required.'));
             }
 
-            console.log("Step 11 Answers:", step_11_answer);
+ 
+            const validOptions = await userCharactersticsOptionsModel.find({}, 'question_id _id').lean();
+           
+            const validPairs = validOptions.map(option => ({
+                questionId: option.question_id.toString(),
+                answerId: option._id.toString() 
+            }));
+
+
+
+           
+            const invalidAnswers = step_11_answer.filter(answer => 
+                !validPairs.some(validPair => 
+                    
+                    validPair.questionId === answer.questionId && validPair.answerId === answer.answerId
+                )
+            );
+
+           
+            if (invalidAnswers.length > 0) {
+                return res.status(400).json(errorResponse('Invalid questionId or answerId', 'One or more questionId-answerId pairs are invalid.'));
+            }
 
           
             find_user_id.user_characterstics.step_11 = step_11_answer.map(answer => ({
@@ -355,13 +376,12 @@ exports.user_registration_steps = async (req, res) => {
                 answerId: answer.answerId
             }));
 
-           
-            user_obj["current_step"] = current_step; 
-            completed_steps[10] = 11; 
+            user_obj["current_step"] = current_step;
+            completed_steps[10] = 11;
             updateFields["completed_steps"] = completed_steps;
 
-        
-            await find_user_id.save(); 
+          
+            await find_user_id.save();
 
             return res.status(200).json({
                 type: "success",
@@ -374,24 +394,42 @@ exports.user_registration_steps = async (req, res) => {
             if (!step_12_answer || !Array.isArray(step_12_answer) || step_12_answer.length === 0) {
                 return res.status(400).json(errorResponse('Please add lifestyles', 'Step 12 answers are required.'));
             }
-
-         
+        
+          
+            const validOptions = await userCharactersticsOptionsModel.find({}, 'question_id _id').lean();
+            const validPairs = validOptions.map(option => ({
+                questionId: option.question_id.toString(),
+                answerId: option._id.toString() 
+            }));
+        
+            
+            const invalidAnswers = step_12_answer.filter(answer => 
+                !validPairs.some(validPair => 
+                    validPair.questionId === answer.questionId && validPair.answerId === answer.answerId
+                )
+            );
+       
+           
+            if (invalidAnswers.length > 0) {
+                return res.status(400).json(errorResponse('Invalid questionId or answerId', 'One or more questionId-answerId pairs are invalid.'));
+            }
+        
+            
             find_user_id.user_characterstics.step_12 = [
-                ...find_user_id.user_characterstics.step_12, 
+                ...find_user_id.user_characterstics.step_12,
                 ...step_12_answer.map(answer => ({
                     questionId: answer.questionId,
                     answerId: answer.answerId
                 }))
             ];
-
-           
+        
             user_obj["current_step"] = current_step; 
             completed_steps[11] = 12; 
             updateFields["completed_steps"] = completed_steps;
-
-          
-            await find_user_id.save(); 
-
+        
+            // Save the updated user document
+            await find_user_id.save();
+        
             return res.status(200).json({
                 type: "success",
                 message: "User characteristics updated successfully for step 12",
@@ -399,31 +437,54 @@ exports.user_registration_steps = async (req, res) => {
             });
         }
 
-
         if (current_step === 13) {
             if (!step_13_answers || !Array.isArray(step_13_answers) || step_13_answers.length === 0) {
                 return res.status(400).json(errorResponse('Please enter the interests', 'Step 13 answers are required.'));
             }
-
-           
+        
+        
+            const validOptions = await userCharactersticsOptionsModel.find({}, 'question_id _id').lean();
+            
+      
+            const validPairs = validOptions.map(option => ({
+                questionId: option.question_id.toString(),
+                answerId: option._id.toString()
+            }));
+        
+       
+            const invalidAnswers = step_13_answers.filter(answer => {
+    
+                const validForQuestion = validPairs.filter(pair => pair.questionId === answer.questionId);
+        
+        
+                return answer.answerIds.some(answerId => !validForQuestion.some(pair => pair.answerId === answerId));
+            });
+        
+  
+            if (invalidAnswers.length > 0) {
+                return res.status(400).json(errorResponse('Invalid question or answerId(s)', 'One or more questionId or answerId(s) are invalid.'));
+            }
+        
+         
             find_user_id.user_characterstics.step_13 = step_13_answers.map(answer => ({
                 questionId: answer.questionId,
                 answerIds: answer.answerIds 
             }));
-
-            user_obj["current_step"] = current_step; 
-            completed_steps[12] = 13; 
-            updateFields["completed_steps"] = completed_steps; 
-
-         
+        
+            user_obj["current_step"] = current_step;
+            completed_steps[12] = 13;
+            updateFields["completed_steps"] = completed_steps;
+        
+            
             await find_user_id.save();
-
+        
             return res.status(200).json({
                 type: "success",
                 message: "User characteristics updated successfully for step 13",
                 data: null
             });
         }
+        
 
         if (current_step == 14) {
 
@@ -501,40 +562,82 @@ exports.user_registration_steps = async (req, res) => {
 
 
 
-
 exports.get_user_details = async (req, res) => {
     const id = req.result.userId;
     const TOTAL_STEPS = 15;
 
     try {
-        const user_detail = await userModel
-            .findById(id)
-            .populate('preferences.sexual_orientation_preference_id', 'orientation_type')
-            .populate('preferences.relationship_type_preference_id', 'relationship_type')
-            .populate('characteristics.communication_style_id', 'style')
-            .populate('characteristics.love_receive_id', 'love_type')
-            .populate('characteristics.drink_frequency_id', 'frequency')
-            .populate('characteristics.smoke_frequency_id', 'frequency')
-            .populate('characteristics.workout_frequency_id', 'frequency')
-            .populate('characteristics.interests_ids', 'interest')
-            .lean();
+        // Fetch the user details
+        const user_detail = await userModel.findById(id).lean();
 
+        // Check if the user exists
         if (!user_detail) return res.status(400).json({ type: "error", message: "User does not exist" });
 
-        const { completed_steps = [] } = user_detail;
+        // Get completed steps
+        const { completed_steps = [], user_characterstics, sexual_orientation_preference_id, relationship_type_preference_id } = user_detail;
         const completedStepCount = completed_steps.length;
         const completionPercentage = (completedStepCount / TOTAL_STEPS) * 100;
 
+        // Populate user_characterstics with actual text for questions and answers
+        for (const step in user_characterstics) {
+            if (user_characterstics.hasOwnProperty(step)) {
+                for (const characteristic of user_characterstics[step]) {
+                    const question = await questionsModel.findById(characteristic.questionId).lean();
+                    const answer = await userCharactersticsOptionsModel.findById(characteristic.answerId).lean();
+
+                    // Attach text and identify_text to the characteristic
+                    characteristic.questionText = question ? question.text : null;
+                    characteristic.answerText = answer ? answer.text : null;
+                    characteristic.identifyText = question ? question.identify_text : null;  // Adding identify_text
+
+                    // Handle multiple answers for step 13
+                    if (characteristic.answerIds) {
+                        characteristic.answerTexts = await userCharactersticsOptionsModel.find({
+                            _id: { $in: characteristic.answerIds }
+                        }).lean();
+                    }
+                }
+            }
+        }
+
+        // Fetch sexual orientation options and structure as { id: value }
+        const sexualOrientationOptions = await userCharactersticsOptionsModel.find({
+            _id: { $in: sexual_orientation_preference_id }
+        }).lean();
+
+        const sexualOrientationPreferences = sexualOrientationOptions.map(option => ({
+            id: option._id,
+            value: option.text
+        }));
+
+        // Fetch relationship type option
+        const relationshipTypeOption = await userCharactersticsOptionsModel.findById(relationship_type_preference_id).lean();
+        const relationshipTypePreference = relationshipTypeOption ? {
+            id: relationshipTypeOption._id,
+            value: relationshipTypeOption.text
+        } : null;
+
+        // Attach the fetched options to the user detail
+        user_detail.sexual_orientation_preference_id = sexualOrientationPreferences;
+        user_detail.relationship_type_preference_id = relationshipTypePreference;
+
         return res.status(200).json({
             type: "success",
-            user_detail: user_detail,
+            user_detail: {
+                ...user_detail,
+                user_characterstics,
+            },
             profile_completion_percentage: completionPercentage.toFixed(2)
         });
     } catch (error) {
-        console.log('ERROR::', error);
-        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+        console.error('ERROR::', error);
+        return res.status(500).json({ type: "error", message: "Something went wrong", error: error.message });
     }
 };
+
+
+
+
 
 
 
@@ -930,34 +1033,39 @@ exports.delete_profile_image = async (req, res) => {
 
 exports.get_options = async (req, res) => {
     try {
-
         const step = req.query.step;
 
-        if (!step) { return res.status(404).json(errorResponse(messages.generalError.notFound, 'step  is required')); }
-
+        if (!step) {
+            return res.status(404).json(errorResponse(messages.generalError.notFound, 'Step is required'));
+        }
 
         const heading = await headingsModel.findOne({ step: step });
         if (!heading) {
             return res.status(404).json(errorResponse(messages.generalError.notFound, 'Heading not found'));
         }
 
-
-        const question = await questionsModel.findOne({ step: step });
-        if (!question) {
-            return res.status(404).json(errorResponse(messages.generalError.notFound, 'Question not found'));
+     
+        const questions = await questionsModel.find({ step: step });
+        if (questions.length === 0) {
+            return res.status(404).json(errorResponse(messages.generalError.notFound, 'Questions not found'));
         }
 
+       
+        const optionsPromises = questions.map(async (question) => {
+            const options = await userCharactersticsOptionsModel.find({ question_id: question._id }).select('_id question_id emoji text');
+            return {
+                questionId: question._id,
+                questionText: question.text,
+                options: options
+            };
+        });
 
-        const options = await optionsModel.findOne({ question_id: question._id });
-        if (!options) {
-            return res.status(404).json(errorResponse(messages.generalError.notFound, 'Options not found'));
-        }
-
+        
+        const questionsWithOptions = await Promise.all(optionsPromises);
 
         return res.status(200).json({
             heading: heading.text,
-            question: question.text,
-            options: options.options
+            questions: questionsWithOptions
         });
 
     } catch (error) {
