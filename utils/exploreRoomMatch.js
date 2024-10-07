@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 
 
 const exploreRoomMatchAlgorithm = async (currentUser, page = 1, limit = 10) => {
-    const { _id, location, gender, intrested_to_see,distance_preference,sexual_orientation_preference_id ,likedUsers, dislikedUsers } = currentUser;
+    const { _id, location, gender, intrested_to_see,distance_preference,sexual_orientation_preference_id ,likedUsers, dislikedUsers,blocked_contacts } = currentUser;
     const currentCoordinates = location.coordinates;
     // const sexual_orientation_preference_id = new mongoose.Types.ObjectId(preferences.sexual_orientation_preference_id);
     const distanceInKm = distance_preference; 
@@ -16,6 +16,7 @@ const exploreRoomMatchAlgorithm = async (currentUser, page = 1, limit = 10) => {
    
         let matchQuery = {
             _id: { $nin: [_id, ...likedUserIds, ...dislikedUserIds] },
+            mobile_number: { $nin: blocked_contacts },
             'location.coordinates': {
                 $geoWithin: {
                     $centerSphere: [currentCoordinates, distanceInKm / 6378.1] 
