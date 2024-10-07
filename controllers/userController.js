@@ -200,7 +200,7 @@ exports.verify_otp = async (req, res) => {
 
 
 exports.user_registration_steps = async (req, res) => {
-    let id = req.result.userId;
+    let id = req.result.userId
     const {
         email,
         username, dob, gender, intrested_to_see,
@@ -211,9 +211,10 @@ exports.user_registration_steps = async (req, res) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (current_step < 2 || current_step === undefined) {
-        return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please enter correct step"));
+        return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please enter correct step"))
     }
 
+   
     let parsedLocation = location;
     if (typeof location === 'string') {
         try {
@@ -227,12 +228,15 @@ exports.user_registration_steps = async (req, res) => {
 
     try {
         const find_user_id = await userModel.findById(id);
+
         if (!find_user_id) return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
 
+        const userId = find_user_id._id;
         const completed_steps = find_user_id.completed_steps || [];
+        const updatecharacteristics = {};
+        const user_obj = {};
+        const updateFields = {};
 
-        // Update properties directly on the find_user_id document
-        find_user_id.current_step = current_step;
 
         // Steps 2 - 14
         if (current_step == 2) {
@@ -242,31 +246,41 @@ exports.user_registration_steps = async (req, res) => {
                     error: 'Please provide a valid email address.'
                 });
             }
-            find_user_id.email = email;
-            completed_steps[1] = 2; // Update completed steps
+            user_obj["email"] = email;
+            user_obj["current_step"] = current_step;
+            completed_steps[1] = 2;
+            updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 3) {
             if (!username) { return res.status(400).json(errorResponse('Username is required.', 'username is required to complete step 3')) }
-            find_user_id.username = username;
-            completed_steps[2] = 3; // Update completed steps
+            user_obj["username"] = username;
+            user_obj["current_step"] = current_step;
+            completed_steps[2] = 3;
+            updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 4) {
             if (!dob) { return res.status(400).json(errorResponse('Date of birth is required.', 'dob is required to complete step 4')) }
-            find_user_id.dob = dob;
-            completed_steps[3] = 4; // Update completed steps
+            user_obj["dob"] = dob;
+            user_obj["current_step"] = current_step;
+            completed_steps[3] = 4;
+            updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 5) {
             if (!gender) {
                 return res.status(400).json(errorResponse('Gender is required.', 'gender is required to complete step 5'));
             }
-            find_user_id.show_gender = show_gender;
-            find_user_id.gender = gender;
-            completed_steps[4] = 5; // Update completed steps
+            user_obj["show_gender"] = show_gender;
+            user_obj["gender"] = gender;
+            user_obj["current_step"] = current_step;
+            completed_steps[4] = 5;
+            updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 6) {
             if (!intrested_to_see) { return res.status(400).json(errorResponse('Interested to see is required.', 'interested to see is required to complete step 6')) }
-            find_user_id.intrested_to_see = intrested_to_see;
-            completed_steps[5] = 6; // Update completed steps
+            user_obj["intrested_to_see"] = intrested_to_see;
+            user_obj["current_step"] = current_step;
+            completed_steps[5] = 6;
+            updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 7) {
             if (!sexual_orientation_preference_id) {
@@ -275,78 +289,106 @@ exports.user_registration_steps = async (req, res) => {
 
             const idsToCheck = Array.isArray(sexual_orientation_preference_id) ? sexual_orientation_preference_id : [sexual_orientation_preference_id];
 
+
             const existingOptions = await userCharactersticsOptionsModel.find({
                 _id: { $in: idsToCheck }
             });
 
+
             const existingIds = existingOptions.map(option => option._id.toString());
 
+
             const invalidIds = idsToCheck.filter(id => !existingIds.includes(id));
+
 
             if (invalidIds.length > 0) {
                 return res.status(400).json(errorResponse("Something went wrong", 'Invalid sexual orientation ID(s)'))
             }
 
-            find_user_id.show_sexual_orientation = show_sexual_orientation;
-            find_user_id.sexual_orientation_preference_id = existingIds; // Set directly
+            user_obj["show_sexual_orientation"] = show_sexual_orientation;
+            updateFields["sexual_orientation_preference_id"] = existingIds;
 
-            completed_steps[6] = 7; // Update completed steps
+            user_obj["current_step"] = current_step;
+            completed_steps[6] = 7;
+            updateFields["completed_steps"] = completed_steps;
         }
 
         if (current_step == 8) {
+
             if (!relationship_type_preference_id) {
                 return res.status(400).json(errorResponse('What are you looking for is required.', 'Relationship preferences are required to complete step 8.'));
             }
             const existingRelationshipOption = await userCharactersticsOptionsModel.findById(relationship_type_preference_id);
 
+
             if (!existingRelationshipOption) {
                 return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'The provided relationship type preference ID does not exist.'));
             }
 
-            find_user_id.relationship_type_preference_id = relationship_type_preference_id; // Set directly
-            completed_steps[7] = 8; // Update completed steps
+
+            updateFields["relationship_type_preference_id"] = relationship_type_preference_id;
+            user_obj["current_step"] = current_step;
+            completed_steps[7] = 8;
+            updateFields["completed_steps"] = completed_steps;
         }
 
         if (current_step == 9) {
             if (!study) { return res.status(400).json(errorResponse('Studying is your thing is required.', 'study is required to complete step 9')) }
-            find_user_id.study = study; // Set directly
-            completed_steps[8] = 9; // Update completed steps
+            user_obj["study"] = study;
+            user_obj["current_step"] = current_step;
+            completed_steps[8] = 9;
+            updateFields["completed_steps"] = completed_steps;
         }
+        console.log("user obj ==--------",user_obj)
         if (current_step == 10) {
             if (!distance_preference) { return res.status(400).json(errorResponse('Distance preference is required.', 'distance preference is required to complete step 10')) }
-            find_user_id.distance_preference = distance_preference; // Set directly
-            completed_steps[9] = 10; // Update completed steps
+            updateFields["distance_preference"] = distance_preference;
+            user_obj["current_step"] = current_step;
+            completed_steps[9] = 10;
+            updateFields["completed_steps"] = completed_steps;
         }
-
+     
         if (current_step == 11) {
+           
+           
             if (!step_11_answer || !Array.isArray(step_11_answer) || step_11_answer.length === 0) {
                 return res.status(400).json(errorResponse('Please add fields', 'Step 11 answers are required.'));
             }
 
+
             const validOptions = await userCharactersticsOptionsModel.find({}, 'question_id _id').lean();
+
             const validPairs = validOptions.map(option => ({
                 questionId: option.question_id.toString(),
                 answerId: option._id.toString()
             }));
 
+
+
+
             const invalidAnswers = step_11_answer.filter(answer =>
                 !validPairs.some(validPair =>
+
                     validPair.questionId === answer.questionId && validPair.answerId === answer.answerId
                 )
             );
 
+
             if (invalidAnswers.length > 0) {
                 return res.status(400).json(errorResponse('Invalid questionId or answerId', 'One or more questionId-answerId pairs are invalid.'));
             }
+
 
             find_user_id.user_characterstics.step_11 = step_11_answer.map(answer => ({
                 questionId: answer.questionId,
                 answerId: answer.answerId
             }));
 
-            completed_steps[10] = 11; // Update completed steps
+            find_user_id.current_step = current_step; // Make sure this is the same object you're saving
+            completed_steps[10] = 11; // Mark step 11 as completed
+            find_user_id.completed_steps = completed_steps; //
+            
 
-            // Save the updated user document
             await find_user_id.save();
 
             return res.status(200).json({
@@ -355,17 +397,19 @@ exports.user_registration_steps = async (req, res) => {
                 data: null
             });
         }
-
+        console.log("user obj ==--------",user_obj)
         if (current_step == 12) {
             if (!step_12_answer || !Array.isArray(step_12_answer) || step_12_answer.length === 0) {
                 return res.status(400).json(errorResponse('Please add lifestyles', 'Step 12 answers are required.'));
             }
+
 
             const validOptions = await userCharactersticsOptionsModel.find({}, 'question_id _id').lean();
             const validPairs = validOptions.map(option => ({
                 questionId: option.question_id.toString(),
                 answerId: option._id.toString()
             }));
+
 
             const invalidAnswers = step_12_answer.filter(answer =>
                 !validPairs.some(validPair =>
@@ -373,61 +417,150 @@ exports.user_registration_steps = async (req, res) => {
                 )
             );
 
+
             if (invalidAnswers.length > 0) {
                 return res.status(400).json(errorResponse('Invalid questionId or answerId', 'One or more questionId-answerId pairs are invalid.'));
             }
 
-            find_user_id.user_characterstics.step_12 = step_12_answer.map(answer => ({
-                questionId: answer.questionId,
-                answerId: answer.answerId
-            }));
 
-            completed_steps[11] = 12; // Update completed steps
+            find_user_id.user_characterstics.step_12 = [
+                ...find_user_id.user_characterstics.step_12,
+                ...step_12_answer.map(answer => ({
+                    questionId: answer.questionId,
+                    answerId: answer.answerId
+                }))
+            ];
+
+            find_user_id.current_step = current_step; // Make sure this is the same object you're saving
+            completed_steps[11] = 12; // Mark step 11 as completed
+            find_user_id.completed_steps = completed_steps; //
+
+            // Save the updated user document
+            await find_user_id.save();
+
+            return res.status(200).json({
+                type: "success",
+                message: "User characteristics updated successfully for step 12",
+                data: null
+            });
         }
 
         if (current_step == 13) {
             if (!step_13_answers || !Array.isArray(step_13_answers) || step_13_answers.length === 0) {
-                return res.status(400).json(errorResponse('Please add interests', 'Step 13 answers are required.'));
+                return res.status(400).json(errorResponse('Please enter the interests', 'Step 13 answers are required.'));
             }
 
+
             const validOptions = await userCharactersticsOptionsModel.find({}, 'question_id _id').lean();
+
+
             const validPairs = validOptions.map(option => ({
                 questionId: option.question_id.toString(),
                 answerId: option._id.toString()
             }));
 
-            const invalidAnswers = step_13_answers.filter(answer =>
-                !validPairs.some(validPair =>
-                    validPair.questionId === answer.questionId && validPair.answerId === answer.answerId
-                )
-            );
+
+            const invalidAnswers = step_13_answers.filter(answer => {
+
+                const validForQuestion = validPairs.filter(pair => pair.questionId === answer.questionId);
+
+
+                return answer.answerIds.some(answerId => !validForQuestion.some(pair => pair.answerId === answerId));
+            });
+
 
             if (invalidAnswers.length > 0) {
-                return res.status(400).json(errorResponse('Invalid questionId or answerId', 'One or more questionId-answerId pairs are invalid.'));
+                return res.status(400).json(errorResponse('Invalid question or answerId(s)', 'One or more questionId or answerId(s) are invalid.'));
             }
+
 
             find_user_id.user_characterstics.step_13 = step_13_answers.map(answer => ({
                 questionId: answer.questionId,
-                answerId: answer.answerId
+                answerIds: answer.answerIds
             }));
 
-            completed_steps[12] = 13; // Update completed steps
+            find_user_id.current_step = current_step; // Make sure this is the same object you're saving
+            completed_steps[12] = 13; // Mark step 11 as completed
+            find_user_id.completed_steps = completed_steps; //
+
+
+            await find_user_id.save();
+
+            return res.status(200).json({
+                type: "success",
+                message: "User characteristics updated successfully for step 13",
+                data: null
+            });
         }
 
-        // After all updates
-        find_user_id.completed_steps = completed_steps; // Update completed steps array
-        await find_user_id.save(); // Save the updated user document
 
-        return res.status(200).json({
-            type: "success",
-            message: "Data added successfully",
-            data: null
-        });
-    } catch (err) {
-        return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, err.message));
+        if (current_step == 14) {
+
+            let imageList = images?.images ? (Array.isArray(images.images) ? images.images : [images.images]) : [];
+
+
+            if (imageList.length < 2) {
+                return res.status(400).json(errorResponse("At least two images are required"));
+            }
+
+            const imageUrls = [];
+            for (const [index, image] of imageList.entries()) {
+                try {
+                    if (!image.data) {
+                        return res.status(400).json(errorResponse("File data is missing."));
+                    }
+
+                    const uploadResult = await uploadFile({
+                        name: image.name,
+                        data: image.data,
+                        mimetype: image.mimetype,
+                        userId: id
+                    });
+
+                    imageUrls.push({
+                        url: uploadResult.Location,
+                        position: index + 1
+                    });
+                } catch (error) {
+                    console.error(`Error uploading image ${image.name}: ${error.message}`);
+                    return res.status(500).json(errorResponse(`Error uploading image: ${error.message}`));
+                }
+            }
+
+            user_obj["images"] = imageUrls;
+            user_obj["current_step"] = current_step;
+            completed_steps[13] = 14;
+            updateFields["completed_steps"] = completed_steps;
+        }
+
+
+        if (current_step == 15) {
+            if (!parsedLocation) return res.status(400).json(errorResponse("Location in required.", "Location is required for step 15"));
+            user_obj["location"] = parsedLocation;
+            user_obj["current_step"] = current_step;
+            completed_steps[14] = 15;
+            updateFields["completed_steps"] = completed_steps;
+        }
+
+        if (current_step > 15) {
+            return res.status(400).json(errorResponse(messages.validation.invalidStep));
+        }
+
+        Object.assign(user_obj, updateFields, updatecharacteristics);
+
+        const user_registration_flow = await userModel.findByIdAndUpdate(userId, user_obj, { new: true, runValidators: true });
+
+        if (!user_registration_flow) {
+            return res.status(400).json(errorResponse(`Error while updating step ${current_step}. Please try again later.`));
+        }
+
+        return res.status(200).json(successResponse(`Step ${current_step} updated successfully`));
+
+    } catch (error) {
+        console.error('Update error:', error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
-
 
 
 
