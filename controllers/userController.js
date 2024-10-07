@@ -6,7 +6,7 @@ const { uploadFile, s3 } = require("../utils/awsUpload")
 let userCharactersticsOptionsModel = require('../models/optionsModel')
 const headingsModel = require("../models/headingsModel")
 const questionsModel = require("../models/questionsModel")
-const { get } = require("mongoose")
+
 
 
 
@@ -46,8 +46,8 @@ exports.login = async (req, res) => {
 
         const smsResponse = await sendTwilioSms(`Your phloii verification code is ${otp}`, mobile_number);
         if (!smsResponse.success) {
-            // return res.status(400).json({ message: 'Error sending verification code via SMS: ' + smsResponse.error, type: 'error' });
-            console.log("error while sending sms")
+            return res.status(400).json({ message: 'Error sending verification code via SMS: ' + smsResponse.error, type: 'error' });
+            // console.log("error while sending sms")
         } else {
             console.log("Response from twilio:::: success--" + smsResponse.success)
         }
@@ -224,7 +224,7 @@ exports.user_registration_steps = async (req, res) => {
 
     try {
         const find_user_id = await userModel.findById(id);
-       
+
         if (!find_user_id) return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
 
         const userId = find_user_id._id;
@@ -348,30 +348,30 @@ exports.user_registration_steps = async (req, res) => {
                 return res.status(400).json(errorResponse('Please add fields', 'Step 11 answers are required.'));
             }
 
- 
+
             const validOptions = await userCharactersticsOptionsModel.find({}, 'question_id _id').lean();
-           
+
             const validPairs = validOptions.map(option => ({
                 questionId: option.question_id.toString(),
-                answerId: option._id.toString() 
+                answerId: option._id.toString()
             }));
 
 
 
-           
-            const invalidAnswers = step_11_answer.filter(answer => 
-                !validPairs.some(validPair => 
-                    
+
+            const invalidAnswers = step_11_answer.filter(answer =>
+                !validPairs.some(validPair =>
+
                     validPair.questionId === answer.questionId && validPair.answerId === answer.answerId
                 )
             );
 
-           
+
             if (invalidAnswers.length > 0) {
                 return res.status(400).json(errorResponse('Invalid questionId or answerId', 'One or more questionId-answerId pairs are invalid.'));
             }
 
-          
+
             find_user_id.user_characterstics.step_11 = step_11_answer.map(answer => ({
                 questionId: answer.questionId,
                 answerId: answer.answerId
@@ -381,7 +381,7 @@ exports.user_registration_steps = async (req, res) => {
             completed_steps[10] = 11;
             updateFields["completed_steps"] = completed_steps;
 
-          
+
             await find_user_id.save();
 
             return res.status(200).json({
@@ -390,32 +390,32 @@ exports.user_registration_steps = async (req, res) => {
                 data: null
             });
         }
-        
+
         if (current_step === 12) {
             if (!step_12_answer || !Array.isArray(step_12_answer) || step_12_answer.length === 0) {
                 return res.status(400).json(errorResponse('Please add lifestyles', 'Step 12 answers are required.'));
             }
-        
-          
+
+
             const validOptions = await userCharactersticsOptionsModel.find({}, 'question_id _id').lean();
             const validPairs = validOptions.map(option => ({
                 questionId: option.question_id.toString(),
-                answerId: option._id.toString() 
+                answerId: option._id.toString()
             }));
-        
-            
-            const invalidAnswers = step_12_answer.filter(answer => 
-                !validPairs.some(validPair => 
+
+
+            const invalidAnswers = step_12_answer.filter(answer =>
+                !validPairs.some(validPair =>
                     validPair.questionId === answer.questionId && validPair.answerId === answer.answerId
                 )
             );
-       
-           
+
+
             if (invalidAnswers.length > 0) {
                 return res.status(400).json(errorResponse('Invalid questionId or answerId', 'One or more questionId-answerId pairs are invalid.'));
             }
-        
-            
+
+
             find_user_id.user_characterstics.step_12 = [
                 ...find_user_id.user_characterstics.step_12,
                 ...step_12_answer.map(answer => ({
@@ -423,14 +423,14 @@ exports.user_registration_steps = async (req, res) => {
                     answerId: answer.answerId
                 }))
             ];
-        
-            user_obj["current_step"] = current_step; 
-            completed_steps[11] = 12; 
+
+            user_obj["current_step"] = current_step;
+            completed_steps[11] = 12;
             updateFields["completed_steps"] = completed_steps;
-        
+
             // Save the updated user document
             await find_user_id.save();
-        
+
             return res.status(200).json({
                 type: "success",
                 message: "User characteristics updated successfully for step 12",
@@ -442,50 +442,50 @@ exports.user_registration_steps = async (req, res) => {
             if (!step_13_answers || !Array.isArray(step_13_answers) || step_13_answers.length === 0) {
                 return res.status(400).json(errorResponse('Please enter the interests', 'Step 13 answers are required.'));
             }
-        
-        
+
+
             const validOptions = await userCharactersticsOptionsModel.find({}, 'question_id _id').lean();
-            
-      
+
+
             const validPairs = validOptions.map(option => ({
                 questionId: option.question_id.toString(),
                 answerId: option._id.toString()
             }));
-        
-       
+
+
             const invalidAnswers = step_13_answers.filter(answer => {
-    
+
                 const validForQuestion = validPairs.filter(pair => pair.questionId === answer.questionId);
-        
-        
+
+
                 return answer.answerIds.some(answerId => !validForQuestion.some(pair => pair.answerId === answerId));
             });
-        
-  
+
+
             if (invalidAnswers.length > 0) {
                 return res.status(400).json(errorResponse('Invalid question or answerId(s)', 'One or more questionId or answerId(s) are invalid.'));
             }
-        
-         
+
+
             find_user_id.user_characterstics.step_13 = step_13_answers.map(answer => ({
                 questionId: answer.questionId,
-                answerIds: answer.answerIds 
+                answerIds: answer.answerIds
             }));
-        
+
             user_obj["current_step"] = current_step;
             completed_steps[12] = 13;
             updateFields["completed_steps"] = completed_steps;
-        
-            
+
+
             await find_user_id.save();
-        
+
             return res.status(200).json({
                 type: "success",
                 message: "User characteristics updated successfully for step 13",
                 data: null
             });
         }
-        
+
 
         if (current_step == 14) {
 
@@ -711,9 +711,9 @@ const stepFieldMappings = {
     8: ['relationship_type_preference_id'],
     9: ['study'],
     10: ['distance_preference'],
-    11: ['step_11_answer'], 
-    12: ['step_12_answer'], 
-    13: ['step_13_answers']  
+    11: ['step_11_answer'],
+    12: ['step_12_answer'],
+    13: ['step_13_answers']
 };
 
 exports.update_user_profile = async (req, res) => {
@@ -721,20 +721,20 @@ exports.update_user_profile = async (req, res) => {
 
     let {
         email,
-        username, 
-        dob, 
-        gender, 
+        username,
+        dob,
+        gender,
         intrested_to_see,
-        sexual_orientation_preference_id, 
+        sexual_orientation_preference_id,
         relationship_type_preference_id,
-        study, 
-        distance_preference, 
-        current_step, 
-        show_gender, 
+        study,
+        distance_preference,
+        current_step,
+        show_gender,
         show_sexual_orientation,
-        step_11_answer, 
+        step_11_answer,
         step_12_answer,
-        step_13_answers  
+        step_13_answers
     } = req.body;
 
     current_step = Number(current_step);
@@ -746,7 +746,7 @@ exports.update_user_profile = async (req, res) => {
 
         const { completed_steps = [] } = user;
 
-        const getLastValidValue = (step,fieldName) => {
+        const getLastValidValue = (step, fieldName) => {
             const lastValidStep = completed_steps[step - 1];
             if (lastValidStep) {
                 switch (step) {
@@ -764,8 +764,8 @@ exports.update_user_profile = async (req, res) => {
                     case 8: return user.relationship_type_preference_id;
                     case 9: return user.study;
                     case 10: return user.distance_preference;
-                    case 11: return user.user_characterstics.step_11 || []; 
-                    case 12: return user.user_characterstics.step_12 || []; 
+                    case 11: return user.user_characterstics.step_11 || [];
+                    case 12: return user.user_characterstics.step_12 || [];
                     case 13: return user.user_characterstics.step_13 || [];
                     default: return null;
                 }
@@ -774,26 +774,26 @@ exports.update_user_profile = async (req, res) => {
         };
 
         if (!stepFieldMappings[current_step]) {
-            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,messages.validation.invalidStep));
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, messages.validation.invalidStep));
         }
 
         const requiredFields = stepFieldMappings[current_step];
 
-        
+
         const providedFields = Object.keys(req.body).filter(key => key !== 'current_step');
         const invalidFields = providedFields.filter(field => !requiredFields.includes(field));
         if (invalidFields.length > 0) {
-            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,`Invalid fields for step ${current_step}: ${invalidFields.join(', ')}`));
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, `Invalid fields for step ${current_step}: ${invalidFields.join(', ')}`));
         }
 
         const updateFields = {};
 
-        const updateStep =  (step, fieldName, value) => {
-         
+        const updateStep = (step, fieldName, value) => {
+
             if (value === undefined) {
-               
-                const lastValidValue = getLastValidValue(step,fieldName);
-             
+
+                const lastValidValue = getLastValidValue(step, fieldName);
+
                 if (lastValidValue === null) {
                     return res.status(400).json(errorResponse(`${fieldName} is required for step ${step}`));
                 }
@@ -812,29 +812,29 @@ exports.update_user_profile = async (req, res) => {
                 updateStep(5, 'show_gender', show_gender);
                 break;
             case 6: updateStep(6, 'intrested_to_see', intrested_to_see); break;
-            case 7: 
-                updateStep(7, 'sexual_orientation_preference_id', sexual_orientation_preference_id); 
+            case 7:
+                updateStep(7, 'sexual_orientation_preference_id', sexual_orientation_preference_id);
                 updateStep(7, 'show_sexual_orientation', show_sexual_orientation);
                 break;
             case 8: updateStep(8, 'relationship_type_preference_id', relationship_type_preference_id); break;
             case 9: updateStep(9, 'study', study); break;
             case 10: updateStep(10, 'distance_preference', distance_preference); break;
-            case 11: 
+            case 11:
                 if (Array.isArray(step_11_answer) && step_11_answer.length > 0) {
                     const validOptions = await userCharactersticsOptionsModel.find({}, 'question_id _id').lean();
-           
+
                     const validPairs = validOptions.map(option => ({
                         questionId: option.question_id.toString(),
-                        answerId: option._id.toString() 
+                        answerId: option._id.toString()
                     }));
-        
-                    const invalidAnswers = step_11_answer.filter(answer => 
-                        !validPairs.some(validPair => 
-                            
+
+                    const invalidAnswers = step_11_answer.filter(answer =>
+                        !validPairs.some(validPair =>
+
                             validPair.questionId === answer.questionId && validPair.answerId === answer.answerId
                         )
                     );
-        
+
                     if (invalidAnswers.length > 0) {
                         return res.status(400).json(errorResponse('Invalid questionId or answerId', 'One or more questionId-answerId pairs are invalid.'));
                     }
@@ -843,59 +843,59 @@ exports.update_user_profile = async (req, res) => {
                     updateFields['user_characterstics.step_11'] = getLastValidValue(11);
                 }
                 break;
-            case 12: 
+            case 12:
                 if (Array.isArray(step_12_answer) && step_12_answer.length > 0) {
-                 
+
 
                     const validOptions = await userCharactersticsOptionsModel.find({}, 'question_id _id').lean();
                     const validPairs = validOptions.map(option => ({
                         questionId: option.question_id.toString(),
-                        answerId: option._id.toString() 
+                        answerId: option._id.toString()
                     }));
-                
-                    
-                    const invalidAnswers = step_12_answer.filter(answer => 
-                        !validPairs.some(validPair => 
+
+
+                    const invalidAnswers = step_12_answer.filter(answer =>
+                        !validPairs.some(validPair =>
                             validPair.questionId === answer.questionId && validPair.answerId === answer.answerId
                         )
                     );
-               
-                   
+
+
                     if (invalidAnswers.length > 0) {
                         return res.status(400).json(errorResponse('Invalid questionId or answerId', 'One or more questionId-answerId pairs are invalid.'));
                     }
 
                     updateFields['user_characterstics.step_12'] = step_12_answer;
                 } else {
-                    
+
                     updateFields['user_characterstics.step_12'] = getLastValidValue(12);
                 }
                 break;
-            case 13: 
+            case 13:
                 if (Array.isArray(step_13_answers) && step_13_answers.length > 0) {
 
                     const validOptions = await userCharactersticsOptionsModel.find({}, 'question_id _id').lean();
-            
-      
+
+
                     const validPairs = validOptions.map(option => ({
                         questionId: option.question_id.toString(),
                         answerId: option._id.toString()
                     }));
-                
-               
+
+
                     const invalidAnswers = step_13_answers.filter(answer => {
-            
+
                         const validForQuestion = validPairs.filter(pair => pair.questionId === answer.questionId);
-                
-                
+
+
                         return answer.answerIds.some(answerId => !validForQuestion.some(pair => pair.answerId === answerId));
                     });
-                
-          
+
+
                     if (invalidAnswers.length > 0) {
                         return res.status(400).json(errorResponse('Invalid question or answerId(s)', 'One or more questionId or answerId(s) are invalid.'));
                     }
-                
+
 
                     updateFields['user_characterstics.step_13'] = step_13_answers;
                 } else {
@@ -1104,13 +1104,13 @@ exports.get_options = async (req, res) => {
             return res.status(404).json(errorResponse(messages.generalError.notFound, 'Heading not found'));
         }
 
-     
+
         const questions = await questionsModel.find({ step: step });
         if (questions.length === 0) {
             return res.status(404).json(errorResponse(messages.generalError.notFound, 'Questions not found'));
         }
 
-       
+
         const optionsPromises = questions.map(async (question) => {
             const options = await userCharactersticsOptionsModel.find({ question_id: question._id }).select('_id question_id emoji text');
             return {
@@ -1120,7 +1120,7 @@ exports.get_options = async (req, res) => {
             };
         });
 
-        
+
         const questionsWithOptions = await Promise.all(optionsPromises);
 
         return res.status(200).json({
@@ -1133,3 +1133,134 @@ exports.get_options = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
+
+
+
+
+exports.import_contacts = async (req, res) => {
+    try {
+        let userId = req.result.userId
+        let contact_list = req.body.contact_list;
+
+        if (!contact_list) {
+            return res.status(400).json(errorResponse("Please add contacts", "Please add contact list in the body"));
+        }
+        
+        if (contact_list.length < 1) {
+            return res.status(400).json(errorResponse("You have not added any contact"));
+        }
+        
+      
+        contact_list = [...new Set(contact_list)];
+        
+      
+        let addContacts = await userModel.findByIdAndUpdate(
+            userId,
+            {
+                $addToSet: {
+                    contacts: { $each: contact_list } 
+                }
+            },
+            { new: true } 
+        );
+        
+        if (!addContacts) {
+            return res.status(404).json(errorResponse(messages.generalError.userNotFound,"User not found"));
+        }
+        
+        return res.status(200).json(successResponse("Contacts added successfully", addContacts.contacts));
+        
+
+    } catch (error) {
+        console.log("ERROR::", error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    }
+}
+
+
+
+
+
+
+exports.block_contacts = async (req, res) => {
+    try {
+        let userId = req.result.userId
+        let blocked_contacts = req.body.blocked_contacts;
+
+        if (!blocked_contacts) {
+            return res.status(400).json(errorResponse("Please add contacts", "Please add contact list in the body"));
+        }
+
+        if (blocked_contacts.length < 1) {
+            return res.status(400).json(errorResponse("You have not added any contact"));
+        }
+
+
+        blocked_contacts = [...new Set(blocked_contacts)];
+
+
+        let addContacts = await userModel.findByIdAndUpdate(
+            userId,
+            {
+                $addToSet: { blocked_contacts: { $each: blocked_contacts } }
+            },
+            { new: true }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json(errorResponse(messages.generalError.userNotFound,"User not found"));
+        }
+
+        return res.status(200).json(successResponse("Contacts added successfully", addContacts.blocked_contacts));
+
+    } catch (error) {
+        console.log("ERROR::", error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    }
+}
+
+
+
+
+exports.remove_blocked_contacts = async (req, res) => {
+    try {
+        const userId = req.result.userId;
+        let contact_list = req.body.contact_list;
+
+      
+        if (!contact_list || !Array.isArray(contact_list)) {
+            return res.status(400).json(errorResponse("Add contacts whom you want to remove from block list", "add the contacts to remove from block list and contact list should be an array"));
+        }
+
+        if (contact_list.length < 1) {
+            return res.status(400).json(errorResponse("You have not added any contacts to remove"));
+        }
+
+       
+        let updatedUser = await userModel.findByIdAndUpdate(
+            userId,
+            {
+                $pull: {
+                    blocked_contacts: { $in: contact_list }
+                }
+            },
+            { new: true } 
+        );
+
+        if (!updatedUser) {
+           
+            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong,"User not found"));
+        }
+
+        return res.status(200).json(successResponse("Contacts removed successfully", updatedUser.blocked_contacts));
+
+    } catch (error) {
+        console.log("ERROR::", error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    }
+};
+
+
+
+
+

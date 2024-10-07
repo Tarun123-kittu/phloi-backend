@@ -79,7 +79,11 @@ const userSchema = new mongoose.Schema({
         questionId: mongoose.Schema.Types.ObjectId,  
         answerIds: [mongoose.Schema.Types.ObjectId]  
       }]
-    }
+    },
+
+    contacts:{type:Array,default:[]},
+    blocked_contacts:{type:Array,default:[]}
+
      
 }, { timestamps: true });
 

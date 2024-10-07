@@ -31,6 +31,9 @@ router.put("/update_image_position", authenticateToken, validateUpdateImagePosit
 router.put("/add_profile_images", authenticateToken, userController.add_profile_images)
 router.delete("/delete_profile_image", authenticateToken, userController.delete_profile_image)
 router.get("/get_options", authenticateToken, userController.get_options)
+router.post("/import_contacts",authenticateToken, userController.import_contacts)
+router.post("/block_contacts",authenticateToken,userController.block_contacts)
+router.put("/remove_blocked_contacts",authenticateToken,userController.remove_blocked_contacts)
 
 
 
@@ -69,18 +72,6 @@ router.put("/left_room",authenticateToken,exploreRoomsController.left_room)
 router.get("/get_matches_in_explore_rooms",authenticateToken,exploreRoomsController.get_matches_in_explore_rooms)
 
 
-//preferences routes
-// router.get("/get_all_sexual_orientations",authenticateToken,preferencesController.get_all_sexual_orientations)
-// router.get("/get_all_relationship_types",authenticateToken,preferencesController.get_all_relationship_types)
-
-
-// //characterstics controller
-// router.get("/get_all_communication_styles",authenticateToken,characteristicsController.get_all_communication_styles)
-// router.get("/get_all_love_receives",authenticateToken,characteristicsController.get_all_love_receives)
-// router.get("/get_all_drink_frequency",authenticateToken,characteristicsController.get_all_drink_frequency)
-// router.get("/get_all_smoke_frequency",authenticateToken,characteristicsController.get_all_smoke_frequency)
-// router.get("/get_all_workout_frequency",authenticateToken,characteristicsController.get_all_workout_frequency)
-// router.get("/get_all_interests",authenticateToken,characteristicsController.get_all_interests)
 
 
 
