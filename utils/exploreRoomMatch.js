@@ -3,11 +3,12 @@ const mongoose = require('mongoose');
 
 
 const exploreRoomMatchAlgorithm = async (currentUser, page = 1, limit = 10) => {
-    const { _id, location, gender, intrested_to_see,distance_preference,sexual_orientation_preference_id ,likedUsers, dislikedUsers,blocked_contacts } = currentUser;
+    let { _id, location, gender, intrested_to_see,distance_preference,sexual_orientation_preference_id ,likedUsers, dislikedUsers,blocked_contacts } = currentUser;
     const currentCoordinates = location.coordinates;
     // const sexual_orientation_preference_id = new mongoose.Types.ObjectId(preferences.sexual_orientation_preference_id);
     const distanceInKm = distance_preference; 
     const distanceInMeters = distanceInKm * 1000; 
+    blocked_contacts = blocked_contacts.map(contact => parseFloat(contact));
     
     try {
        

@@ -34,7 +34,8 @@ router.get("/get_options", authenticateToken, userController.get_options)
 router.post("/import_contacts",authenticateToken, userController.import_contacts)
 router.post("/block_contacts",authenticateToken,userController.block_contacts)
 router.put("/remove_blocked_contacts",authenticateToken,userController.remove_blocked_contacts)
-
+router.get("/get_contacts",authenticateToken,userController.get_contacts)
+router.get("/get_blocked_contacts",authenticateToken,userController.get_blocked_contacts)
 
 
 

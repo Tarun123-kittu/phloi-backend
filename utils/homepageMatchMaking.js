@@ -1,13 +1,14 @@
 let userModel = require('../models/userModel')
-const mongoose = require('mongoose');
+
 
 
 const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter = null) => {
-    const { _id, location, gender, intrested_to_see, distance_preference, characteristics, likedUsers, dislikedUsers ,sexual_orientation_preference_id} = currentUser;
+    let { _id, location, gender, intrested_to_see, distance_preference, characteristics, likedUsers, dislikedUsers ,blocked_contacts,sexual_orientation_preference_id} = currentUser;
     const currentCoordinates = location.coordinates;
     // const sexual_orientation_preference_id = new mongoose.Types.ObjectId(preferences.sexual_orientation_preference_id);
     const distanceInKm = distance_preference;
     const distanceInMeters = distanceInKm * 1000;
+    blocked_contacts = blocked_contacts.map(contact => parseFloat(contact));
 
     try {
        

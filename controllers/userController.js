@@ -214,7 +214,7 @@ exports.user_registration_steps = async (req, res) => {
         return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please enter correct step"))
     }
 
-   
+
     let parsedLocation = location;
     if (typeof location === 'string') {
         try {
@@ -339,7 +339,7 @@ exports.user_registration_steps = async (req, res) => {
             completed_steps[8] = 9;
             updateFields["completed_steps"] = completed_steps;
         }
-        console.log("user obj ==--------",user_obj)
+
         if (current_step == 10) {
             if (!distance_preference) { return res.status(400).json(errorResponse('Distance preference is required.', 'distance preference is required to complete step 10')) }
             updateFields["distance_preference"] = distance_preference;
@@ -347,10 +347,10 @@ exports.user_registration_steps = async (req, res) => {
             completed_steps[9] = 10;
             updateFields["completed_steps"] = completed_steps;
         }
-     
+
         if (current_step == 11) {
-           
-           
+
+
             if (!step_11_answer || !Array.isArray(step_11_answer) || step_11_answer.length === 0) {
                 return res.status(400).json(errorResponse('Please add fields', 'Step 11 answers are required.'));
             }
@@ -384,10 +384,10 @@ exports.user_registration_steps = async (req, res) => {
                 answerId: answer.answerId
             }));
 
-            find_user_id.current_step = current_step; // Make sure this is the same object you're saving
-            completed_steps[10] = 11; // Mark step 11 as completed
-            find_user_id.completed_steps = completed_steps; //
-            
+            find_user_id.current_step = current_step;
+            completed_steps[10] = 11;
+            find_user_id.completed_steps = completed_steps;
+
 
             await find_user_id.save();
 
@@ -397,7 +397,7 @@ exports.user_registration_steps = async (req, res) => {
                 data: null
             });
         }
-        console.log("user obj ==--------",user_obj)
+
         if (current_step == 12) {
             if (!step_12_answer || !Array.isArray(step_12_answer) || step_12_answer.length === 0) {
                 return res.status(400).json(errorResponse('Please add lifestyles', 'Step 12 answers are required.'));
@@ -431,11 +431,11 @@ exports.user_registration_steps = async (req, res) => {
                 }))
             ];
 
-            find_user_id.current_step = current_step; // Make sure this is the same object you're saving
-            completed_steps[11] = 12; // Mark step 11 as completed
-            find_user_id.completed_steps = completed_steps; //
+            find_user_id.current_step = current_step;
+            completed_steps[11] = 12;
+            find_user_id.completed_steps = completed_steps;
 
-            // Save the updated user document
+
             await find_user_id.save();
 
             return res.status(200).json({
@@ -479,9 +479,9 @@ exports.user_registration_steps = async (req, res) => {
                 answerIds: answer.answerIds
             }));
 
-            find_user_id.current_step = current_step; // Make sure this is the same object you're saving
-            completed_steps[12] = 13; // Mark step 11 as completed
-            find_user_id.completed_steps = completed_steps; //
+            find_user_id.current_step = current_step;
+            completed_steps[12] = 13;
+            find_user_id.completed_steps = completed_steps;
 
 
             await find_user_id.save();
@@ -1152,31 +1152,31 @@ exports.import_contacts = async (req, res) => {
         if (!contact_list) {
             return res.status(400).json(errorResponse("Please add contacts", "Please add contact list in the body"));
         }
-        
+
         if (contact_list.length < 1) {
             return res.status(400).json(errorResponse("You have not added any contact"));
         }
-        
-      
+
+
         contact_list = [...new Set(contact_list)];
-        
-      
+
+
         let addContacts = await userModel.findByIdAndUpdate(
             userId,
             {
                 $addToSet: {
-                    contacts: { $each: contact_list } 
+                    contacts: { $each: contact_list }
                 }
             },
-            { new: true } 
+            { new: true }
         );
-        
+
         if (!addContacts) {
-            return res.status(404).json(errorResponse(messages.generalError.userNotFound,"User not found"));
+            return res.status(404).json(errorResponse(messages.generalError.userNotFound, "User not found"));
         }
-        
+
         return res.status(200).json(successResponse("Contacts added successfully", addContacts.contacts));
-        
+
 
     } catch (error) {
         console.log("ERROR::", error);
@@ -1215,7 +1215,7 @@ exports.block_contacts = async (req, res) => {
         );
 
         if (!updatedUser) {
-            return res.status(404).json(errorResponse(messages.generalError.userNotFound,"User not found"));
+            return res.status(404).json(errorResponse(messages.generalError.userNotFound, "User not found"));
         }
 
         return res.status(200).json(successResponse("Contacts added successfully", addContacts.blocked_contacts));
@@ -1234,7 +1234,7 @@ exports.remove_blocked_contacts = async (req, res) => {
         const userId = req.result.userId;
         let contact_list = req.body.contact_list;
 
-      
+
         if (!contact_list || !Array.isArray(contact_list)) {
             return res.status(400).json(errorResponse("Add contacts whom you want to remove from block list", "add the contacts to remove from block list and contact list should be an array"));
         }
@@ -1243,7 +1243,7 @@ exports.remove_blocked_contacts = async (req, res) => {
             return res.status(400).json(errorResponse("You have not added any contacts to remove"));
         }
 
-       
+
         let updatedUser = await userModel.findByIdAndUpdate(
             userId,
             {
@@ -1251,12 +1251,12 @@ exports.remove_blocked_contacts = async (req, res) => {
                     blocked_contacts: { $in: contact_list }
                 }
             },
-            { new: true } 
+            { new: true }
         );
 
         if (!updatedUser) {
-           
-            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong,"User not found"));
+
+            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "User not found"));
         }
 
         return res.status(200).json(successResponse("Contacts removed successfully", updatedUser.blocked_contacts));
@@ -1271,3 +1271,46 @@ exports.remove_blocked_contacts = async (req, res) => {
 
 
 
+exports.get_contacts = async (req, res) => {
+    try {
+        let userId = req.result.userId;
+
+        let isUserExist = await userModel.findById(userId)
+        if (!isUserExist) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User not found with the given user id ")) }
+
+        let contact_list = isUserExist.contacts
+
+        if (!contact_list) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Contact field not added for this user")) }
+        console.log("contact list ----",contact_list)
+        if (contact_list.length < 1) { return res.status(400).json(errorResponse("Not found any added contact")) }
+
+        return res.status(200).json(successResponse("Data fetched successfully", contact_list))
+    } catch (error) {
+        console.log("ERROR::", error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    }
+}
+
+
+
+
+exports.get_blocked_contacts = async (req, res) => {
+    try {
+      let userId = req.result.userId
+
+      let isUserExist = await userModel.findById(userId)
+      if(!isUserExist){return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"User not found"))}
+
+      let blocked_contacts = isUserExist.blocked_contacts
+
+      if (!blocked_contacts) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "blocked contact field not added for this user")) }
+      console.log("blocked contact ---",blocked_contacts)
+      if (blocked_contacts.length < 1) { return res.status(400).json(errorResponse("Not found any added contact")) }
+
+      return res.status(200).json(successResponse("Data fetched successfully", blocked_contacts))
+
+    } catch (error) {
+        console.log("ERROR::", error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    }
+}

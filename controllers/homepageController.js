@@ -297,12 +297,16 @@ exports.getTopPicks = async (req, res) => {
         const maxDistance = user.distance_preference || 50;
         const likedUsers = user.likedUsers
         const dislikedUsers = user.dislikedUsers
-        const blocked_contacts = user.blocked_contacts
+        let blocked_contacts = user.blocked_contacts
+    
+        blocked_contacts = blocked_contacts.map(contact => parseFloat(contact));
+    
 
+   
         const nearbyUsers = await userModel.find({
             _id: { 
                 $ne: userId, 
-                $nin: [...likedUsers, ...dislikedUsers],
+                $nin: [...likedUsers, ...dislikedUsers],    
             },
             gender: preferredGender === 'everyone' ? { $exists: true } : preferredGender,
             mobile_number: { $nin: blocked_contacts },
@@ -313,7 +317,7 @@ exports.getTopPicks = async (req, res) => {
                 }
             }
         });
-    
+  
 
        
         const matchedUsers = nearbyUsers.map(nearbyUser => {
