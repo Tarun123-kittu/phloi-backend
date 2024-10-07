@@ -1149,13 +1149,9 @@ exports.import_contacts = async (req, res) => {
         let userId = req.result.userId
         let contact_list = req.body.contact_list;
 
-        if (!contact_list) {
-            return res.status(400).json(errorResponse("Please add contacts", "Please add contact list in the body"));
-        }
+        if (!contact_list) {  return res.status(400).json(errorResponse("Please add contacts", "Please add contact list in the body")); }
 
-        if (contact_list.length < 1) {
-            return res.status(400).json(errorResponse("You have not added any contact"));
-        }
+        if (contact_list.length < 1) {  return res.status(400).json(errorResponse("You have not added any contact"))}
 
 
         contact_list = [...new Set(contact_list)];
@@ -1176,7 +1172,6 @@ exports.import_contacts = async (req, res) => {
         }
 
         return res.status(200).json(successResponse("Contacts added successfully", addContacts.contacts));
-
 
     } catch (error) {
         console.log("ERROR::", error);
