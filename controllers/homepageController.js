@@ -1,12 +1,13 @@
 let userModel = require("../models/userModel")
 let matchModel = require("../models/matchesModel")
-const QuestionModel = require('../models/questionsModel'); 
+const QuestionModel = require('../models/questionsModel');
 const AnswerModel = require('../models/optionsModel');
 let homepageMatchAlgorithm = require("../utils/homepageMatchMaking")
 let calculateMatchScore = require("../utils/calculateTopPicks")
 let { errorResponse, successResponse } = require("../utils/responseHandler")
 let messages = require("../utils/messages")
-let { io } = require('../index')
+let { io } = require('../index');
+const likeDislikeLimitModel = require("../models/likeDislikeLimit");
 
 
 
@@ -72,6 +73,33 @@ exports.like_profile = async (req, res) => {
             return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
         }
 
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const tomorrow = new Date(today);
+        tomorrow.setDate(today.getDate() + 1);
+
+
+        if (currentUser.subscription_type == 'free') {
+
+            let todayLimit = await likeDislikeLimitModel.findOne({
+                userId: currentUser._id,
+                createdAt: {
+                    $gte: today,
+                    $lt: tomorrow
+                }
+            });
+
+            if (!todayLimit) {
+                todayLimit = await likeDislikeLimitModel.create({
+                    userId: currentUser._id,
+                    like_count: 0,
+                    dislike_count: 0
+                });
+            } else {
+                if (todayLimit.like_count >= 15) { return res.status(400).json(errorResponse("You have reached your daily limit for liking profiles on your free account.")) }
+            }
+        }
 
         const likedUser = await userModel.findById(likedUserId);
         if (!likedUser) {
@@ -84,9 +112,36 @@ exports.like_profile = async (req, res) => {
         }
 
 
+
         currentUser.likedUsers.push(likedUserId);
+
         await currentUser.save();
 
+
+        let todayLimit = await likeDislikeLimitModel.findOne({
+            userId: currentUser._id,
+            createdAt: {
+                $gte: today,
+                $lt: tomorrow
+            }
+        });
+        if (!todayLimit) {
+            todayLimit = await likeDislikeLimitModel.create({
+                userId: currentUser._id,
+                like_count: 0,
+                dislike_count: 0
+            });
+        }
+        await likeDislikeLimitModel.findOneAndUpdate({
+            userId: currentUser._id,
+            createdAt: {
+                $gte: today,
+                $lt: tomorrow
+            },
+            $set: {
+                like_count: todayLimit.like_count + 1
+            }
+        })
 
         if (likedUser.likedUsers.includes(currentUserId)) {
 
@@ -131,6 +186,33 @@ exports.dislike_profile = async (req, res) => {
             return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "Current user not found"));
         }
 
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const tomorrow = new Date(today);
+        tomorrow.setDate(today.getDate() + 1);
+
+        if (currentUser.subscription_type == 'free') {
+
+            let todayLimit = await likeDislikeLimitModel.findOne({
+                userId: currentUser._id,
+                createdAt: {
+                    $gte: today,
+                    $lt: tomorrow
+                }
+            });
+
+            if (!todayLimit) {
+                todayLimit = await likeDislikeLimitModel.create({
+                    userId: currentUser._id,
+                    like_count: 0,
+                    dislike_count: 0
+                });
+            } else {
+                if (todayLimit.dislike_count >= 15) { return res.status(400).json(errorResponse("You have reached your daily limit for disliking profiles on your free account.")) }
+            }
+        }
+
         const dislikedUser = await userModel.findById(dislikedUserId);
         if (!dislikedUser) {
             return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "User to be disliked not found."));
@@ -143,6 +225,33 @@ exports.dislike_profile = async (req, res) => {
 
         currentUser.dislikedUsers.push(dislikedUserId);
         await currentUser.save();
+
+
+        let todayLimit = await likeDislikeLimitModel.findOne({
+            userId: currentUser._id,
+            createdAt: {
+                $gte: today,
+                $lt: tomorrow
+            }
+        });
+        if (!todayLimit) {
+            todayLimit = await likeDislikeLimitModel.create({
+                userId: currentUser._id,
+                like_count: 0,
+                dislike_count: 0
+            });
+        }
+        await likeDislikeLimitModel.findOneAndUpdate({
+            userId: currentUser._id,
+            createdAt: {
+                $gte: today,
+                $lt: tomorrow
+            },
+            $set: {
+                dislike_count: todayLimit.dislike_count + 1
+            }
+        })
+
 
         return res.status(200).json(successResponse("User disliked successfully."));
 
@@ -209,28 +318,13 @@ exports.get_profile_details = async (req, res) => {
             return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
         }
 
-       
+
         const groupedAnswers = {};
 
-        
+
         for (const step of user.user_characterstics.step_11 || []) {
             const question = await QuestionModel.findById(step.questionId).lean();
             const answer = await AnswerModel.findById(step.answerId).lean();
-
-            if (question && answer) {
-                if (!groupedAnswers[question.identify_text]) {
-                    groupedAnswers[question.identify_text] = {
-                        question: question.identify_text,
-                        answers: []
-                    };
-                }
-                groupedAnswers[question.identify_text].answers.push(answer.text); 
-            }
-        }
-
-        for (const step of user.user_characterstics.step_12 || []) {
-            const question = await QuestionModel.findById(step.questionId).lean();
-            const answer = await AnswerModel.findById(step.answerId).lean();n
 
             if (question && answer) {
                 if (!groupedAnswers[question.identify_text]) {
@@ -243,7 +337,22 @@ exports.get_profile_details = async (req, res) => {
             }
         }
 
-     
+        for (const step of user.user_characterstics.step_12 || []) {
+            const question = await QuestionModel.findById(step.questionId).lean();
+            const answer = await AnswerModel.findById(step.answerId).lean(); n
+
+            if (question && answer) {
+                if (!groupedAnswers[question.identify_text]) {
+                    groupedAnswers[question.identify_text] = {
+                        question: question.identify_text,
+                        answers: []
+                    };
+                }
+                groupedAnswers[question.identify_text].answers.push(answer.text);
+            }
+        }
+
+
         for (const step of user.user_characterstics.step_13 || []) {
             const question = await QuestionModel.findById(step.questionId).lean();
             const answers = await AnswerModel.find({ _id: { $in: step.answerIds } }).lean();
@@ -261,14 +370,14 @@ exports.get_profile_details = async (req, res) => {
             }
         }
 
-        
+
         const groupedAnswersArray = Object.values(groupedAnswers);
 
         let userDetails = {
             username: user.username,
             age: user.dob,
             images: user.images,
-            user_characterstics: groupedAnswersArray 
+            user_characterstics: groupedAnswersArray
         };
 
         return res.status(200).json(successResponse("Details fetched successfully", userDetails));
@@ -293,35 +402,35 @@ exports.getTopPicks = async (req, res) => {
             return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "User not found with this user id."));
         }
 
-        
+
         const preferredGender = user.intrested_to_see;
         const maxDistance = user.distance_preference || 50;
         const likedUsers = user.likedUsers
         const dislikedUsers = user.dislikedUsers
         let blocked_contacts = user.blocked_contacts
-    
-      
-   
+
+
+
         const nearbyUsers = await userModel.find({
-            _id: { 
-                $ne: userId, 
-                $nin: [...likedUsers, ...dislikedUsers],    
+            _id: {
+                $ne: userId,
+                $nin: [...likedUsers, ...dislikedUsers],
             },
             gender: preferredGender === 'everyone' ? { $exists: true } : preferredGender,
-            mobile_number: {$nin: blocked_contacts.map(contact => contact.number) },
+            mobile_number: { $nin: blocked_contacts.map(contact => contact.number) },
             location: {
                 $near: {
                     $geometry: { type: 'Point', coordinates: user.location.coordinates },
-                    $maxDistance: maxDistance * 1000, 
+                    $maxDistance: maxDistance * 1000,
                 }
             }
         });
-   
 
-       
+
+
         const matchedUsers = nearbyUsers.map(nearbyUser => {
 
-            const score =  calculateMatchScore(user, nearbyUser);
+            const score = calculateMatchScore(user, nearbyUser);
             const userImage = nearbyUser.images.find(img => img.position === 1) || {};
 
             return {
@@ -331,7 +440,7 @@ exports.getTopPicks = async (req, res) => {
                 image: userImage.url || null,
                 matchScorePercentage: score
             };
-        }).filter(user => user.matchScorePercentage >= 60); 
+        }).filter(user => user.matchScorePercentage >= 60);
 
 
         matchedUsers.sort((a, b) => b.matchScorePercentage - a.matchScorePercentage);

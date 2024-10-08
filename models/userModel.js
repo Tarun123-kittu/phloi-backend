@@ -84,8 +84,8 @@ const userSchema = new mongoose.Schema({
   contacts: {
     type: [
       {
-        name: { type: String, required: true },
-        number: { type: Number, required: true }
+        name: { type: String },
+        number: { type: Number }
       }
     ],
     default: []
@@ -93,13 +93,13 @@ const userSchema = new mongoose.Schema({
   blocked_contacts: {
     type: [
       {
-        name: { type: String, required: true },
-        number: { type: Number, required: true }
+        name: { type: String },
+        number: { type: Number }
       }
     ],
     default: []
   },
-
+ subscription_type:{type:String,enum:['free','premium'],default:'free'}
 
 }, { timestamps: true });
 
