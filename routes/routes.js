@@ -36,6 +36,8 @@ router.post("/block_contacts",authenticateToken,userController.block_contacts)
 router.put("/remove_blocked_contacts",authenticateToken,userController.remove_blocked_contacts)
 router.get("/get_contacts",authenticateToken,userController.get_contacts)
 router.get("/get_blocked_contacts",authenticateToken,userController.get_blocked_contacts)
+router.put("/update_phone_number",authenticateToken,userController.update_phone_number)
+router.put("/verify_updated_number",authenticateToken,userController.verify_updated_number)
 
 
 

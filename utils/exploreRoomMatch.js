@@ -17,7 +17,7 @@ const exploreRoomMatchAlgorithm = async (currentUser, page = 1, limit = 10) => {
    
         let matchQuery = {
             _id: { $nin: [_id, ...likedUserIds, ...dislikedUserIds] },
-            mobile_number: { $nin: blocked_contacts },
+            mobile_number: {$nin: blocked_contacts.map(contact => contact.number)  },
             'location.coordinates': {
                 $geoWithin: {
                     $centerSphere: [currentCoordinates, distanceInKm / 6378.1] 

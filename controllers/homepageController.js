@@ -117,6 +117,7 @@ exports.like_profile = async (req, res) => {
 
 
 
+
 exports.dislike_profile = async (req, res) => {
     const currentUserId = req.result.userId;
     const dislikedUserId = req.query.dislikedUserId;
@@ -229,7 +230,7 @@ exports.get_profile_details = async (req, res) => {
 
         for (const step of user.user_characterstics.step_12 || []) {
             const question = await QuestionModel.findById(step.questionId).lean();
-            const answer = await AnswerModel.findById(step.answerId).lean();
+            const answer = await AnswerModel.findById(step.answerId).lean();n
 
             if (question && answer) {
                 if (!groupedAnswers[question.identify_text]) {
@@ -299,9 +300,7 @@ exports.getTopPicks = async (req, res) => {
         const dislikedUsers = user.dislikedUsers
         let blocked_contacts = user.blocked_contacts
     
-        blocked_contacts = blocked_contacts.map(contact => parseFloat(contact));
-    
-
+      
    
         const nearbyUsers = await userModel.find({
             _id: { 
@@ -309,7 +308,7 @@ exports.getTopPicks = async (req, res) => {
                 $nin: [...likedUsers, ...dislikedUsers],    
             },
             gender: preferredGender === 'everyone' ? { $exists: true } : preferredGender,
-            mobile_number: { $nin: blocked_contacts },
+            mobile_number: {$nin: blocked_contacts.map(contact => contact.number) },
             location: {
                 $near: {
                     $geometry: { type: 'Point', coordinates: user.location.coordinates },
@@ -317,7 +316,7 @@ exports.getTopPicks = async (req, res) => {
                 }
             }
         });
-  
+   
 
        
         const matchedUsers = nearbyUsers.map(nearbyUser => {
