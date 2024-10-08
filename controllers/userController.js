@@ -1481,6 +1481,7 @@ exports.verify_updated_number = async (req, res) => {
         }
 
     } catch (error) {
+        console.log("ERROR::",error)
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
     }
 }
