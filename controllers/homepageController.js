@@ -339,7 +339,7 @@ exports.get_profile_details = async (req, res) => {
 
         for (const step of user.user_characterstics.step_12 || []) {
             const question = await QuestionModel.findById(step.questionId).lean();
-            const answer = await AnswerModel.findById(step.answerId).lean(); n
+            const answer = await AnswerModel.findById(step.answerId).lean(); 
 
             if (question && answer) {
                 if (!groupedAnswers[question.identify_text]) {
@@ -438,7 +438,7 @@ exports.getTopPicks = async (req, res) => {
                 username: nearbyUser.username,
                 age: nearbyUser.dob ? new Date().getFullYear() - new Date(nearbyUser.dob).getFullYear() : null,
                 image: userImage.url || null,
-                matchScorePercentage: score
+                matchScorePercentage: score.toFixed(2)
             };
         }).filter(user => user.matchScorePercentage >= 60);
 

@@ -1227,18 +1227,17 @@ exports.block_contacts = async (req, res) => {
         }
 
         const existingContacts = user.contacts;
-
-        // Check if each blocked contact exists in the contacts list
+      
+  
         const notFoundContacts = uniqueBlockedContacts.filter(blocked =>
             !existingContacts.some(contact => contact.number === blocked.number && contact.name === blocked.name)
         );
 
-        // If any blocked contact is not found in the contacts list, return an error
         if (notFoundContacts.length > 0) {
             return res.status(404).json(errorResponse("These contacts are not found in the contacts list.", notFoundContacts));
         }
 
-        // Block the contacts by adding them to the blocked_contacts array
+     
         let updatedUser = await userModel.findByIdAndUpdate(
             userId,
             {
@@ -1249,7 +1248,7 @@ exports.block_contacts = async (req, res) => {
             { new: true }
         );
 
-        // Respond with the updated blocked contacts
+     
         return res.status(200).json(successResponse("Contacts blocked successfully", updatedUser.blocked_contacts));
 
     } catch (error) {
@@ -1276,30 +1275,30 @@ exports.remove_blocked_contacts = async (req, res) => {
             return res.status(400).json(errorResponse("You have not added any contacts to remove"));
         }
 
-        // Fetch the user's current blocked contacts
+       
         const user = await userModel.findById(userId);
         if (!user) {
             return res.status(404).json(errorResponse(messages.generalError.userNotFound, "User not found"));
         }
 
         const blockedContacts = user.blocked_contacts;
-
-        // Validate that each contact exists in the blocked_contacts
+   
+       
         const notFoundContacts = contact_list.filter(contact =>
             !blockedContacts.some(blocked => blocked.number === contact.number && blocked.name === contact.name)
         );
-
+        
         if (notFoundContacts.length > 0) {
             return res.status(404).json(errorResponse("These contacts are not found in the blocked list.", notFoundContacts));
         }
 
-        // Prepare the conditions for removal
+
         const removeConditions = contact_list.map(contact => ({
             name: contact.name,
             number: contact.number
         }));
 
-        // Remove the contacts from the blocked list
+ 
         let updatedUser = await userModel.findByIdAndUpdate(
             userId,
             {
@@ -1312,7 +1311,7 @@ exports.remove_blocked_contacts = async (req, res) => {
             { new: true }
         );
 
-        // Respond with the updated blocked contacts
+       
         return res.status(200).json(successResponse("Contacts removed successfully", updatedUser.blocked_contacts));
 
     } catch (error) {
