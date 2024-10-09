@@ -17,9 +17,7 @@ exports.getChats = async (req, res) => {
         const skip = (page - 1) * limit;
         const searchQuery = req.query.search || ""; 
 
-        if (!userId) {
-            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User ID is required"));
-        }
+        if (!userId) {  return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User ID is required"));  }
 
     
         const chats = await chatModel.find({ participants: userId })

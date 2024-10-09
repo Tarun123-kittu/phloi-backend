@@ -931,9 +931,6 @@ exports.update_user_profile = async (req, res) => {
 
 
 
-
-
-
 exports.update_user_setting = async (req, res) => {
     try {
         const { user_id, distance_in, read_receipts } = req.body;
@@ -1152,20 +1149,20 @@ exports.import_contacts = async (req, res) => {
             return res.status(400).json(errorResponse("You have not added any contact"));
         }
 
-     
+
         const formattedContacts = contact_list.filter(contact => contact.name && contact.number);
 
         if (formattedContacts.length === 0) {
             return res.status(400).json(errorResponse("Each contact must include both name and number"));
         }
 
-       
+
         const uniqueContacts = formattedContacts.filter(
-            (contact, index, self) => 
+            (contact, index, self) =>
                 self.findIndex(c => c.number === contact.number) === index
         );
 
-     
+
         let addContacts = await userModel.findByIdAndUpdate(
             userId,
             {
@@ -1216,7 +1213,7 @@ exports.block_contacts = async (req, res) => {
 
         // Ensure blocked contacts are unique based on the number
         const uniqueBlockedContacts = formattedBlockedContacts.filter(
-            (contact, index, self) => 
+            (contact, index, self) =>
                 self.findIndex(c => c.number === contact.number) === index
         );
 
@@ -1226,18 +1223,7 @@ exports.block_contacts = async (req, res) => {
             return res.status(404).json(errorResponse(messages.generalError.userNotFound, "User not found"));
         }
 
-        const existingContacts = user.contacts;
-      
-  
-        const notFoundContacts = uniqueBlockedContacts.filter(blocked =>
-            !existingContacts.some(contact => contact.number === blocked.number && contact.name === blocked.name)
-        );
 
-        if (notFoundContacts.length > 0) {
-            return res.status(404).json(errorResponse("These contacts are not found in the contacts list.", notFoundContacts));
-        }
-
-     
         let updatedUser = await userModel.findByIdAndUpdate(
             userId,
             {
@@ -1248,7 +1234,7 @@ exports.block_contacts = async (req, res) => {
             { new: true }
         );
 
-     
+
         return res.status(200).json(successResponse("Contacts blocked successfully", updatedUser.blocked_contacts));
 
     } catch (error) {
@@ -1275,19 +1261,19 @@ exports.remove_blocked_contacts = async (req, res) => {
             return res.status(400).json(errorResponse("You have not added any contacts to remove"));
         }
 
-       
+
         const user = await userModel.findById(userId);
         if (!user) {
             return res.status(404).json(errorResponse(messages.generalError.userNotFound, "User not found"));
         }
 
         const blockedContacts = user.blocked_contacts;
-   
-       
+
+
         const notFoundContacts = contact_list.filter(contact =>
             !blockedContacts.some(blocked => blocked.number === contact.number && blocked.name === contact.name)
         );
-        
+
         if (notFoundContacts.length > 0) {
             return res.status(404).json(errorResponse("These contacts are not found in the blocked list.", notFoundContacts));
         }
@@ -1298,7 +1284,7 @@ exports.remove_blocked_contacts = async (req, res) => {
             number: contact.number
         }));
 
- 
+
         let updatedUser = await userModel.findByIdAndUpdate(
             userId,
             {
@@ -1311,12 +1297,12 @@ exports.remove_blocked_contacts = async (req, res) => {
             { new: true }
         );
 
-       
+
         return res.status(200).json(successResponse("Contacts removed successfully", updatedUser.blocked_contacts));
 
     } catch (error) {
-        console.log("ERROR::", error);
-        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+        console.log("ERROR::", error)
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
     }
 };
 
@@ -1327,42 +1313,40 @@ exports.get_contacts = async (req, res) => {
     try {
         let userId = req.result.userId;
 
-      
+
         let isUserExist = await userModel.findById(userId);
         if (!isUserExist) {
             return res.status(404).json(errorResponse(messages.generalError.userNotFound, "User not found with the given user ID"));
         }
 
-       
+
         let contact_list = isUserExist.contacts;
         let blocked_contacts = isUserExist.blocked_contacts;
 
-    
+
         if (!contact_list || contact_list.length < 1) {
             return res.status(400).json(errorResponse("No contacts found for this user."));
         }
 
-       
+
         if (!blocked_contacts || blocked_contacts.length < 1) {
-            blocked_contacts = []; 
+            blocked_contacts = [];
         }
-        
-   
-       
+
+
         const unblocked_contacts = contact_list.filter(contact =>
             !blocked_contacts.some(blocked => blocked.number === contact.number)
         );
 
-     
+
         if (unblocked_contacts.length < 1) {
             return res.status(404).json(errorResponse("All contacts are blocked."));
         }
 
-  
         return res.status(200).json(successResponse("Data fetched successfully", unblocked_contacts));
     } catch (error) {
-        console.log("ERROR::", error);
-        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+        console.log('ERROR::', error)
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
     }
 };
 
@@ -1373,23 +1357,23 @@ exports.get_blocked_contacts = async (req, res) => {
     try {
         let userId = req.result.userId;
 
-     
+
         let isUserExist = await userModel.findById(userId);
         if (!isUserExist) {
             return res.status(404).json(errorResponse(messages.generalError.userNotFound, "User not found"));
         }
 
-    
+
         let blocked_contacts = isUserExist.blocked_contacts;
 
-        
+
         if (!blocked_contacts || blocked_contacts.length < 1) {
             return res.status(400).json(errorResponse("No blocked contacts found for this user"));
         }
 
         console.log("Blocked contacts ---", blocked_contacts);
 
-     
+
         return res.status(200).json(successResponse("Data fetched successfully", blocked_contacts));
     } catch (error) {
         console.log("ERROR::", error);
@@ -1431,7 +1415,6 @@ exports.update_phone_number = async (req, res) => {
             // return res.status(400).json({ message: 'Error sending verification code via SMS: ' + smsResponse.error, type: 'error' });
         } else {
             console.log("Response from twilio:::: success--" + smsResponse.success)
-
         }
         return res.status(200).json(successResponse("verifiction code has been sent to the number " + new_number))
 
@@ -1467,20 +1450,20 @@ exports.verify_updated_number = async (req, res) => {
         if (timeDifference > 2) { return res.status(400).json(errorResponse("OTP has been expired")) }
 
         if (otp == isUserExist.otp) {
-         await userModel.findByIdAndUpdate(userId,{
-            $set:{
-                mobile_number:new_number,
-                otp:null
-            }
-         })
+            await userModel.findByIdAndUpdate(userId, {
+                $set: {
+                    mobile_number: new_number,
+                    otp: null
+                }
+            })
 
-         return res.status(200).json(successResponse("OTP verified successfully. New number updated!"))
+            return res.status(200).json(successResponse("OTP verified successfully. New number updated!"))
         } else {
             return res.status(400).json(errorResponse("Entered OTP is incorrect"))
         }
 
     } catch (error) {
-        console.log("ERROR::",error)
+        console.log("ERROR::", error)
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
     }
 }
