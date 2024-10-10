@@ -650,11 +650,6 @@ exports.get_user_details = async (req, res) => {
 
 
 
-
-
-
-
-
 exports.update_image_position = async (req, res) => {
 
     const userId = req.result.userId
@@ -708,6 +703,9 @@ exports.update_image_position = async (req, res) => {
 
 
 
+
+
+
 const stepFieldMappings = {
     2: ['email'],
     3: ['username'],
@@ -722,6 +720,14 @@ const stepFieldMappings = {
     12: ['step_12_answer'],
     13: ['step_13_answers']
 };
+
+
+
+
+
+
+
+
 
 exports.update_user_profile = async (req, res) => {
     let userId = req.result.userId;
@@ -931,49 +937,36 @@ exports.update_user_profile = async (req, res) => {
 
 
 
-exports.update_user_setting = async (req, res) => {
+
+
+
+exports.update_read_receipts = async (req, res) => {
     try {
-        const { user_id, distance_in, read_receipts } = req.body;
+        let userId = req.result.userId
 
-        if (!user_id) {
-            return res.status(400).json({ error: "User ID is required" });
+        let isUserExist = await userModel.findById(userId)
+
+        if (!isUserExist) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User not found with this user Id"))
         }
 
-        if (!distance_in && read_receipts === undefined) {
-            return res.status(400).json({ error: "At least one setting field (distance_in or read_receipts) is required" });
-        }
-
-        const setting_obj = {};
-        if (distance_in) {
-            if (!['km', 'mi'].includes(distance_in)) {
-                return res.status(400).json({ error: "Invalid value for distance_in. Allowed values are 'km' or 'mi'" });
+        await userModel.findByIdAndUpdate(userId, {
+            $set: {
+                'setting.read_receipts': isUserExist.setting.read_receipts == true ? false : true
             }
-            setting_obj["setting.distance_in"] = distance_in;
-        }
-        if (read_receipts !== undefined) {
-            setting_obj["setting.read_receipts"] = read_receipts;
-        }
+        })
 
+        let upatedUser = await userModel.findById(userId)
 
-        const user_setting = await userModel.findByIdAndUpdate(
-            user_id,
-            { $set: setting_obj },
-            { new: true, runValidators: true }
-        );
-
-        if (!user_setting) {
-            return res.status(404).json({ error: "User not found or could not update settings" });
-        }
-
-        return res.status(200).json({
-            message: "Settings updated successfully"
-        });
-
+        return res.status(200).json(successResponse(upatedUser.setting.read_receipts == true ? "Read receipts turned-on" : "Read receipts turned-off", "Read receipts changed to " + upatedUser.setting.read_receipts))
     } catch (error) {
         console.error("Error updating user settings:", error);
-        return res.status(500).json({ error: "An internal server error occurred" });
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
+
+
+
 
 
 
@@ -1023,6 +1016,8 @@ exports.add_profile_images = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.userNotFound, error.message))
     }
 }
+
+
 
 
 
@@ -1090,6 +1085,8 @@ exports.delete_profile_image = async (req, res) => {
 
 
 
+
+
 exports.get_options = async (req, res) => {
     try {
         const step = req.query.step;
@@ -1124,6 +1121,7 @@ exports.get_options = async (req, res) => {
 
         return res.status(200).json({
             heading: heading.text,
+            sub_headings:heading.sub_headings,
             questions: questionsWithOptions
         });
 
@@ -1132,6 +1130,9 @@ exports.get_options = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
+
+
+
 
 
 
@@ -1188,36 +1189,39 @@ exports.import_contacts = async (req, res) => {
 
 
 
+
+
+
 exports.block_contacts = async (req, res) => {
     try {
         let userId = req.result.userId;
         let blocked_contacts = req.body.blocked_contacts;
 
-        // Validate that blocked_contacts is provided
+
         if (!blocked_contacts) {
             return res.status(400).json(errorResponse("Please add contacts", "Please add contact list in the body"));
         }
 
-        // Check if the array is empty
+
         if (blocked_contacts.length < 1) {
             return res.status(400).json(errorResponse("You have not added any contact"));
         }
 
-        // Filter contacts to ensure they have both name and number
+
         const formattedBlockedContacts = blocked_contacts.filter(contact => contact.name && contact.number);
 
-        // Validate that at least one valid contact is present
+
         if (formattedBlockedContacts.length === 0) {
             return res.status(400).json(errorResponse("Each blocked contact must include both name and number"));
         }
 
-        // Ensure blocked contacts are unique based on the number
+
         const uniqueBlockedContacts = formattedBlockedContacts.filter(
             (contact, index, self) =>
                 self.findIndex(c => c.number === contact.number) === index
         );
 
-        // Fetch the user's current contacts to validate
+
         const user = await userModel.findById(userId);
         if (!user) {
             return res.status(404).json(errorResponse(messages.generalError.userNotFound, "User not found"));
@@ -1242,6 +1246,9 @@ exports.block_contacts = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
+
+
+
 
 
 
@@ -1309,6 +1316,10 @@ exports.remove_blocked_contacts = async (req, res) => {
 
 
 
+
+
+
+
 exports.get_contacts = async (req, res) => {
     try {
         let userId = req.result.userId;
@@ -1353,6 +1364,9 @@ exports.get_contacts = async (req, res) => {
 
 
 
+
+
+
 exports.get_blocked_contacts = async (req, res) => {
     try {
         let userId = req.result.userId;
@@ -1380,6 +1394,8 @@ exports.get_blocked_contacts = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
+
+
 
 
 
