@@ -15,11 +15,11 @@ exports.getChats = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
-        const searchQuery = req.query.search || ""; 
+        const searchQuery = req.query.search || "";
 
-        if (!userId) {  return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User ID is required"));  }
+        if (!userId) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User ID is required")); }
 
-    
+
         const chats = await chatModel.find({ participants: userId })
             .populate({
                 path: 'lastMessage',
@@ -29,7 +29,7 @@ exports.getChats = async (req, res) => {
                 path: 'participants',
                 select: 'username images',
             })
-            .sort({ 'lastMessage.createdAt': -1 }) 
+            .sort({ 'lastMessage.createdAt': -1 })
             .skip(skip)
             .limit(limit);
 
@@ -37,18 +37,18 @@ exports.getChats = async (req, res) => {
             return res.status(200).json(successResponse("No chats found", []));
         }
 
-    
+
         const filteredChats = chats.filter(chat => {
             const otherParticipant = chat.participants.find(participant => participant._id.toString() !== userId);
             return otherParticipant && otherParticipant.username.toLowerCase().includes(searchQuery.toLowerCase());
         });
 
-        
+
         if (!filteredChats || filteredChats.length === 0) {
             return res.status(200).json(successResponse("No chats found matching the search query", []));
         }
 
-      
+
         const chatDetails = await Promise.all(filteredChats.map(async chat => {
             const otherParticipant = chat.participants.find(participant => participant._id.toString() !== userId);
             const imageObj = otherParticipant?.images?.find(img => img.position === 1);
@@ -57,23 +57,23 @@ exports.getChats = async (req, res) => {
             const unreadCount = await messageModel.countDocuments({
                 chat: chat._id,
                 receiver: userId,
-                read: false
+                read_chat: false
             });
 
             return {
                 chatId: chat._id,
-                otherParticipantName: otherParticipant ? otherParticipant.username : null, 
+                otherParticipantName: otherParticipant ? otherParticipant.username : null,
                 otherParticipantImage: otherParticipantImage,
-                lastMessage: chat.lastMessage ? chat.lastMessage.text : null, 
-                lastMessageSender: chat.lastMessage ? chat.lastMessage.sender.username : null, 
-                unreadCount: unreadCount 
+                lastMessage: chat.lastMessage ? chat.lastMessage.text : null,
+                lastMessageSender: chat.lastMessage ? chat.lastMessage.sender.username : null,
+                unreadCount: unreadCount
             };
         }));
 
-       
+
         const totalChatsCount = await chatModel.countDocuments({
             participants: userId,
-            'participants.username': { $regex: searchQuery, $options: "i" } 
+            'participants.username': { $regex: searchQuery, $options: "i" }
         });
 
         res.status(200).json(successResponse("Chats retrieved successfully", {
@@ -98,16 +98,16 @@ exports.createChat = async (req, res) => {
         const { participants } = req.body;
 
 
-        if (!participants || !Array.isArray(participants)) {  return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Participants must be an array.")) }
+        if (!participants || !Array.isArray(participants)) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Participants must be an array.")) }
 
 
-        if (participants.length !== 2) {  return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Participants of the chat must be exactly 2.")); }
-        
-    
+        if (participants.length !== 2) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Participants of the chat must be exactly 2.")); }
+
+
         const sortedParticipants = participants.sort();
 
         const existingUsers = await userModel.find({ _id: { $in: sortedParticipants } });
-        if (existingUsers.length !== 2) { 
+        if (existingUsers.length !== 2) {
             return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "One or both participants do not exist."));
         }
 
@@ -115,9 +115,9 @@ exports.createChat = async (req, res) => {
             participants: { $all: sortedParticipants },
         });
 
-        if (existingChat) {  return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Chat already exists between these participants.")); }
+        if (existingChat) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Chat already exists between these participants.")); }
 
-        
+
         const chat = new chatModel({ participants });
         await chat.save();
         io.emit(`create_chat`, chat._id)
@@ -142,11 +142,11 @@ exports.sendMessage = async (req, res) => {
 
 
         const chat = await chatModel.findById(chatId);
-        if (!chat) {  return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "Chat not found with this chat Id."));}
+        if (!chat) { return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "Chat not found with this chat Id.")); }
 
 
         const receiverId = chat.participants.find(participant => !participant.equals(senderId));
-        if (!receiverId) {  return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Invalid sender/receiver configuration.")); }
+        if (!receiverId) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Invalid sender/receiver configuration.")); }
 
         let receiver = await userModel.findById(receiverId)
         let sender = await userModel.findById(senderId)
@@ -241,10 +241,10 @@ exports.markMessagesAsRead = async (req, res) => {
         if (!chatId) {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Chat ID is required."));
         }
-        
+
         let isUserExist = await userModel.findById(userId)
-        if(!isUserExist){return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"User not found with this user Id."))}
-        
+        if (!isUserExist) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User not found with this user Id.")) }
+
 
         const chat = await chatModel.findById(chatId);
         if (!chat) {
@@ -254,23 +254,31 @@ exports.markMessagesAsRead = async (req, res) => {
 
         const result = await messageModel.updateMany(
             { chat: chatId, receiver: userId, read: false },
-            { $set: { read: true } }
+            {
+                $set: {
+                    read: isUserExist.setting.read_receipts,
+                    read_chat: true
+                }
+            }
         );
 
-       
+
         if (result.nModified > 0) {
             chat.unreadCount = 0;
             await chat.save();
         }
 
-        io.emit('messages_read', {
-            chatId: chatId,
-            userId: userId,
-            count: result.nModified
-        });
+        if (isUserExist.setting.read_receipts == true) {
+            io.emit('messages_read', {
+                chatId: chatId,
+                userId: userId,
+                count: result.nModified
+            });
 
-        res.status(200).json(successResponse("Messages marked as read", { count: result.nModified }));
-
+           return  res.status(200).json(successResponse("Messages marked as read", { count: result.nModified }));
+        } else {
+           return  res.status(200).json(successResponse("Read receipts is off.Message not marked seen","Messages not marked as seen due to read receipts is off"));
+        }
 
     } catch (error) {
         console.log("ERROR::", error)
