@@ -44,6 +44,7 @@ router.put("/verify_updated_number",authenticateToken,userController.verify_upda
 
 // update user setting routes
 router.put("/update_read_receipts", authenticateToken,userController.update_read_receipts)
+router.put("/update_distance_unit",authenticateToken,userController.update_distance_unit)
 
 
 

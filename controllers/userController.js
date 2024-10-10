@@ -46,8 +46,8 @@ exports.login = async (req, res) => {
 
         const smsResponse = await sendTwilioSms(`Your phloii verification code is ${otp}`, mobile_number);
         if (!smsResponse.success) {
-            // return res.status(400).json({ message: 'Error sending verification code via SMS: ' + smsResponse.error, type: 'error' });
-            console.log("error while sending sms")
+            return res.status(400).json({ message: 'Error sending verification code via SMS: ' + smsResponse.error, type: 'error' });
+            // console.log("error while sending sms")
         } else {
             console.log("Response from twilio:::: success--" + smsResponse.success)
         }
@@ -967,6 +967,33 @@ exports.update_read_receipts = async (req, res) => {
 
 
 
+exports.update_distance_unit = async (req, res) => {
+    try {
+        let userId = req.result.userId;
+
+        let isUserExist = await userModel.findById(userId)
+
+        if (!isUserExist) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User not found with this userId"))
+        }
+
+        await userModel.findByIdAndUpdate(userId,{
+            $set:{
+                'setting.distance_in':isUserExist.setting.distance_in=="km"?"mi":"km"
+            }
+        })
+
+        let updatedUser = await userModel.findById(userId)
+
+        return res.status(200).json(successResponse("Distance updated to "+ updatedUser.setting.distance_in))
+
+    } catch (error) {
+        console.log('ERROR::', error)
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
+    }
+}
+
+
 
 
 
@@ -1121,7 +1148,7 @@ exports.get_options = async (req, res) => {
 
         return res.status(200).json({
             heading: heading.text,
-            sub_headings:heading.sub_headings,
+            sub_headings: heading.sub_headings,
             questions: questionsWithOptions
         });
 

@@ -241,7 +241,10 @@ exports.markMessagesAsRead = async (req, res) => {
         if (!chatId) {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Chat ID is required."));
         }
-
+        
+        let isUserExist = await userModel.findById(userId)
+        if(!isUserExist){return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"User not found with this user Id."))}
+        
 
         const chat = await chatModel.findById(chatId);
         if (!chat) {
@@ -254,7 +257,7 @@ exports.markMessagesAsRead = async (req, res) => {
             { $set: { read: true } }
         );
 
-
+       
         if (result.nModified > 0) {
             chat.unreadCount = 0;
             await chat.save();
