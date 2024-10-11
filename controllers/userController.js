@@ -1139,6 +1139,7 @@ exports.get_options = async (req, res) => {
             return {
                 questionId: question._id,
                 questionText: question.text,
+                iconImage:question.icon_image,
                 options: options
             };
         });
