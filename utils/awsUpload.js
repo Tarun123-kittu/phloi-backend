@@ -14,9 +14,11 @@ const uploadFile = async (file) => {
 
     const current_time = moment().tz('Asia/Kolkata').format('YYYYMMDD_HHmmss');
     const userId = file.userId; 
+    const filename = file.name
 
 
     const key = `profile_images/${userId}/${current_time}`;
+    
 
     try {
         const result = await s3.upload({
@@ -29,7 +31,7 @@ const uploadFile = async (file) => {
         
         return result;
     } catch (error) {
-        console.error('Error uploading file:', error);
+        console.error('Error uploading file:', error);  
         throw new Error(`Error uploading image: ${error.message}`);
     }
 };

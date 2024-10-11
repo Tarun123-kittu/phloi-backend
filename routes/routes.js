@@ -45,6 +45,7 @@ router.put("/verify_updated_number",authenticateToken,userController.verify_upda
 // update user setting routes
 router.put("/update_read_receipts", authenticateToken,userController.update_read_receipts)
 router.put("/update_distance_unit",authenticateToken,userController.update_distance_unit)
+router.post("/createS3imageLink",userController.createS3imageLink)
 
 
 
@@ -77,7 +78,7 @@ router.put("/left_room",authenticateToken,exploreRoomsController.left_room)
 router.get("/get_matches_in_explore_rooms",authenticateToken,exploreRoomsController.get_matches_in_explore_rooms)
 
 
-
+ 
 
 
 

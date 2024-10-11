@@ -1135,7 +1135,7 @@ exports.get_options = async (req, res) => {
 
 
         const optionsPromises = questions.map(async (question) => {
-            const options = await userCharactersticsOptionsModel.find({ question_id: question._id }).select('_id question_id emoji text');
+            const options = await userCharactersticsOptionsModel.find({ question_id: question._id }).select('_id question_id emoji text images');
             return {
                 questionId: question._id,
                 questionText: question.text,
@@ -1508,5 +1508,24 @@ exports.verify_updated_number = async (req, res) => {
     } catch (error) {
         console.log("ERROR::", error)
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
+    }
+}
+
+
+
+exports.createS3imageLink = async(req,res)=>{
+    try{
+        let image = req.files.images
+       
+        const uploadResult = await uploadFile({
+            name: image.name,
+            data: image.data,
+            mimetype: image.mimetype,
+            userId: 1
+        });
+        res.send(uploadResult)
+    }catch(error){
+        console.log("ERROR::",error)
+        return res.status(500).json(errorResponse(error.message))
     }
 }

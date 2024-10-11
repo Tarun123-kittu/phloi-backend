@@ -1,10 +1,10 @@
-// seedOptions.js
+
 const mongoose = require('mongoose');
 const config = require('./config/config');  
-const Option = require('./models/optionsModel'); // Adjust the path if necessary
+const Option = require('./models/optionsModel');
 
 const options = [
-    // sexual orientation
+   
     {
         question_id: '66fe594f05a11c463087a34a',
     
@@ -20,22 +20,22 @@ const options = [
             { text: 'Bicurious' }
         ]
     },
-    // relationship type preference
+  
     {
         question_id: '66fe594f05a11c463087a34c',
    
         options: [
-            { text: 'Long-term partner', emoji: '❤' },
-            { text: 'Long-term open to short', emoji: '😍' },
-            { text: 'Short-term open to long', emoji: '🥂' },
-            { text: 'Short-term fun', emoji: '🎉' },
-            { text: 'New friends', emoji: '👋' },
-            { text: 'Still figuring it out', emoji: '🤔' },
-            { text: 'Single with kids', emoji: '🙋‍♀️' },
-            { text: 'Single no kids', emoji: '👩‍🦰' }
+            { text: 'Long-term partner', emoji: '❤' ,images:'https://phloii.s3.amazonaws.com/relationshiptTypes/heartWithArrow.png/20241011_153904' },
+            { text: 'Long-term, open to short', emoji: '😍',images:'https://phloii.s3.eu-north-1.amazonaws.com/relationshiptTypes/heartEyes.png/20241011_153951' },
+            { text: 'Short-term, open to long', emoji: '🥂',images:'https://phloii.s3.eu-north-1.amazonaws.com/relationshiptTypes/cheersGlass.png/20241011_154049' },
+            { text: 'Short-term fun', emoji: '🎉',images:'https://phloii.s3.eu-north-1.amazonaws.com/relationshiptTypes/partyPopper.png/20241011_154145' },
+            { text: 'New-friends', emoji: '👋',images:'https://phloii.s3.eu-north-1.amazonaws.com/relationshiptTypes/waveingHand.png/20241011_154425' },
+            { text: 'Still figuring it out', emoji: '🤔',images:'https://phloii.s3.eu-north-1.amazonaws.com/relationshiptTypes/emojiThinkingFace.png/20241011_154548' },
+            { text: 'Single with kids', emoji: '🙋‍♀️' ,images:'https://phloii.s3.eu-north-1.amazonaws.com/relationshiptTypes/singleWithKids.png/20241011_154709' },
+            { text: 'Single no kids', emoji: '👩‍🦰' ,images:'https://phloii.s3.eu-north-1.amazonaws.com/relationshiptTypes/singleNoKids.png/20241011_154745' }
         ]
     },
-    // communication
+  
     {
         question_id: '66fe595005a11c463087a34e',
      
@@ -49,7 +49,7 @@ const options = [
             { text: 'Better in person' }
         ]
     },
-    // love receive
+
     {
         question_id: '66fe595005a11c463087a350',
    
@@ -61,7 +61,7 @@ const options = [
             { text: 'Time together' }
         ]
     },
-    // drink
+
     {
         question_id: '66fe595005a11c463087a354',
 
@@ -74,7 +74,7 @@ const options = [
             { text: 'Most nights' }
         ]
     },
-    // smoke
+  
     {
         question_id: '66fe595005a11c463087a358',
 
@@ -86,7 +86,7 @@ const options = [
             { text: 'Trying to quit' }
         ]
     },
-    // workout  
+ 
     {
         question_id: '66fe595005a11c463087a35c',
    
@@ -97,7 +97,7 @@ const options = [
             { text: 'Never' }
         ]
     },
-    // interest
+
     {
         question_id: '66fe595005a11c463087a360',
        
