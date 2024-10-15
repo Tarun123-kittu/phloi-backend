@@ -759,6 +759,7 @@ exports.update_user_profile = async (req, res) => {
         step_13_answers
     } = req.body;
 
+    if(!current_step){return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"Please provide current step for which you want to update"))}
     current_step = Number(current_step);
 
     try {
