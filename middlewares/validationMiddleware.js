@@ -183,6 +183,8 @@ const user_registration_steps_validator = [
 
 const validateLogin = [
     check('mobile_number', 'Please provide a valid mobile number.').not().isEmpty().isMobilePhone(),
+    check('country_code','Country code missing').not().isEmpty(),
+    check('number','Number(without country code) is missing').not().isEmpty(),
     (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {

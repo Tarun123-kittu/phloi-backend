@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
   username: { type: String, default: null },
   mobile_number: { type: Number, default: null },
+  country_code:{type: Number, default: null},
+  number:{type: Number, default: null},
   email: { type: String, default: null },
   otp: { type: String, default: null },
   otp_sent_at: { type: Date, default: null },

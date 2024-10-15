@@ -16,7 +16,7 @@ const questionsModel = require("../models/questionsModel")
 
 exports.login = async (req, res) => {
     try {
-        const { mobile_number } = req.body;
+        const { mobile_number, country_code, number } = req.body;
 
         const otp = await generateOtp();
 
@@ -29,13 +29,20 @@ exports.login = async (req, res) => {
             await userModel.findOneAndUpdate(
                 { mobile_number },
                 {
-                    $set: { otp, otp_sent_at: currentTime }
+                    $set: {
+                        otp,
+                        otp_sent_at: currentTime,
+                        country_code: country_code,
+                        number:number
+                    }
                 }
             );
         } else {
 
             await userModel.create({
                 mobile_number,
+                country_code,
+                number,
                 otp,
                 otp_sent_at: currentTime,
                 likedUsers: [],
@@ -575,30 +582,30 @@ exports.get_user_details = async (req, res) => {
     const TOTAL_STEPS = 15;
 
     try {
-        // Fetch the user details
+
         const user_detail = await userModel.findById(id).lean();
 
-        // Check if the user exists
+
         if (!user_detail) return res.status(400).json({ type: "error", message: "User does not exist" });
 
-        // Get completed steps
+
         const { completed_steps = [], user_characterstics, sexual_orientation_preference_id, relationship_type_preference_id } = user_detail;
         const completedStepCount = completed_steps.length;
         const completionPercentage = (completedStepCount / TOTAL_STEPS) * 100;
 
-        // Populate user_characterstics with actual text for questions and answers
+
         for (const step in user_characterstics) {
             if (user_characterstics.hasOwnProperty(step)) {
                 for (const characteristic of user_characterstics[step]) {
                     const question = await questionsModel.findById(characteristic.questionId).lean();
                     const answer = await userCharactersticsOptionsModel.findById(characteristic.answerId).lean();
 
-                    // Attach text and identify_text to the characteristic
+
                     characteristic.questionText = question ? question.text : null;
                     characteristic.answerText = answer ? answer.text : null;
-                    characteristic.identifyText = question ? question.identify_text : null;  // Adding identify_text
+                    characteristic.identifyText = question ? question.identify_text : null;
 
-                    // Handle multiple answers for step 13
+
                     if (characteristic.answerIds) {
                         characteristic.answerTexts = await userCharactersticsOptionsModel.find({
                             _id: { $in: characteristic.answerIds }
@@ -608,7 +615,7 @@ exports.get_user_details = async (req, res) => {
             }
         }
 
-        // Fetch sexual orientation options and structure as { id: value }
+
         const sexualOrientationOptions = await userCharactersticsOptionsModel.find({
             _id: { $in: sexual_orientation_preference_id }
         }).lean();
@@ -618,16 +625,18 @@ exports.get_user_details = async (req, res) => {
             value: option.text
         }));
 
-        // Fetch relationship type option
+
         const relationshipTypeOption = await userCharactersticsOptionsModel.findById(relationship_type_preference_id).lean();
         const relationshipTypePreference = relationshipTypeOption ? {
             id: relationshipTypeOption._id,
             value: relationshipTypeOption.text
         } : null;
 
-        // Attach the fetched options to the user detail
+
         user_detail.sexual_orientation_preference_id = sexualOrientationPreferences;
         user_detail.relationship_type_preference_id = relationshipTypePreference;
+
+
 
         return res.status(200).json({
             type: "success",
@@ -977,15 +986,15 @@ exports.update_distance_unit = async (req, res) => {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User not found with this userId"))
         }
 
-        await userModel.findByIdAndUpdate(userId,{
-            $set:{
-                'setting.distance_in':isUserExist.setting.distance_in=="km"?"mi":"km"
+        await userModel.findByIdAndUpdate(userId, {
+            $set: {
+                'setting.distance_in': isUserExist.setting.distance_in == "km" ? "mi" : "km"
             }
         })
 
         let updatedUser = await userModel.findById(userId)
 
-        return res.status(200).json(successResponse("Distance updated to "+ updatedUser.setting.distance_in))
+        return res.status(200).json(successResponse("Distance updated to " + updatedUser.setting.distance_in))
 
     } catch (error) {
         console.log('ERROR::', error)
@@ -1139,7 +1148,7 @@ exports.get_options = async (req, res) => {
             return {
                 questionId: question._id,
                 questionText: question.text,
-                iconImage:question.icon_image,
+                iconImage: question.icon_image,
                 options: options
             };
         });
@@ -1514,10 +1523,10 @@ exports.verify_updated_number = async (req, res) => {
 
 
 
-exports.createS3imageLink = async(req,res)=>{
-    try{
+exports.createS3imageLink = async (req, res) => {
+    try {
         let image = req.files.images
-       
+
         const uploadResult = await uploadFile({
             name: image.name,
             data: image.data,
@@ -1525,8 +1534,8 @@ exports.createS3imageLink = async(req,res)=>{
             userId: 1
         });
         res.send(uploadResult)
-    }catch(error){
-        console.log("ERROR::",error)
+    } catch (error) {
+        console.log("ERROR::", error)
         return res.status(500).json(errorResponse(error.message))
     }
 }
