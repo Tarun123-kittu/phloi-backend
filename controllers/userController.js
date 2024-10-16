@@ -14,10 +14,13 @@ const questionsModel = require("../models/questionsModel")
 exports.login = async (req, res) => {
     try {
         const { mobile_number, country_code, number } = req.body;
-
+     
         let otp = await generateOtp();
-        if(mobile_number=='12082276076'){ otp = 1111}
-
+        if(mobile_number =='+12082276076'){ 
+            console.log("here --",)
+            otp = "1111"
+        }
+     console.log("otp ----",otp)
         const currentTime = new Date();
 
         let user = await userModel.findOne({ mobile_number });
