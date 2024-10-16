@@ -11,9 +11,6 @@ const questionsModel = require("../models/questionsModel")
 
 
 
-
-
-
 exports.login = async (req, res) => {
     try {
         const { mobile_number, country_code, number } = req.body;
@@ -52,6 +49,7 @@ exports.login = async (req, res) => {
         }
 
         const smsResponse = await sendTwilioSms(`Your phloii verification code is ${otp}`, mobile_number);
+        console.log(smsResponse)
         if (!smsResponse.success) {
             return res.status(400).json({ message: 'Error sending verification code via SMS: ' + smsResponse.error, type: 'error' });
             // console.log("error while sending sms")
@@ -1444,11 +1442,13 @@ exports.update_phone_number = async (req, res) => {
     try {
         let userId = req.result.userId
         let new_number = req.body.new_number
+    
 
         let isUserExist = await userModel.findById(userId)
         if (!isUserExist) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User not found")) }
 
         if (!new_number) { return res.status(400).json(errorResponse("Please enter your new mobile number", "Enter new mobile number in body")) }
+       
 
         let isNewNumberExist = await userModel.findOne({ mobile_number: new_number })
         if (isNewNumberExist) { return res.status(400).json(errorResponse("This number is already linked with another account")) }
@@ -1459,14 +1459,14 @@ exports.update_phone_number = async (req, res) => {
         await userModel.findByIdAndUpdate(userId, {
             $set: {
                 otp: otp,
-                otp_sent_at: currentTime
+                otp_sent_at: currentTime,
             }
         })
 
         const smsResponse = await sendTwilioSms(`Your phloii verification code is ${otp}`, new_number);
         if (!smsResponse.success) {
-            console.log("error while sending sms")
-            // return res.status(400).json({ message: 'Error sending verification code via SMS: ' + smsResponse.error, type: 'error' });
+            // console.log("error while sending sms")
+            return res.status(400).json({ message: 'Error sending verification code via SMS: ' + smsResponse.error, type: 'error' });
         } else {
             console.log("Response from twilio:::: success--" + smsResponse.success)
         }
@@ -1488,12 +1488,16 @@ exports.verify_updated_number = async (req, res) => {
         let userId = req.result.userId
         let new_number = req.body.new_number
         let otp = req.body.otp
+        let country_code = req.body.country_code
+        let number = req.body.number
 
         let isUserExist = await userModel.findById(userId)
 
         if (!isUserExist) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User not found with this user Id")) }
 
         if (!new_number) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please add the new phone number in the body")) }
+        if(!country_code){ return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please provide country code")) }
+        if(!number){ return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please provide number")) }
 
         if (!otp) { return res.status(400).json(errorResponse("Please enter OTP sent on the number " + new_number)) }
 
@@ -1507,7 +1511,9 @@ exports.verify_updated_number = async (req, res) => {
             await userModel.findByIdAndUpdate(userId, {
                 $set: {
                     mobile_number: new_number,
-                    otp: null
+                    otp: null,
+                    country_code:country_code,
+                    number:number
                 }
             })
 
