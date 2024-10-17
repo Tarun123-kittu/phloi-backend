@@ -38,6 +38,7 @@ router.get("/get_contacts",authenticateToken,userController.get_contacts)
 router.get("/get_blocked_contacts",authenticateToken,userController.get_blocked_contacts)
 router.put("/update_phone_number",authenticateToken,userController.update_phone_number)
 router.put("/verify_updated_number",authenticateToken,userController.verify_updated_number)
+router.get("/get_user_images",authenticateToken,userController.get_user_images)
 
 
 

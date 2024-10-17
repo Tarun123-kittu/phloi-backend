@@ -14,13 +14,13 @@ const questionsModel = require("../models/questionsModel")
 exports.login = async (req, res) => {
     try {
         const { mobile_number, country_code, number } = req.body;
-     
+
         let otp = await generateOtp();
-        if(mobile_number =='+12082276076'){ 
-            console.log("here --",)
+
+        if (mobile_number == '+12082276076') {
             otp = "1111"
         }
-     console.log("otp ----",otp)
+
         const currentTime = new Date();
 
         let user = await userModel.findOne({ mobile_number });
@@ -34,7 +34,7 @@ exports.login = async (req, res) => {
                         otp,
                         otp_sent_at: currentTime,
                         country_code: country_code,
-                        number:number
+                        number: number
                     }
                 }
             );
@@ -51,7 +51,7 @@ exports.login = async (req, res) => {
 
             });
         }
-        if(number == "12082276076"){ return res.status(200).json(successResponse("You can proceed ahead."))}
+        if (number == "12082276076") { return res.status(200).json(successResponse("You can proceed ahead.")) }
 
         const smsResponse = await sendTwilioSms(`Your phloii verification code is ${otp}`, mobile_number);
         console.log(smsResponse)
@@ -762,7 +762,7 @@ exports.update_user_profile = async (req, res) => {
         step_13_answers
     } = req.body;
 
-    if(!current_step){return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"Please provide current step for which you want to update"))}
+    if (!current_step) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please provide current step for which you want to update")) }
     current_step = Number(current_step);
 
     try {
@@ -1447,13 +1447,13 @@ exports.update_phone_number = async (req, res) => {
     try {
         let userId = req.result.userId
         let new_number = req.body.new_number
-    
+
 
         let isUserExist = await userModel.findById(userId)
         if (!isUserExist) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User not found")) }
 
         if (!new_number) { return res.status(400).json(errorResponse("Please enter your new mobile number", "Enter new mobile number in body")) }
-       
+
 
         let isNewNumberExist = await userModel.findOne({ mobile_number: new_number })
         if (isNewNumberExist) { return res.status(400).json(errorResponse("This number is already linked with another account")) }
@@ -1501,8 +1501,8 @@ exports.verify_updated_number = async (req, res) => {
         if (!isUserExist) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User not found with this user Id")) }
 
         if (!new_number) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please add the new phone number in the body")) }
-        if(!country_code){ return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please provide country code")) }
-        if(!number){ return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please provide number")) }
+        if (!country_code) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please provide country code")) }
+        if (!number) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please provide number")) }
 
         if (!otp) { return res.status(400).json(errorResponse("Please enter OTP sent on the number " + new_number)) }
 
@@ -1517,8 +1517,8 @@ exports.verify_updated_number = async (req, res) => {
                 $set: {
                     mobile_number: new_number,
                     otp: null,
-                    country_code:country_code,
-                    number:number
+                    country_code: country_code,
+                    number: number
                 }
             })
 
@@ -1551,3 +1551,24 @@ exports.createS3imageLink = async (req, res) => {
         return res.status(500).json(errorResponse(error.message))
     }
 }
+
+
+
+
+exports.get_user_images = async (req, res) => {
+    try {
+      let userId = req.result.userId
+
+      let isUserExist = await userModel.findById(userId)
+      if(!isUserExist){return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"User not found"))}
+
+      if(isUserExist.images.length<1){ return res.status(400).json(errorResponse("Not a single image is added by the user"))}
+
+      return res.status(200).json(successResponse("Data retreived successfully",isUserExist.images))
+    } catch (error) {
+        console.log('ERROR::', error)
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
+    }
+}
+
+   
