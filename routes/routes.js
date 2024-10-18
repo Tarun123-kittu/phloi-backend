@@ -30,6 +30,7 @@ router.put("/update_user_profile", authenticateToken, userController.update_user
 router.put("/update_image_position", authenticateToken, validateUpdateImagePositions, userController.update_image_position)
 router.put("/add_profile_images", authenticateToken, userController.add_profile_images)
 router.delete("/delete_profile_image", authenticateToken, userController.delete_profile_image)
+router.put("/replace_image",authenticateToken,userController.replace_image)
 router.get("/get_options", authenticateToken, userController.get_options)
 router.post("/import_contacts",authenticateToken, userController.import_contacts)
 router.post("/block_contacts",authenticateToken,userController.block_contacts)

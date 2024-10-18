@@ -1069,8 +1069,6 @@ exports.delete_profile_image = async (req, res) => {
         const userId = req.result.userId;
         const imageUrl = req.body.imageUrl;
 
-        console.log("url form frontend ---",imageUrl)
-
         const user = await userModel.findById(userId);
         if (!user) {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
@@ -1082,7 +1080,7 @@ exports.delete_profile_image = async (req, res) => {
 
 
         let imagesArray = user.images || [];
-        console.log("images ----",imagesArray)
+
         const imageIndex = imagesArray.findIndex(img => img.url === imageUrl);
         console.log(imageIndex)
         if (imageIndex === -1) {
@@ -1116,6 +1114,72 @@ exports.delete_profile_image = async (req, res) => {
             message: "Image deleted successfully",
             images: user.images
         });
+
+    } catch (error) {
+        console.log("ERROR::", error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    }
+};
+
+
+
+exports.replace_image = async (req, res) => {
+    try {
+        const userId = req.result.userId;
+        const oldImageUrl = req.body.oldImageUrl; 
+        const newImageFile = req.files?.newImage; 
+
+        const user = await userModel.findById(userId);
+        if (!user) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
+        }
+
+       
+        let imagesArray = user.images || [];
+
+       
+        const imageIndex = imagesArray.findIndex(img => img.url === oldImageUrl);
+        if (imageIndex === -1) {
+            return res.status(404).json(errorResponse("Image to replace not found."));
+        }
+
+        
+        if (newImageFile) {
+            newImageFile.userId = user._id; 
+            const uploadedNewImage = await uploadFile(newImageFile); 
+
+            
+            imagesArray[imageIndex] = {
+                url: uploadedNewImage.Location, 
+                position: imageIndex + 1,      
+            };
+
+            
+            const oldImageKey = oldImageUrl.split('phloii.s3.eu-north-1.amazonaws.com/')[1];
+            const params = {
+                Bucket: 'phloii',
+                Key: oldImageKey, 
+            };
+
+           
+            try {
+                await s3.deleteObject(params).promise();
+                console.log("Successfully deleted old image from S3:", oldImageKey);
+            } catch (deleteError) {
+                console.error("Error deleting old image from S3:", deleteError);
+            }
+
+        
+            user.images = imagesArray;
+            await user.save();
+
+            return res.status(200).json({
+                message: "Image replaced successfully",
+                images: user.images
+            });
+        } else {
+            return res.status(400).json(errorResponse("New image file is required for replacement."));
+        }
 
     } catch (error) {
         console.log("ERROR::", error);
@@ -1559,18 +1623,17 @@ exports.createS3imageLink = async (req, res) => {
 
 exports.get_user_images = async (req, res) => {
     try {
-      let userId = req.result.userId
+        let userId = req.result.userId
 
-      let isUserExist = await userModel.findById(userId)
-      if(!isUserExist){return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"User not found"))}
+        let isUserExist = await userModel.findById(userId)
+        if (!isUserExist) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User not found")) }
 
-      if(isUserExist.images.length<1){ return res.status(400).json(errorResponse("Not a single image is added by the user"))}
+        if (isUserExist.images.length < 1) { return res.status(400).json(errorResponse("Not a single image is added by the user")) }
 
-      return res.status(200).json(successResponse("Data retreived successfully",isUserExist.images))
+        return res.status(200).json(successResponse("Data retreived successfully", isUserExist.images))
     } catch (error) {
         console.log('ERROR::', error)
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
     }
 }
 
-   
