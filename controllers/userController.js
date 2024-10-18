@@ -662,10 +662,9 @@ exports.get_user_details = async (req, res) => {
 
 
 
+
 exports.update_image_position = async (req, res) => {
-
-    const userId = req.result.userId
-
+    const userId = req.result.userId;
     const { fromPosition, toPosition } = req.body;
 
     try {
@@ -674,42 +673,35 @@ exports.update_image_position = async (req, res) => {
             return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
         }
 
-
+      
         const fromImage = user.images.find(img => img.position === fromPosition);
+        const toImage = user.images.find(img => img.position === toPosition);
 
-        if (!fromImage) {
-            return res.status(400).json(errorResponse('Invalid fromPosition'));
+        if (!fromImage || !toImage) {
+            return res.status(400).json(errorResponse('Invalid fromPosition or toPosition'));
         }
 
+     
+        const tempPosition = fromImage.position;
+        fromImage.position = toImage.position;
+        toImage.position = tempPosition;
 
-        if (fromPosition < toPosition) {
-
-            user.images.forEach(img => {
-                if (img.position > fromPosition && img.position <= toPosition) {
-                    img.position -= 1;
-                }
-            });
-        } else if (fromPosition > toPosition) {
-
-            user.images.forEach(img => {
-                if (img.position >= toPosition && img.position < fromPosition) {
-                    img.position += 1;
-                }
-            });
-        }
-
-        fromImage.position = toPosition;
+       
+        user.images.sort((a, b) => a.position - b.position);
 
         await user.save();
-        const sortedImages = user.images.sort((a, b) => a.position - b.position);
 
-        res.status(200).json(sortedImages);
+        return res.status(200).json({
+            message: "Image positions updated successfully.",
+            images: user.images
+        });
 
     } catch (err) {
         console.error('Error updating image positions:', err);
-        res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
-}
+};
+
 
 
 
