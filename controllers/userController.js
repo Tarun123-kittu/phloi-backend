@@ -1049,7 +1049,7 @@ exports.add_profile_images = async (req, res) => {
         user.images = imagesArray;
         await user.save();
 
-        return res.status(200).json(errorResponse("User images updated successfully", user.images));
+        return res.status(200).json(successResponse("User images updated successfully", user.images));
 
     } catch (error) {
         console.log("ERROR::", error)
@@ -1069,6 +1069,7 @@ exports.delete_profile_image = async (req, res) => {
         const userId = req.result.userId;
         const imageUrl = req.body.imageUrl;
 
+        console.log("url form frontend ---",imageUrl)
 
         const user = await userModel.findById(userId);
         if (!user) {
@@ -1083,7 +1084,7 @@ exports.delete_profile_image = async (req, res) => {
         let imagesArray = user.images || [];
         console.log("images ----",imagesArray)
         const imageIndex = imagesArray.findIndex(img => img.url === imageUrl);
-
+        console.log(imageIndex)
         if (imageIndex === -1) {
             return res.status(404).json(errorResponse("Image not found."));
         }
