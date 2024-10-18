@@ -1081,6 +1081,7 @@ exports.delete_profile_image = async (req, res) => {
 
 
         let imagesArray = user.images || [];
+        console.log("images ----",imagesArray)
         const imageIndex = imagesArray.findIndex(img => img.url === imageUrl);
 
         if (imageIndex === -1) {
