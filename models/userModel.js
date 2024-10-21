@@ -101,7 +101,8 @@ const userSchema = new mongoose.Schema({
     ],
     default: []
   },
- subscription_type:{type:String,enum:['free','premium'],default:'free'}
+ subscription_type:{type:String,enum:['free','premium'],default:'free'},
+ secret_dating_mode:{type:Boolean,default:false}
 
 }, { timestamps: true });
 

@@ -10,7 +10,6 @@ module.exports = {
         userNotFound: "User not found",
         imageNotFound: "Image not found",
         resourceNotFound: "Resource not found",
-  
     },
     validation: {
         invalidInput: "Invalid input data",
