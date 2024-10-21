@@ -56,8 +56,8 @@ exports.login = async (req, res) => {
         const smsResponse = await sendTwilioSms(`Your phloii verification code is ${otp}`, mobile_number);
         console.log(smsResponse)
         if (!smsResponse.success) {
-            // return res.status(400).json({ message: 'Error sending verification code via SMS: ' + smsResponse.error, type: 'error' });
-            console.log("error while sending sms")
+            return res.status(400).json({ message: 'Error sending verification code via SMS: ' + smsResponse.error, type: 'error' });
+            // console.log("error while sending sms")
         } else {
             console.log("Response from twilio:::: success--" + smsResponse.success)
         }
@@ -596,7 +596,7 @@ exports.get_user_details = async (req, res) => {
         const completedStepCount = completed_steps.length;
         const completionPercentage = (completedStepCount / TOTAL_STEPS) * 100;
 
-
+        
         for (const step in user_characterstics) {
             if (user_characterstics.hasOwnProperty(step)) {
                 for (const characteristic of user_characterstics[step]) {
@@ -654,6 +654,7 @@ exports.get_user_details = async (req, res) => {
         return res.status(500).json({ type: "error", message: "Something went wrong", error: error.message });
     }
 };
+
 
 
 
