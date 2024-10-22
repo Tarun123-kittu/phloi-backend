@@ -138,7 +138,7 @@ exports.get_matches_in_explore_rooms = async (req, res) => {
  
         let matchedUsers = await exploreRoomMatchAlgorithm(isUserExist,page,limit)
         
-        if(matchedUsers.length<1){return res.status(400).json(errorResponse("Currently no user found"))}
+        // if(matchedUsers.length<1){return res.status(400).json(errorResponse("Currently no user found"))}
 
         return res.status(200).json({
             type: 'success',
