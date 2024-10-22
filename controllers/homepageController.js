@@ -306,6 +306,90 @@ exports.get_users_who_liked_profile = async (req, res) => {
 
 
 
+// exports.get_profile_details = async (req, res) => {
+//     try {
+//         let id = req.query.userId;
+//         if (!id) {
+//             return res.status(404).json(errorResponse("Please provide userId"));
+//         }
+
+//         let user = await userModel.findById(id).lean();
+//         if (!user) {
+//             return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
+//         }
+
+
+//         const groupedAnswers = {};
+
+
+//         for (const step of user.user_characterstics.step_11 || []) {
+//             const question = await QuestionModel.findById(step.questionId).lean();
+//             const answer = await AnswerModel.findById(step.answerId).lean();
+
+//             if (question && answer) {
+//                 if (!groupedAnswers[question.identify_text]) {
+//                     groupedAnswers[question.identify_text] = {
+//                         question: question.identify_text,
+//                         answers: []
+//                     };
+//                 }
+//                 groupedAnswers[question.identify_text].answers.push(answer.text);
+//             }
+//         }
+
+//         for (const step of user.user_characterstics.step_12 || []) {
+//             const question = await QuestionModel.findById(step.questionId).lean();
+//             const answer = await AnswerModel.findById(step.answerId).lean(); 
+
+//             if (question && answer) {
+//                 if (!groupedAnswers[question.identify_text]) {
+//                     groupedAnswers[question.identify_text] = {
+//                         question: question.identify_text,
+//                         answers: []
+//                     };
+//                 }
+//                 groupedAnswers[question.identify_text].answers.push(answer.text);
+//             }
+//         }
+
+
+//         for (const step of user.user_characterstics.step_13 || []) {
+//             const question = await QuestionModel.findById(step.questionId).lean();
+//             const answers = await AnswerModel.find({ _id: { $in: step.answerIds } }).lean();
+
+//             if (question) {
+//                 if (!groupedAnswers[question.identify_text]) {
+//                     groupedAnswers[question.identify_text] = {
+//                         question: question.identify_text,
+//                         answers: []
+//                     };
+//                 }
+//                 for (const answer of answers) {
+//                     groupedAnswers[question.identify_text].answers.push(answer.text);
+//                 }
+//             }
+//         }
+
+
+//         const groupedAnswersArray = Object.values(groupedAnswers);
+
+//         let userDetails = {
+//             username: user.username,
+//             age: user.dob,
+//             images: user.images,
+//             user_characterstics: groupedAnswersArray
+//         };
+
+//         return res.status(200).json(successResponse("Details fetched successfully", userDetails));
+
+//     } catch (error) {
+//         console.error('ERROR::', error);
+//         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+//     }
+// };
+
+
+
 exports.get_profile_details = async (req, res) => {
     try {
         let id = req.query.userId;
@@ -313,73 +397,72 @@ exports.get_profile_details = async (req, res) => {
             return res.status(404).json(errorResponse("Please provide userId"));
         }
 
+        
         let user = await userModel.findById(id).lean();
         if (!user) {
             return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
         }
 
+        
+        const getSingleAnswerStep = async (userSteps) => {
+            const groupedAnswers = [];
 
-        const groupedAnswers = {};
+            for (const step of userSteps || []) {
+                const question = await QuestionModel.findById(step.questionId).lean();
+                const answer = await AnswerModel.findById(step.answerId).lean();
 
-
-        for (const step of user.user_characterstics.step_11 || []) {
-            const question = await QuestionModel.findById(step.questionId).lean();
-            const answer = await AnswerModel.findById(step.answerId).lean();
-
-            if (question && answer) {
-                if (!groupedAnswers[question.identify_text]) {
-                    groupedAnswers[question.identify_text] = {
+                if (question && answer) {
+                    groupedAnswers.push({
                         question: question.identify_text,
-                        answers: []
-                    };
-                }
-                groupedAnswers[question.identify_text].answers.push(answer.text);
-            }
-        }
-
-        for (const step of user.user_characterstics.step_12 || []) {
-            const question = await QuestionModel.findById(step.questionId).lean();
-            const answer = await AnswerModel.findById(step.answerId).lean(); 
-
-            if (question && answer) {
-                if (!groupedAnswers[question.identify_text]) {
-                    groupedAnswers[question.identify_text] = {
-                        question: question.identify_text,
-                        answers: []
-                    };
-                }
-                groupedAnswers[question.identify_text].answers.push(answer.text);
-            }
-        }
-
-
-        for (const step of user.user_characterstics.step_13 || []) {
-            const question = await QuestionModel.findById(step.questionId).lean();
-            const answers = await AnswerModel.find({ _id: { $in: step.answerIds } }).lean();
-
-            if (question) {
-                if (!groupedAnswers[question.identify_text]) {
-                    groupedAnswers[question.identify_text] = {
-                        question: question.identify_text,
-                        answers: []
-                    };
-                }
-                for (const answer of answers) {
-                    groupedAnswers[question.identify_text].answers.push(answer.text);
+                        answers: [answer.text]
+                    });
                 }
             }
-        }
 
+            return groupedAnswers;
+        };
 
-        const groupedAnswersArray = Object.values(groupedAnswers);
+     
+        const getMultipleAnswerStep = async (userSteps) => {
+            const groupedAnswers = [];
 
-        let userDetails = {
+            for (const step of userSteps || []) {
+                const question = await QuestionModel.findById(step.questionId).lean();
+                const answers = await AnswerModel.find({ _id: { $in: step.answerIds } }).lean();
+
+                if (question) {
+                    groupedAnswers.push({
+                        question: question.identify_text,
+                        answers: answers.map(answer => answer.text) 
+                    });
+                }
+            }
+
+            return groupedAnswers;
+        };
+
+        
+        const step11Answers = user.user_characterstics?.step_11 
+            ? await getSingleAnswerStep(user.user_characterstics.step_11) 
+            : [];
+        const step12Answers = user.user_characterstics?.step_12 
+            ? await getSingleAnswerStep(user.user_characterstics.step_12) 
+            : [];
+        const step13Answers = user.user_characterstics?.step_13 
+            ? await getMultipleAnswerStep(user.user_characterstics.step_13) 
+            : [];
+
+        
+        const userDetails = {
             username: user.username,
             age: user.dob,
             images: user.images,
-            user_characterstics: groupedAnswersArray
+            step_11: step11Answers,
+            step_12: step12Answers,
+            step_13: step13Answers
         };
 
+      
         return res.status(200).json(successResponse("Details fetched successfully", userDetails));
 
     } catch (error) {
@@ -387,6 +470,7 @@ exports.get_profile_details = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
+
 
 
 
