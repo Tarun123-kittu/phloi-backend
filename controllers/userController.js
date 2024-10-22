@@ -593,10 +593,12 @@ exports.get_user_details = async (req, res) => {
 
 
         const { completed_steps = [], user_characterstics, sexual_orientation_preference_id, relationship_type_preference_id } = user_detail;
-        const completedStepCount = completed_steps.length;
+        const validSteps = completed_steps.filter(step => step !== null);
+
+        const completedStepCount = validSteps.length;
         const completionPercentage = (completedStepCount / TOTAL_STEPS) * 100;
 
-        
+
         for (const step in user_characterstics) {
             if (user_characterstics.hasOwnProperty(step)) {
                 for (const characteristic of user_characterstics[step]) {
@@ -664,6 +666,8 @@ exports.get_user_details = async (req, res) => {
 
 
 
+
+
 exports.update_image_position = async (req, res) => {
     const userId = req.result.userId;
     const { fromPosition, toPosition } = req.body;
@@ -674,7 +678,7 @@ exports.update_image_position = async (req, res) => {
             return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
         }
 
-      
+
         const fromImage = user.images.find(img => img.position === fromPosition);
         const toImage = user.images.find(img => img.position === toPosition);
 
@@ -682,12 +686,12 @@ exports.update_image_position = async (req, res) => {
             return res.status(400).json(errorResponse('Invalid fromPosition or toPosition'));
         }
 
-     
+
         const tempPosition = fromImage.position;
         fromImage.position = toImage.position;
         toImage.position = tempPosition;
 
-       
+
         user.images.sort((a, b) => a.position - b.position);
 
         await user.save();
@@ -1119,42 +1123,42 @@ exports.delete_profile_image = async (req, res) => {
 exports.replace_image = async (req, res) => {
     try {
         const userId = req.result.userId;
-        const oldImageUrl = req.body.oldImageUrl; 
-        const newImageFile = req.files?.newImage; 
+        const oldImageUrl = req.body.oldImageUrl;
+        const newImageFile = req.files?.newImage;
 
         const user = await userModel.findById(userId);
         if (!user) {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
         }
 
-       
+
         let imagesArray = user.images || [];
 
-       
+
         const imageIndex = imagesArray.findIndex(img => img.url === oldImageUrl);
         if (imageIndex === -1) {
             return res.status(404).json(errorResponse("Image to replace not found."));
         }
 
-        
-        if (newImageFile) {
-            newImageFile.userId = user._id; 
-            const uploadedNewImage = await uploadFile(newImageFile); 
 
-            
+        if (newImageFile) {
+            newImageFile.userId = user._id;
+            const uploadedNewImage = await uploadFile(newImageFile);
+
+
             imagesArray[imageIndex] = {
-                url: uploadedNewImage.Location, 
-                position: imageIndex + 1,      
+                url: uploadedNewImage.Location,
+                position: imageIndex + 1,
             };
 
-            
+
             const oldImageKey = oldImageUrl.split('phloii.s3.eu-north-1.amazonaws.com/')[1];
             const params = {
                 Bucket: 'phloii',
-                Key: oldImageKey, 
+                Key: oldImageKey,
             };
 
-           
+
             try {
                 await s3.deleteObject(params).promise();
                 console.log("Successfully deleted old image from S3:", oldImageKey);
@@ -1162,7 +1166,7 @@ exports.replace_image = async (req, res) => {
                 console.error("Error deleting old image from S3:", deleteError);
             }
 
-        
+
             user.images = imagesArray;
             await user.save();
 
