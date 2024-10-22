@@ -285,9 +285,9 @@ exports.get_users_who_liked_profile = async (req, res) => {
             .limit(limit)
             .lean();
 
-        if (usersWhoLikedProfile.length === 0) {
-            return res.status(200).json(successResponse("No user have liked your profile"));
-        }
+        // if (usersWhoLikedProfile.length === 0) {
+        //     return res.status(200).json(successResponse("No user have liked your profile"));
+        // }
 
         return res.status(200).json({
             type: 'success',

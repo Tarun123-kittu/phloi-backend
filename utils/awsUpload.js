@@ -17,8 +17,8 @@ const uploadFile = async (file) => {
     const filename = file.name
 
     
-    const key = `profile_images/${userId}/${current_time}`;
-    // const key = `Avatar/male/${current_time}`;
+    // const key = `profile_images/${userId}/${current_time}`;
+    const key = `Secret Dating/Avatar/female/${filename}`;
 
     try {
         const result = await s3.upload({
