@@ -87,7 +87,7 @@ router.get("/get_matches_in_explore_rooms",authenticateToken,exploreRoomsControl
 
 //users routes
 router.put("/switch_secretDating_mode",authenticateToken,secretDatingUserController.switch_secretDating_mode)
-
+router.post("/secretDating_registration",authenticateToken,secretDatingUserController.secretDating_registration)
 
 
 

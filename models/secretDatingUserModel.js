@@ -12,7 +12,8 @@ let secretDatingUserSchema = new mongoose.Schema({
     relationship_preference: { type: mongoose.Schema.Types.ObjectId, ref: 'Options' },
     likedUsers: [{ type: mongoose.Schema.Types.ObjectId }],
     dislikedUsers: [{ type: mongoose.Schema.Types.ObjectId }],
-    
+    current_step:{type:Number,default:0},
+    completed_steps: { type: Array, default: [] },
 }, { timestamps: true })
 
 module.exports = mongoose.model('secret_dating_users', secretDatingUserSchema)

@@ -26,7 +26,7 @@ const exploreRoomMatchAlgorithm = async (currentUser, page = 1, limit = 10) => {
             'sexual_orientation_preference_id': {
                 $in: sexual_orientation_preference_id
             },
-            joined_room_id: currentUser.joined_room_id
+            joined_room_id: { $eq: currentUser.joined_room_id, $ne: null }
         };
    
         if (!(intrested_to_see === 'everyone')) {

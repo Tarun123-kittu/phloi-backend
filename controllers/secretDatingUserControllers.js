@@ -33,11 +33,110 @@ exports.switch_secretDating_mode = async (req, res) => {
 
 exports.secretDating_registration = async (req, res) => {
     try {
-     let userId = req.result.userId
+        const userId = req.result.userId;
+        const step = req.body.step;
+        const image = req.file?.image || null;
+        const avatar = req.body.avatar;
+        const secret_name = req.body.secret_name;
+        const bio = req.body.bio;
+        const interested_in = req.body.interested_in;
+        const sexual_orientation = req.body.sexual_orientation;
+        const show_sexual_orientation = req.body.show_sexual_orientation;
+        const relationship_preference = req.body.relationship_preference;
 
-     let isUserExist = await userModel.findById(userId)
+      
+        if (![1, 2, 3, 4].includes(Number(step))) {
+            return res.status(400).json({
+                type: 'error',
+                message: 'Invalid step. Step should be between 1 and 4.'
+            });
+        }
+
+        
+        const user = await userModel.findById(userId);
+        if (!user) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'User not found with this userId')) }
+
+        
+        let profile = await secretDatingUserModel.findOne({ user_id: userId });
+
+       
+        const profileUpdateData = {};
+
+        switch (Number(step)) {
+            case 1:
+                if (!avatar && !image) {
+                    return res.status(400).json(errorResponse('Please provide either avatar or image'));
+                }
+                if (!secret_name || !bio) {
+                    return res.status(400).json(errorResponse('Secret name and bio are required'));
+                }
+                if (image) {
+                    profileUpdateData.profile_image = await uploadToS3(image);
+                }
+                profileUpdateData.avatar = avatar || null;
+                profileUpdateData.name = secret_name;
+                profileUpdateData.bio = bio;
+                break;
+
+            case 2:
+                if (!interested_in) {
+                    return res.status(400).json({
+                        type: 'error',
+                        message: 'Interested in field is required.'
+                    });
+                }
+                profileUpdateData.interested_to_see = interested_in;
+                break;
+
+            case 3:
+                if (!sexual_orientation || typeof show_sexual_orientation === 'undefined') {
+                    return res.status(400).json({
+                        type: 'error',
+                        message: 'Sexual orientation and show sexual orientation are required.'
+                    });
+                }
+                profileUpdateData.sexual_orientation_preference_id = sexual_orientation;
+                profileUpdateData.show_sexual_orientation = show_sexual_orientation;
+                break;
+
+            case 4:
+                if (!relationship_preference) {
+                    return res.status(400).json({
+                        type: 'error',
+                        message: 'Relationship preference is required.'
+                    });
+                }
+                profileUpdateData.relationship_preference = relationship_preference;
+                break;
+
+            default:
+                return res.status(400).json({
+                    type: 'error',
+                    message: 'Invalid step provided.'
+                });
+        }
+
+        
+        if (!profile) {
+            profile = new secretDatingUserModel({
+                user_id: userId,
+                ...profileUpdateData
+            });
+        } else {
+            Object.assign(profile, profileUpdateData);
+        }
+        await profile.save();
+
+        
+        return res.status(200).json({
+            type: 'success',
+            message: 'Profile updated successfully.',
+            data: profile
+        });
+
     } catch (error) {
-        console.log('ERROR::', error)
-        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
+        console.error('ERROR::', error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message));
     }
-}
+};
+
