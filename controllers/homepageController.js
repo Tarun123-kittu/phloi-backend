@@ -314,7 +314,7 @@ exports.get_profile_details = async (req, res) => {
             return res.status(404).json(errorResponse("Please provide userId"));
         }
 
-        
+     
         let user = await userModel.findById(id).lean();
         if (!user) {
             return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
@@ -323,11 +323,9 @@ exports.get_profile_details = async (req, res) => {
         
         const getSingleAnswerStep = async (userSteps) => {
             const groupedAnswers = [];
-
             for (const step of userSteps || []) {
                 const question = await QuestionModel.findById(step.questionId).lean();
                 const answer = await AnswerModel.findById(step.answerId).lean();
-
                 if (question && answer) {
                     groupedAnswers.push({
                         question: question.identify_text,
@@ -335,18 +333,15 @@ exports.get_profile_details = async (req, res) => {
                     });
                 }
             }
-
             return groupedAnswers;
         };
 
-     
+       
         const getMultipleAnswerStep = async (userSteps) => {
             const groupedAnswers = [];
-
             for (const step of userSteps || []) {
                 const question = await QuestionModel.findById(step.questionId).lean();
                 const answers = await AnswerModel.find({ _id: { $in: step.answerIds } }).lean();
-
                 if (question) {
                     groupedAnswers.push({
                         question: question.identify_text,
@@ -354,11 +349,22 @@ exports.get_profile_details = async (req, res) => {
                     });
                 }
             }
-
             return groupedAnswers;
         };
 
         
+        const getAnswerText = async (idOrIds) => {
+            
+            if (Array.isArray(idOrIds)) {
+                const answers = await AnswerModel.find({ _id: { $in: idOrIds } }).lean();
+                return answers.map(answer => answer.text);
+            } else {
+                const answer = await AnswerModel.findById(idOrIds).lean();
+                return answer ? answer.text : null;
+            }
+        };
+
+       
         const step11Answers = user.user_characterstics?.step_11 
             ? await getSingleAnswerStep(user.user_characterstics.step_11) 
             : [];
@@ -370,16 +376,33 @@ exports.get_profile_details = async (req, res) => {
             : [];
 
         
+        const sexualOrientationText = user.sexual_orientation_preference_id 
+            ? await getAnswerText(user.sexual_orientation_preference_id)
+            : [];
+
+        
+        const lookingForText = user.relationship_type_preference_id 
+            ? await getAnswerText(user.relationship_type_preference_id)
+            : null;
+
+       
         const userDetails = {
             username: user.username,
             age: user.dob,
+            gender: user.gender,
+            show_gender: user.show_gender,
+            interested_in: user.intrested_to_see,
+            sexual_orientation: sexualOrientationText,
+            show_sexual_orientation: user.show_sexual_orientation,
+            looking_for: lookingForText,
+            study: user.study,
             images: user.images,
             step_11: step11Answers,
             step_12: step12Answers,
             step_13: step13Answers
         };
 
-      
+        // Return the response
         return res.status(200).json(successResponse("Details fetched successfully", userDetails));
 
     } catch (error) {
@@ -387,8 +410,6 @@ exports.get_profile_details = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
-
-
 
 
 
