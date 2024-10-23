@@ -26,7 +26,8 @@ exports.getChats = async (req, res) => {
         const chats = await chatModel.find({ participants: userId })
             .populate({
                 path: 'lastMessage',
-                populate: { path: 'sender', select: 'username' }
+                populate: { path: 'sender', 
+                select: 'username' }
             })
             .populate({
                 path: 'participants',
@@ -70,6 +71,7 @@ exports.getChats = async (req, res) => {
                 lastMessage: chat.lastMessage ? chat.lastMessage.text : null,
                 lastMessageSender: chat.lastMessage ? chat.lastMessage.sender.username : null,
                 unreadCount: unreadCount,
+                messageSentAt:chat.lastMessage.createdAt,
                 onlineStatus:otherParticipant.online_status
             };
         }));

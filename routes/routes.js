@@ -5,6 +5,7 @@ const matchMakingController = require("../controllers/homepageController")
 const chatController = require("../controllers/chatController")
 const exploreRoomsController = require("../controllers/exploreRoomsController")
 const secretDatingUserController = require("../controllers/secretDatingUserControllers")
+const notificationController = require("../controllers/notificationController")
 const {
     user_registration_steps_validator,
     validateLogin,
@@ -79,6 +80,12 @@ router.get("/get_all_rooms",authenticateToken,exploreRoomsController.get_all_roo
 router.post("/join_room",authenticateToken,exploreRoomsController.join_room)
 router.put("/left_room",authenticateToken,exploreRoomsController.left_room)
 router.get("/get_matches_in_explore_rooms",authenticateToken,exploreRoomsController.get_matches_in_explore_rooms)
+
+
+//notification routes 
+router.get('/get_all_notification',authenticateToken,notificationController.get_all_notification)
+
+
 
 
 
