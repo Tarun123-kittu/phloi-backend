@@ -9,6 +9,7 @@ let { io } = require("../index")
 
 
 
+
 exports.get_all_rooms = async (req, res) => {
     try {
         let allRooms = await roomsModel.find().select('_id room image joined_user_count')
@@ -63,7 +64,7 @@ exports.join_room = async (req, res) => {
             }
         })
 
-        let joinedUserCount = await joinedRoomsModel.findById(roomId)
+        let joinedUserCount = await roomsModel.findById(roomId)
         let count = joinedUserCount.joined_user_count
         io.emit("user_joined_room",{roomId,count})
         
@@ -117,7 +118,7 @@ exports.left_room = async (req, res) => {
             }
         });
 
-        let joinedUserCount = await joinedRoomsModel.findById(roomId)
+        let joinedUserCount = await roomsModel.findById(roomId)
         let count = joinedUserCount.joined_user_count
         io.emit("room_left",{roomId,count});
 
