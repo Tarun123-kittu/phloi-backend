@@ -30,7 +30,7 @@ exports.getChats = async (req, res) => {
             })
             .populate({
                 path: 'participants',
-                select: 'username images',
+                select: 'username images online_status',
             })
             .sort({ 'lastMessage.createdAt': -1 })
             .skip(skip)
@@ -51,7 +51,7 @@ exports.getChats = async (req, res) => {
             return res.status(200).json(successResponse("No chats found matching the search query", []));
         }
 
-
+    
         const chatDetails = await Promise.all(filteredChats.map(async chat => {
             const otherParticipant = chat.participants.find(participant => participant._id.toString() !== userId);
             const imageObj = otherParticipant?.images?.find(img => img.position === 1);
@@ -62,14 +62,15 @@ exports.getChats = async (req, res) => {
                 receiver: userId,
                 read_chat: false
             });
-
+ 
             return {
                 chatId: chat._id,
                 otherParticipantName: otherParticipant ? otherParticipant.username : null,
                 otherParticipantImage: otherParticipantImage,
                 lastMessage: chat.lastMessage ? chat.lastMessage.text : null,
                 lastMessageSender: chat.lastMessage ? chat.lastMessage.sender.username : null,
-                unreadCount: unreadCount
+                unreadCount: unreadCount,
+                onlineStatus:otherParticipant.online_status
             };
         }));
 

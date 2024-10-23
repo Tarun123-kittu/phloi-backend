@@ -158,7 +158,12 @@ exports.like_profile = async (req, res) => {
                 await newMatch.save();
             }
 
-            io.emit('its_a_match')
+            io.emit('its_a_match', {
+                matchId: newMatch._id,
+                users: [currentUserId, likedUserId],
+                usernames: [currentUser.username, likedUser.username],
+                message: `It's a match between ${currentUser.username} and ${likedUser.username}!`
+            });
 
             await notificationModel.create({ userId: likedUserId, notification_text: `You got a match with ${currentUser.username}` })
 
@@ -174,8 +179,6 @@ exports.like_profile = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
     }
 }
-
-
 
 
 exports.dislike_profile = async (req, res) => {
