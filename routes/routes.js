@@ -84,7 +84,7 @@ router.get("/get_matches_in_explore_rooms",authenticateToken,exploreRoomsControl
 
 //notification routes 
 router.get('/get_all_notification',authenticateToken,notificationController.get_all_notification)
-
+router.put("/mark_notification_read",authenticateToken,notificationController.mark_notification_read)
 
 
 
