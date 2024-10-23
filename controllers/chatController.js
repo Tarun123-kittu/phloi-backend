@@ -3,7 +3,10 @@ const messageModel = require('../models/messageModel');
 const userModel = require("../models/userModel")
 const { errorResponse, successResponse } = require('../utils/responseHandler');
 const messages = require("../utils/messages")
-const { io } = require("../index")
+const { io } = require("../index");
+const notificationModel = require('../models/notificationModel');
+
+
 
 
 
@@ -92,7 +95,11 @@ exports.getChats = async (req, res) => {
 
 
 
-// Create a new chat
+
+
+
+
+
 exports.createChat = async (req, res) => {
     try {
         const { participants } = req.body;
@@ -131,7 +138,11 @@ exports.createChat = async (req, res) => {
 
 
 
-// Send a message
+
+
+
+
+
 exports.sendMessage = async (req, res) => {
     try {
         const { chatId, text } = req.body;
@@ -169,7 +180,8 @@ exports.sendMessage = async (req, res) => {
             createdAt: message.createdAt,
             unreadCount: chat.unreadCount
         });
-
+         
+        
         res.status(201).json(successResponse("Message sent successfully", message));
 
 
@@ -178,6 +190,7 @@ exports.sendMessage = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
+
 
 
 

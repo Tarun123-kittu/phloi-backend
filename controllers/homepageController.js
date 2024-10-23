@@ -2,14 +2,14 @@ let userModel = require("../models/userModel")
 let matchModel = require("../models/matchesModel")
 let QuestionModel = require('../models/questionsModel');
 let AnswerModel = require('../models/optionsModel');
-let notificationModel = require('../models/notificationModel') 
+let notificationModel = require('../models/notificationModel')
 let homepageMatchAlgorithm = require("../utils/homepageMatchMaking")
 let calculateMatchScore = require("../utils/calculateTopPicks")
 let { errorResponse, successResponse } = require("../utils/responseHandler")
 let messages = require("../utils/messages")
 let { io } = require('../index');
 const likeDislikeLimitModel = require("../models/likeDislikeLimit");
- 
+
 
 
 
@@ -160,9 +160,11 @@ exports.like_profile = async (req, res) => {
 
             io.emit('its_a_match')
 
-            await notificationModel.create({userId:likedUserId,notification_text:`You got a match with ${currentUser.username}`})
+            await notificationModel.create({ userId: likedUserId, notification_text: `You got a match with ${currentUser.username}` })
 
-            return res.status(200).json(successResponse("Mutual like! A new match has been created."));
+            let participants = { currentUserId, likedUserId }
+
+            return res.status(200).json(successResponse("Mutual like! A new match has been created.",participants));
         }
 
         return res.status(200).json(successResponse("User liked successfully."));
@@ -317,13 +319,13 @@ exports.get_profile_details = async (req, res) => {
             return res.status(404).json(errorResponse("Please provide userId"));
         }
 
-     
+
         let user = await userModel.findById(id).lean();
         if (!user) {
             return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
         }
 
-        
+
         const getSingleAnswerStep = async (userSteps) => {
             const groupedAnswers = [];
             for (const step of userSteps || []) {
@@ -339,7 +341,7 @@ exports.get_profile_details = async (req, res) => {
             return groupedAnswers;
         };
 
-       
+
         const getMultipleAnswerStep = async (userSteps) => {
             const groupedAnswers = [];
             for (const step of userSteps || []) {
@@ -348,16 +350,16 @@ exports.get_profile_details = async (req, res) => {
                 if (question) {
                     groupedAnswers.push({
                         question: question.identify_text,
-                        answers: answers.map(answer => answer.text) 
+                        answers: answers.map(answer => answer.text)
                     });
                 }
             }
             return groupedAnswers;
         };
 
-        
+
         const getAnswerText = async (idOrIds) => {
-            
+
             if (Array.isArray(idOrIds)) {
                 const answers = await AnswerModel.find({ _id: { $in: idOrIds } }).lean();
                 return answers.map(answer => answer.text);
@@ -367,28 +369,28 @@ exports.get_profile_details = async (req, res) => {
             }
         };
 
-       
-        const step11Answers = user.user_characterstics?.step_11 
-            ? await getSingleAnswerStep(user.user_characterstics.step_11) 
+
+        const step11Answers = user.user_characterstics?.step_11
+            ? await getSingleAnswerStep(user.user_characterstics.step_11)
             : [];
-        const step12Answers = user.user_characterstics?.step_12 
-            ? await getSingleAnswerStep(user.user_characterstics.step_12) 
+        const step12Answers = user.user_characterstics?.step_12
+            ? await getSingleAnswerStep(user.user_characterstics.step_12)
             : [];
-        const step13Answers = user.user_characterstics?.step_13 
-            ? await getMultipleAnswerStep(user.user_characterstics.step_13) 
+        const step13Answers = user.user_characterstics?.step_13
+            ? await getMultipleAnswerStep(user.user_characterstics.step_13)
             : [];
 
-        
-        const sexualOrientationText = user.sexual_orientation_preference_id 
+
+        const sexualOrientationText = user.sexual_orientation_preference_id
             ? await getAnswerText(user.sexual_orientation_preference_id)
             : [];
 
-        
-        const lookingForText = user.relationship_type_preference_id 
+
+        const lookingForText = user.relationship_type_preference_id
             ? await getAnswerText(user.relationship_type_preference_id)
             : null;
 
-       
+
         const userDetails = {
             username: user.username,
             age: user.dob,
