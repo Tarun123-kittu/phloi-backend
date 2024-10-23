@@ -63,7 +63,7 @@ exports.join_room = async (req, res) => {
             }
         })
 
-        io.emit("user_joined_room")
+        io.emit("user_joined_room",roomId)
         return res.status(200).json(successResponse(`You joined the room ${isRoomExist.room}`));
 
     } catch (error) {
@@ -114,7 +114,7 @@ exports.left_room = async (req, res) => {
             }
         });
 
-        io.emit("room_left");
+        io.emit("room_left",roomId);
         return res.status(200).json(successResponse("Room left!"));
 
     } catch (error) {

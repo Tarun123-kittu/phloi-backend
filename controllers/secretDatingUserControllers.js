@@ -19,7 +19,6 @@ exports.switch_secretDating_mode = async (req, res) => {
             }
         })
 
-
         return res.status(200).json(successResponse(`Secret dating mode is ${isUserExist.secret_dating_mode == true ? 'turned off' : 'turned on'}`))
     } catch (error) {
         console.log('ERROR::', error)
@@ -43,7 +42,7 @@ exports.secretDating_registration = async (req, res) => {
         const show_sexual_orientation = req.body.show_sexual_orientation;
         const relationship_preference = req.body.relationship_preference;
 
-       console.log('image---',image)
+       
         if (![1, 2, 3, 4].includes(step)) {
             return res.status(400).json({
                 type: 'error',
@@ -51,7 +50,7 @@ exports.secretDating_registration = async (req, res) => {
             });
         }
 
-      
+       
         const user = await userModel.findById(userId);
         if (!user) {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'User not found with this userId'));
@@ -69,12 +68,16 @@ exports.secretDating_registration = async (req, res) => {
                 if (!avatar && !image) {
                     return res.status(400).json(errorResponse('Please provide either avatar or image'));
                 }
+                if(avatar && image){
+                    return res.status(400).json(errorResponse('You can only add one : Select avatar or upload image'))
+                }
                 if (!secret_name || !bio) {
                     return res.status(400).json(errorResponse('Secret name and bio are required'));
                 }
                 if (image) {
                     image.userId=userId
-                    profileUpdateData.profile_image = await uploadFile(image,'Secret Dating');
+                    let data  = await uploadFile(image,'Secret Dating');
+                    profileUpdateData.profile_image = data.Location
                 }
                 profileUpdateData.avatar = avatar || null;
                 profileUpdateData.name = secret_name;
@@ -124,8 +127,7 @@ exports.secretDating_registration = async (req, res) => {
 
         
         await profile.save();
-
-        
+    
         return res.status(200).json(successResponse('Profile updated successfully',profile));
 
     } catch (error) {

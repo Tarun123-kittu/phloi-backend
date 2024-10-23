@@ -1,14 +1,15 @@
 let userModel = require("../models/userModel")
 let matchModel = require("../models/matchesModel")
-const QuestionModel = require('../models/questionsModel');
-const AnswerModel = require('../models/optionsModel');
+let QuestionModel = require('../models/questionsModel');
+let AnswerModel = require('../models/optionsModel');
+let notificationModel = require('../models/notificationModel') 
 let homepageMatchAlgorithm = require("../utils/homepageMatchMaking")
 let calculateMatchScore = require("../utils/calculateTopPicks")
 let { errorResponse, successResponse } = require("../utils/responseHandler")
 let messages = require("../utils/messages")
 let { io } = require('../index');
 const likeDislikeLimitModel = require("../models/likeDislikeLimit");
-
+ 
 
 
 
@@ -158,6 +159,8 @@ exports.like_profile = async (req, res) => {
             }
 
             io.emit('its_a_match')
+
+            await notificationModel.create({userId:likedUserId,notification_text:`You got a match with ${currentUser.username}`})
 
             return res.status(200).json(successResponse("Mutual like! A new match has been created."));
         }
