@@ -63,7 +63,10 @@ exports.join_room = async (req, res) => {
             }
         })
 
-        io.emit("user_joined_room",roomId)
+        let joinedUserCount = await joinedRoomsModel.findById(roomId)
+        let count = joinedUserCount.joined_user_count
+        io.emit("user_joined_room",{roomId,count})
+        
         return res.status(200).json(successResponse(`You joined the room ${isRoomExist.room}`));
 
     } catch (error) {
@@ -114,7 +117,10 @@ exports.left_room = async (req, res) => {
             }
         });
 
-        io.emit("room_left",roomId);
+        let joinedUserCount = await joinedRoomsModel.findById(roomId)
+        let count = joinedUserCount.joined_user_count
+        io.emit("room_left",{roomId,count});
+
         return res.status(200).json(successResponse("Room left!"));
 
     } catch (error) {
