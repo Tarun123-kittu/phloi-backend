@@ -71,7 +71,7 @@ exports.getChats = async (req, res) => {
                 lastMessage: chat.lastMessage ? chat.lastMessage.text : null,
                 lastMessageSender: chat.lastMessage ? chat.lastMessage.sender.username : null,
                 unreadCount: unreadCount,
-                messageSentAt:chat.lastMessage?.createdAt,
+                messageSentAt:chat.lastMessage?.createdAt? chat.lastMessage.createdAt:null,
                 onlineStatus:otherParticipant.online_status
             };
         }));
