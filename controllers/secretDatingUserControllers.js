@@ -2,6 +2,7 @@ let userModel = require('../models/userModel')
 let secretDatingUserModel = require('../models/secretDatingUserModel')
 let { successResponse, errorResponse } = require('../utils/responseHandler')
 let messages = require('../utils/messages')
+let {uploadFile} = require('../utils/awsUpload')
 
 
 
@@ -33,7 +34,7 @@ exports.secretDating_registration = async (req, res) => {
     try {
         const userId = req.result.userId;
         const step = Number(req.body.step); 
-        const image = req.file?.image || null;
+        let image = req.files?.image || null;
         const avatar = req.body.avatar;
         const secret_name = req.body.secret_name;
         const bio = req.body.bio;
@@ -42,7 +43,7 @@ exports.secretDating_registration = async (req, res) => {
         const show_sexual_orientation = req.body.show_sexual_orientation;
         const relationship_preference = req.body.relationship_preference;
 
-      
+       console.log('image---',image)
         if (![1, 2, 3, 4].includes(step)) {
             return res.status(400).json({
                 type: 'error',
@@ -72,7 +73,8 @@ exports.secretDating_registration = async (req, res) => {
                     return res.status(400).json(errorResponse('Secret name and bio are required'));
                 }
                 if (image) {
-                    profileUpdateData.profile_image = await uploadToS3(image);
+                    image.userId=userId
+                    profileUpdateData.profile_image = await uploadFile(image,'Secret Dating');
                 }
                 profileUpdateData.avatar = avatar || null;
                 profileUpdateData.name = secret_name;

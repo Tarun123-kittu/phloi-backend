@@ -7,18 +7,25 @@ const s3 = new AWS.S3({
     secretAccessKey: config?.development?.aws_s3_secret_key,
 });
 
-const uploadFile = async (file) => {
+const uploadFile = async (file, data = null) => {
+   
     if (!file || !file.data) {
         throw new Error('File data is missing.');
     }
 
     const current_time = moment().tz('Asia/Kolkata').format('YYYYMMDD_HHmmss');
-    const userId = file.userId; 
+    const userId = file.userId;
     const filename = file.name
+    let key
 
-    
-    // const key = `profile_images/${userId}/${current_time}`;
-    const key = `Secret Dating/Avatar/female/${filename}`;
+
+    if (data == 'Secret Dating') {
+        console.log('inside secret dating ----')
+        key = `${data}/profile_images/${userId}/${current_time}`
+    } else {
+        key = `profile_images/${userId}/${current_time}`;
+    }
+
 
     try {
         const result = await s3.upload({
@@ -28,10 +35,10 @@ const uploadFile = async (file) => {
             ContentType: file.mimetype,
         }).promise();
 
-        
+
         return result;
     } catch (error) {
-        console.error('Error uploading file:', error);  
+        console.error('Error uploading file:', error);
         throw new Error(`Error uploading image: ${error.message}`);
     }
 };
