@@ -156,7 +156,7 @@ exports.like_profile = async (req, res) => {
                     createdAt: Date.now(),
                 });
                 await newMatch.save();
-        
+           
 
          
             io.emit('its_a_match', {
@@ -165,6 +165,7 @@ exports.like_profile = async (req, res) => {
                 usernames: [currentUser.username, likedUser.username],
                 message: `It's a match between ${currentUser.username} and ${likedUser.username}!`
             });
+            
         }
             await notificationModel.create({ userId: likedUserId, notification_text: `You got a match with ${currentUser.username}` })
 

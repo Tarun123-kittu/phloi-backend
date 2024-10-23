@@ -40,7 +40,13 @@ exports.mark_notification_read = async(req,res)=>{
         return res.status(400).json(errorResponse(errorResponse.generalError.somethingWentWrong,"Notification do not exist with this notification Id"))
     }
 
-    await notificationModel.findByIdAndDelete(notificationId)
+    await notificationModel.findByIdAndUpdate(notificationId,{
+        $set:{
+            read:true
+        }
+    })
+
+    return res.status(200).json(successResponse('No'))
         
     }catch(error){
         console.log("ERROR")
