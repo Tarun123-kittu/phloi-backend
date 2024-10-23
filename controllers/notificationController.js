@@ -15,8 +15,14 @@ exports.get_all_notification = async (req, res) => {
         }
 
         let notifications = await notificationModel.find({userId:userId}).select('_id notification_text read')
+        let unreadNotificationCount = await notificationModel.countDocuments({userId:userId,read:false}).lean()
         
-        return res.status(200).json(successResponse("Notification reterived successfully",notifications))
+        let data = {
+            unread_notification_count:unreadNotificationCount,
+            notifications:notifications
+        }
+       
+        return res.status(200).json(successResponse("Notification reterived successfully",data))
 
     } catch (error) {
         console.log("ERROR::", error)
