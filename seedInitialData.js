@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const config = require('./config/config');
 const exploreRoomModel = require('./models/exploreRoomsModel');
 const avatarModel = require('./models/avatarsModel'); 
+const settingModel = require('./models/settingsModel')
+
 
 const exploreRooms = [
     {
@@ -78,6 +80,46 @@ const avatars = [
     },
 
 ];
+
+
+const setting = [
+    {
+        heading:'Help & Support',
+        type:'contact us'
+    },
+    {
+        heading:'Help & Support',
+        type:'community'
+    },
+    {
+        heading:'Help & Support',
+        type:'community'
+    },
+    {
+        heading:'Help & Support',
+        type:'community'
+    },
+    {
+        heading:'Help & Support',
+        type:'privacy'
+    },
+    {
+        heading:'Help & Support',
+        type:'privacy'
+    },
+    {
+        heading:'Help & Support',
+        type:'privacy'
+    },
+    {
+        heading:'legal',
+        type:'legal'
+    },
+    {
+        heading:'legal',
+        type:'legal'
+    }
+]
 
 
 async function syncCollection(dataArray, Model, modelName, queryField) {

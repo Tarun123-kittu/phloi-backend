@@ -22,10 +22,11 @@ exports.recommended_users = async (req, res) => {
         const page = parseInt(req.query.page, 10) || 1;
         const limit = parseInt(req.query.limit, 10) || 10;
 
-        const ageMin = parseInt(req.query.age_min, 10) || 20;
-        const ageMax = parseInt(req.query.age_max, 10) || 40;
-        let maxDistance = parseInt(req.query.max_distance, 10) || 70
-        const interestedIn = req.query.interested_in || 'everyone'
+        const ageMin = parseInt(req.query.age_min, 10)
+        const ageMax = parseInt(req.query.age_max, 10)
+        let maxDistance = parseInt(req.query.max_distance, 10)
+        const interestedIn = req.query.interested_in
+        let show_verified_profiles = req.query.show_verified_profiles
         const applyFilter = req.query.applyFilter || false
 
 
@@ -33,19 +34,25 @@ exports.recommended_users = async (req, res) => {
         if (!currentUser) {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
         }
-
-        if (currentUser.setting.distance_in === 'mi') {
-            maxDistance = maxDistance * 1.60934; 
+        if (applyFilter == 'true' || applyFilter == true) {
+            if (!ageMin || !ageMax || !maxDistance || !interestedIn || !show_verified_profiles) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please provide all the filter values to find match")) }
+            show_verified_profiles = (show_verified_profiles ==='true')
         }
-    
-        console.log("apply filer ---",applyFilter)
+       
+        if (currentUser.setting.distance_in === 'mi') {
+            maxDistance = maxDistance * 1.60934;
+        }
+
+       
         let filterApplied
-        if (applyFilter == 'true' ||applyFilter == true ) {
+        if (applyFilter == 'true' || applyFilter == true) {
+
             filterApplied = {
                 ageMin: ageMin,
                 ageMax: ageMax,
                 maxDistance: maxDistance,
-                interestedIn: interestedIn
+                interestedIn: interestedIn,
+                show_verified_profiles: show_verified_profiles
             }
         }
 
@@ -162,22 +169,22 @@ exports.like_profile = async (req, res) => {
                     createdAt: Date.now(),
                 });
                 await newMatch.save();
-           
 
-         
-            io.emit('its_a_match', {
-                matchId: newMatch._id,
-                users: [currentUserId, likedUserId],
-                usernames: [currentUser.username, likedUser.username],
-                message: `It's a match between ${currentUser.username} and ${likedUser.username}!`
-            });
-            
-        }
+
+
+                io.emit('its_a_match', {
+                    matchId: newMatch._id,
+                    users: [currentUserId, likedUserId],
+                    usernames: [currentUser.username, likedUser.username],
+                    message: `It's a match between ${currentUser.username} and ${likedUser.username}!`
+                });
+
+            }
             await notificationModel.create({ userId: likedUserId, notification_text: `You got a match with ${currentUser.username}` })
 
             let participants = { currentUserId, likedUserId }
 
-            return res.status(200).json(successResponse("Mutual like! A new match has been created.",participants));
+            return res.status(200).json(successResponse("Mutual like! A new match has been created.", participants));
         }
 
         return res.status(200).json(successResponse("User liked successfully."));

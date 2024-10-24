@@ -5,7 +5,6 @@ let userModel = require('../models/userModel')
 const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter = null) => {
     let { _id, location, gender, intrested_to_see, distance_preference, characteristics, likedUsers, dislikedUsers ,blocked_contacts,sexual_orientation_preference_id} = currentUser;
     const currentCoordinates = location.coordinates;
-    // const sexual_orientation_preference_id = new mongoose.Types.ObjectId(preferences.sexual_orientation_preference_id);
     const distanceInKm = distance_preference;
     const distanceInMeters = distanceInKm * 1000;
     blocked_contacts = blocked_contacts.map(contact => parseFloat(contact));
@@ -30,7 +29,7 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
 
         let distanceInMetersFiltered
         if (filter) {
-            const { ageMin, maxDistance,ageMax, interestedIn } = filter;
+            const { ageMin, maxDistance,ageMax, interestedIn,show_verified_profiles} = filter;
           
             
             matchQuery.dob = {
@@ -41,6 +40,10 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
           
             if (interestedIn !== 'everyone') {
                 matchQuery.gender = { $in: [interestedIn] };
+            }
+
+            if(show_verified_profiles===true || show_verified_profiles===false){
+                matchQuery.verified_profile =  show_verified_profiles
             }
 
             
