@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const config = require('./config/config');
 const exploreRoomModel = require('./models/exploreRoomsModel');
 const avatarModel = require('./models/avatarsModel'); 
-const settingModel = require('./models/settingsModel')
+const settingModel = require('./models/settingsModel');
 
 
 const exploreRooms = [
@@ -82,44 +82,73 @@ const avatars = [
 ];
 
 
-const setting = [
+const settings = [
     {
-        heading:'Help & Support',
-        type:'contact us'
+        section: "Contact Us",
+        pages: [
+            {
+                title: "Help & Support",
+                content: "These are the help and support you can contact us...",
+                slug: "contact-us"
+            },
+        ]
     },
     {
-        heading:'Help & Support',
-        type:'community'
+        section: "Community",
+        pages: [
+            {
+                title: "Community Guidelines",
+                content: "These are the guidelines for our community...",
+                slug: "community-guidelines"
+            },
+            {
+                title: "Safety Tips",
+                content: "This explains the safety tips...",
+                slug: "safety-tips"
+            },
+            {
+                title: "Safety Center",
+                content: "This explains the safety center...",
+                slug: "safety-center"
+            }
+        ]
     },
     {
-        heading:'Help & Support',
-        type:'community'
+        section: "Privacy",
+        pages: [
+            {
+                title: "Cookie Policy",
+                content: "Our website uses cookies to enhance your experience...",
+                slug: "cookie-policy"
+            },
+            {
+                title: "Privacy Policy",
+                content: "Our website uses privacy policy to enhance your experience...",
+                slug: "privacy-policy"
+            },
+            {
+                title: "Privacy Preferences",
+                content: "Our website uses privacy preferences to enhance your experience...",
+                slug: "privacy-preferences"
+            }   
+        ]
     },
     {
-        heading:'Help & Support',
-        type:'community'
-    },
-    {
-        heading:'Help & Support',
-        type:'privacy'
-    },
-    {
-        heading:'Help & Support',
-        type:'privacy'
-    },
-    {
-        heading:'Help & Support',
-        type:'privacy'
-    },
-    {
-        heading:'legal',
-        type:'legal'
-    },
-    {
-        heading:'legal',
-        type:'legal'
+        section: "Legal",
+        pages: [
+            {
+                title: "Licenses",
+                content: "This is our license disclaimer...",
+                slug: "license"
+            },
+            {
+                title: "Terms of Service",
+                content: "These are our terms of service...",
+                slug: "terms-of-service"
+            }
+        ]
     }
-]
+];
 
 
 async function syncCollection(dataArray, Model, modelName, queryField) {
@@ -146,11 +175,27 @@ async function syncCollection(dataArray, Model, modelName, queryField) {
 
 async function seedAllData() {
     try {
-        // Sync explore rooms using room name as the unique identifier
+        
         await syncCollection(exploreRooms, exploreRoomModel, 'Explore Rooms', 'room');
 
-        // Sync avatars using avatar_image as the unique identifier
+       
         await syncCollection(avatars, avatarModel, 'Avatars', 'avatar_image');
+
+        for (let setting of settings) {
+
+            const result = await settingModel.findOneAndUpdate(
+
+                { section: setting.section },
+
+                { $set: setting },
+
+                { new: true, upsert: true }
+
+            );
+
+            console.log(`Upserted setting section: ${result.section}`);
+
+        }
 
         console.log('All data synchronized successfully.');
     } catch (error) {

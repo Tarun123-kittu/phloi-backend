@@ -1,9 +1,21 @@
-    let mongoose = require('mongoose')
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
-    let settingSchema = new mongoose.Schema({
-        heading:{type:String,default:null},
-        type:{type:String,enum:['contact us','community','privacy','legal'],default:null},
-        enable:{type:Boolean,default:true}
-    },{timestamps:true})
 
-    module.exports = mongoose.model('setting',settingSchema)
+const pageSchema = new Schema({
+    title: { type: String, required: true },   
+    content: { type: String, required: true },  
+    slug: { type: String, required: true, unique: true }  
+});
+
+
+const settingSchema = new Schema({
+    section: { type: String, required: true },  
+    pages: [pageSchema]  
+}, {
+    timestamps: true
+});
+
+const Setting = mongoose.model('Setting', settingSchema);
+
+module.exports = Setting;

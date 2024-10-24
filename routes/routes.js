@@ -6,6 +6,7 @@ const chatController = require("../controllers/chatController")
 const exploreRoomsController = require("../controllers/exploreRoomsController")
 const secretDatingUserController = require("../controllers/secretDatingUserControllers")
 const notificationController = require("../controllers/notificationController")
+const settingsController = require("../controllers/settingController")
 const {
     user_registration_steps_validator,
     validateLogin,
@@ -23,6 +24,7 @@ router.get("/get_user_details/:id?", authenticateToken, userController.get_user_
 router.post("/login", validateLogin, userController.login)
 router.post("/social_login", validateSocialLogin, userController.social_login)
 router.post("/verify_otp", validateVerifyOtp, userController.verify_otp)
+router.put('/logout',authenticateToken,userController.logout)
 
 
 
@@ -88,6 +90,8 @@ router.get('/get_all_notification',authenticateToken,notificationController.get_
 router.put("/mark_notification_read",authenticateToken,notificationController.mark_notification_read)
 
 
+//settings
+router.get("/get_settings_info",authenticateToken,settingsController.get_settings_info)
 
  
 //SECRET DATING

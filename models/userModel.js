@@ -35,6 +35,7 @@ const userSchema = new mongoose.Schema({
   dislikedUsers: [{ type: mongoose.Schema.Types.ObjectId }],
   token: { type: String, default: null },
   online_status: { type: Boolean, default: true },
+  logout_time:{type:Date,default:null},
   sexual_orientation_preference_id: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Options' }],
   show_sexual_orientation: { type: Boolean, default: true },
   relationship_type_preference_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Options' },

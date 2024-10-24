@@ -206,6 +206,29 @@ exports.verify_otp = async (req, res) => {
 
 
 
+exports.logout = async(req,res)=>{
+    try{
+     let userId = req.result.userId
+
+     let isUserExist = await userModel.findById(userId)
+     if(!isUserExist){
+        return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"User not found with this  user id"))
+     }
+     await userModel.findByIdAndUpdate(userId,{
+        $set:{
+            online_status:false,
+            logout_time: new Date()
+        }
+     })
+     io.emit('logout',userId)
+     return res.status(200).json(successResponse("Logged out"))
+
+    }catch(error){
+        console.log("ERROR::",error)
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message))
+    }
+}
+
 
 
 
@@ -372,7 +395,6 @@ exports.user_registration_steps = async (req, res) => {
                 questionId: option.question_id.toString(),
                 answerId: option._id.toString()
             }));
-
 
 
 
