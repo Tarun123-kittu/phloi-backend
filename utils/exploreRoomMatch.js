@@ -51,7 +51,10 @@ const exploreRoomMatchAlgorithm = async (currentUser, page = 1, limit = 10) => {
                 }
             },
             {
-                $unwind: "$user_characterstics.step_13"
+                $unwind: {
+                    path: "$user_characterstics.step_13",
+                    preserveNullAndEmptyArrays: true 
+                }
             },
             {
                 $lookup: {
