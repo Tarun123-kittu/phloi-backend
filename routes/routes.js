@@ -88,14 +88,13 @@ router.put("/mark_notification_read",authenticateToken,notificationController.ma
 
 
 
-
  
 //SECRET DATING
 
 //users routes
 router.put("/switch_secretDating_mode",authenticateToken,secretDatingUserController.switch_secretDating_mode)
 router.post("/secretDating_registration",authenticateToken,secretDatingUserController.secretDating_registration)
-
+// router.get("/get_secret_dating_recommendations",authenticateToken,secretDatingUserController.get_secret_dating_recommendations)
 
 
 module.exports = router

@@ -52,7 +52,7 @@ exports.mark_notification_read = async(req,res)=>{
         }
     })
 
-    return res.status(200).json(successResponse('Notifiction has been marked as read'))
+    return res.status(200).json(successResponse('Notification has been marked as read'))
         
     }catch(error){
         console.log("ERROR",error)

@@ -24,23 +24,29 @@ exports.recommended_users = async (req, res) => {
 
         const ageMin = parseInt(req.query.age_min, 10) || 20;
         const ageMax = parseInt(req.query.age_max, 10) || 40;
-        const maxDistance = parseInt(req.query.max_distance, 10) || 70
+        let maxDistance = parseInt(req.query.max_distance, 10) || 70
         const interestedIn = req.query.interested_in || 'everyone'
         const applyFilter = req.query.applyFilter || false
 
+
+        const currentUser = await userModel.findById(userId).lean();
+        if (!currentUser) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
+        }
+
+        if (currentUser.setting.distance_in === 'mi') {
+            maxDistance = maxDistance * 1.60934; 
+        }
+    
+        console.log("apply filer ---",applyFilter)
         let filterApplied
-        if (applyFilter === true) {
+        if (applyFilter == 'true' ||applyFilter == true ) {
             filterApplied = {
                 ageMin: ageMin,
                 ageMax: ageMax,
                 maxDistance: maxDistance,
                 interestedIn: interestedIn
             }
-        }
-
-        const currentUser = await userModel.findById(userId).lean();
-        if (!currentUser) {
-            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
         }
 
         const matchedUsers = await homepageMatchAlgorithm(currentUser, page, limit, filterApplied);

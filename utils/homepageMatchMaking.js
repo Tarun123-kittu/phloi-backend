@@ -19,15 +19,19 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
                 $geoWithin: {
                     $centerSphere: [currentCoordinates, distanceInKm / 6378.1] 
                 }
-            },
-            'sexual_orientation_preference_id': {
-                $in: sexual_orientation_preference_id
             }
         };
 
-        if (filter) {
-            const { ageMin, ageMax, maxDistance, interestedIn } = filter;
+        if (sexual_orientation_preference_id && sexual_orientation_preference_id.length > 0) {
+            matchQuery['sexual_orientation_preference_id'] = {
+                $in: sexual_orientation_preference_id
+            };
+        }
 
+        let distanceInMetersFiltered
+        if (filter) {
+            const { ageMin, maxDistance,ageMax, interestedIn } = filter;
+          
             
             matchQuery.dob = {
                 $gte: new Date(new Date().setFullYear(new Date().getFullYear() - ageMax)),
@@ -41,7 +45,7 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
 
             
             if (maxDistance) {
-                const distanceInMetersFiltered = maxDistance * 1000;
+                 distanceInMetersFiltered = maxDistance * 1000;
                 matchQuery['location.coordinates'] = {
                     $geoWithin: {
                         $centerSphere: [currentCoordinates, maxDistance / 6378.1] // Radius in radians
@@ -55,7 +59,7 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
             }
         }
 
-       
+       console.log("filter ----",filter)
         const usersCount = await userModel.aggregate([
             {
                 $geoNear: {
@@ -64,7 +68,7 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
                         coordinates: currentCoordinates
                     },
                     distanceField: 'distance',
-                    maxDistance: filter ? filter.maxDistance * 1000 : distanceInMeters,
+                    maxDistance: filter ? distanceInMetersFiltered : distanceInMeters,
                     query: matchQuery,
                     spherical: true
                 }

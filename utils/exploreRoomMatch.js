@@ -23,16 +23,20 @@ const exploreRoomMatchAlgorithm = async (currentUser, page = 1, limit = 10) => {
                     $centerSphere: [currentCoordinates, distanceInKm / 6378.1] 
                 }
             },
-            'sexual_orientation_preference_id': {
-                $in: sexual_orientation_preference_id
-            },
             joined_room_id: { $eq: currentUser.joined_room_id, $ne: null }
         };
    
+        if (sexual_orientation_preference_id && sexual_orientation_preference_id.length > 0) {
+            matchQuery['sexual_orientation_preference_id'] = {
+                $in: sexual_orientation_preference_id
+            };
+        }
+
         if (!(intrested_to_see === 'everyone')) {
             matchQuery.gender = { $in: [intrested_to_see] }; 
         }
    
+       
         const users = await userModel.aggregate([
             {
                 $geoNear: {
