@@ -70,7 +70,20 @@ exports.mark_notification_read = async (req, res) => {
 
 exports.mark_all_notification_read = async (req, res) => {
     try {
-    // let userId = req.result
+    let userId = req.result.userId;
+
+    let isUserExist = await userModel.findById(userId)
+    if(!isUserExist){ return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"User not found with this user Id"))}
+    
+    await notificationModel.updateMany(
+        { userId: userId },   
+        {
+            $set: { read: true } 
+        }
+    );
+
+    return res.status(200).json(successResponse("All notifications mark as read"))
+
     } catch (error) {
         console.log("ERROR", error)
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))

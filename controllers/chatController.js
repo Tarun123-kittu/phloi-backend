@@ -22,7 +22,6 @@ exports.getChats = async (req, res) => {
 
         if (!userId) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User ID is required")); }
 
-
         const chats = await chatModel.find({ participants: userId })
             .populate({
                 path: 'lastMessage',
@@ -40,7 +39,6 @@ exports.getChats = async (req, res) => {
         if (!chats || chats.length === 0) {
             return res.status(200).json(successResponse("No chats found", []));
         }
-
 
         const filteredChats = chats.filter(chat => {
             const otherParticipant = chat.participants.find(participant => participant._id.toString() !== userId);
@@ -225,9 +223,7 @@ exports.getMessages = async (req, res) => {
             return res.status(404).json(successResponse("Say hey to start conversation!", "No messages found for this chat."));
         }
 
-
         const totalMessages = await messageModel.countDocuments({ chat: chatId });
-
 
         res.status(200).json(successResponse("Messages retrieved successfully", {
             messages,
