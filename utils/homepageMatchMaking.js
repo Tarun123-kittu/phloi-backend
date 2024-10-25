@@ -3,7 +3,7 @@ let userModel = require('../models/userModel')
 
 
 const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter = null) => {
-    let { _id, location, gender, intrested_to_see, distance_preference, characteristics, likedUsers, dislikedUsers ,blocked_contacts,sexual_orientation_preference_id} = currentUser;
+    let { _id, location, gender, intrested_to_see, distance_preference, characteristics, likedUsers, dislikedUsers ,blocked_contacts,sexual_orientation_preference_id,verified_profile} = currentUser;
     const currentCoordinates = location.coordinates;
     const distanceInKm = distance_preference;
     const distanceInMeters = distanceInKm * 1000;
@@ -66,6 +66,12 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
         }
 
        console.log("filter ----",filter)
+
+       if (!verified_profile) {
+        matchQuery.show_me_to_verified_profiles = { $ne: true };
+        }
+
+    
         const usersCount = await userModel.aggregate([
             {
                 $geoNear: {
