@@ -180,7 +180,7 @@ exports.like_profile = async (req, res) => {
                 });
 
             }
-            await notificationModel.create({ userId: likedUserId, notification_text: `You got a match with ${currentUser.username}` })
+            await notificationModel.create({ userId: likedUserId,sender_id:currentUserId, notification_text: `You got a match with ${currentUser.username}` })
 
             let participants = { currentUserId, likedUserId }
 

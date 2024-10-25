@@ -9,6 +9,7 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
     const distanceInMeters = distanceInKm * 1000;
     blocked_contacts = blocked_contacts.map(contact => parseFloat(contact));
 
+   
     try {
        
         let matchQuery = {
@@ -22,6 +23,7 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
         };
 
         if (sexual_orientation_preference_id && sexual_orientation_preference_id.length > 0) {
+            console.log("inside sexual orientaion -----")
             matchQuery['sexual_orientation_preference_id'] = {
                 $in: sexual_orientation_preference_id
             };
@@ -29,6 +31,7 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
 
         let distanceInMetersFiltered
         if (filter) {
+           
             const { ageMin, maxDistance,ageMax, interestedIn,show_verified_profiles} = filter;
           
             

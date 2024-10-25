@@ -51,6 +51,7 @@ router.get("/get_user_images",authenticateToken,userController.get_user_images)
 // update user setting routes
 router.put("/update_read_receipts", authenticateToken,userController.update_read_receipts)
 router.put("/update_distance_unit",authenticateToken,userController.update_distance_unit)
+router.put("/show_profile_to_verified_accounts",authenticateToken,userController.show_profile_to_verified_accounts)
 router.post("/createS3imageLink",userController.createS3imageLink)
 
 
@@ -88,12 +89,15 @@ router.get("/get_matches_in_explore_rooms",authenticateToken,exploreRoomsControl
 //notification routes 
 router.get('/get_all_notification',authenticateToken,notificationController.get_all_notification)
 router.put("/mark_notification_read",authenticateToken,notificationController.mark_notification_read)
+router.put("/mark_all_notification_read",authenticateToken,notificationController.mark_all_notification_read)
 
 
 //settings
 router.get("/get_settings_info",authenticateToken,settingsController.get_settings_info)
 
  
+
+
 //SECRET DATING
 
 //users routes

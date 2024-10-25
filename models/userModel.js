@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
   verified_profile:{type:Boolean,default:false},
+  show_me_to_verified_profiles:{type:Boolean,default:false},
   username: { type: String, default: null },
   mobile_number: { type: Number, default: null },
   country_code: { type: Number, default: null },

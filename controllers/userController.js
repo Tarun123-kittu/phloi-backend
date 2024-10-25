@@ -206,26 +206,26 @@ exports.verify_otp = async (req, res) => {
 
 
 
-exports.logout = async(req,res)=>{
-    try{
-     let userId = req.result.userId
+exports.logout = async (req, res) => {
+    try {
+        let userId = req.result.userId
 
-     let isUserExist = await userModel.findById(userId)
-     if(!isUserExist){
-        return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"User not found with this  user id"))
-     }
-     await userModel.findByIdAndUpdate(userId,{
-        $set:{
-            online_status:false,
-            logout_time: new Date()
+        let isUserExist = await userModel.findById(userId)
+        if (!isUserExist) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User not found with this  user id"))
         }
-     })
-     io.emit('logout',userId)
-     return res.status(200).json(successResponse("Logged out"))
+        await userModel.findByIdAndUpdate(userId, {
+            $set: {
+                online_status: false,
+                logout_time: new Date()
+            }
+        })
+        io.emit('logout', userId)
+        return res.status(200).json(successResponse("Logged out"))
 
-    }catch(error){
-        console.log("ERROR::",error)
-        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message))
+    } catch (error) {
+        console.log("ERROR::", error)
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
     }
 }
 
@@ -1027,6 +1027,30 @@ exports.update_distance_unit = async (req, res) => {
 
 
 
+
+
+exports.show_profile_to_verified_accounts = async (req, res) => {
+    try {
+        let userId = req.result.userId
+
+        let isUserExist = await userModel.findById(userId)
+        
+        if (!isUserExist) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User not found with this user Id"))
+        }
+
+        await userModel.findByIdAndUpdate(userId, {
+            $set: {
+                show_me_to_verified_profiles: isUserExist.show_me_to_verified_profiles == true ? false : true
+            }
+        })
+        
+        return res.status(200).json(successResponse(`show me to verified profile ${isUserExist.show_me_to_verified_profiles == true  ? 'turned off' :'turned on'} `))  
+    } catch (error) {
+        console.log("ERROR::", error)
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
+    }
+}
 
 
 
