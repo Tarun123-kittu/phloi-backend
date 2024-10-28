@@ -547,7 +547,7 @@ exports.user_registration_steps = async (req, res) => {
                         data: image.data,
                         mimetype: image.mimetype,
                         userId: id
-                    });
+                    },'Profile image');
 
                     imageUrls.push({
                         url: uploadResult.Location,
@@ -1075,7 +1075,7 @@ exports.add_profile_images = async (req, res) => {
             const uploadedImages = Array.isArray(newImagesFromFrontend) ? newImagesFromFrontend : [newImagesFromFrontend];
             for (const imageFile of uploadedImages) {
                 imageFile.userId = user._id
-                const uploadedImage = await uploadFile(imageFile);
+                const uploadedImage = await uploadFile(imageFile,'Profile image');
                 imagesArray.push({
                     url: uploadedImage.Location,
                     position: imagesArray.length + 1,
@@ -1189,7 +1189,7 @@ exports.replace_image = async (req, res) => {
 
         if (newImageFile) {
             newImageFile.userId = user._id;
-            const uploadedNewImage = await uploadFile(newImageFile);
+            const uploadedNewImage = await uploadFile(newImageFile,'Profile image');
 
 
             imagesArray[imageIndex] = {
@@ -1647,6 +1647,7 @@ exports.verify_updated_number = async (req, res) => {
 exports.createS3imageLink = async (req, res) => {
     try {
         let image = req.files.images
+    
 
         const uploadResult = await uploadFile({
             name: image.name,

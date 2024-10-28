@@ -5,7 +5,7 @@ const { errorResponse, successResponse } = require('../utils/responseHandler');
 const messages = require("../utils/messages")
 const { io } = require("../index");
 const notificationModel = require('../models/notificationModel');
-
+const {uploadFile} = require('../utils/awsUpload')
 
 
 
@@ -146,13 +146,18 @@ exports.createChat = async (req, res) => {
 
 exports.sendMessage = async (req, res) => {
     try {
-        const { chatId, text } = req.body;
-        const senderId = req.result.userId;
+        let { chatId, text } = req.body;
+        let senderId = req.result.userId;
+        let image = req.files?.image ;
+         
 
+        if (!chatId ) { return res.status(400).json(errorResponse(messages.generalError.invalidInput, "Chat ID  are required.")); }
 
-        if (!chatId || !text) { return res.status(400).json(errorResponse(messages.generalError.invalidInput, "Chat ID and message text are required.")); }
-
-
+       
+        if (!text && !image) {
+            return res.status(400).json(errorResponse(messages.generalError.invalidInput, "Either text or image is required."));
+        }
+        
         const chat = await chatModel.findById(chatId);
         if (!chat) { return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "Chat not found with this chat Id.")); }
 
@@ -160,8 +165,12 @@ exports.sendMessage = async (req, res) => {
         const receiverId = chat.participants.find(participant => !participant.equals(senderId));
         if (!receiverId) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Invalid sender/receiver configuration.")); }
 
-        let receiver = await userModel.findById(receiverId)
-        let sender = await userModel.findById(senderId)
+        if (image) {
+            image.userId=senderId
+            image.chatId = chatId
+            let imageData  = await uploadFile(image,'Chat');
+            text = imageData.Location
+        }
 
 
         const message = new messageModel({ chat: chatId, sender: senderId, receiver: receiverId, text });

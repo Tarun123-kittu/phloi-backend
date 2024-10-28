@@ -8,7 +8,7 @@ const s3 = new AWS.S3({
 });
 
 const uploadFile = async (file, data = null) => {
-   
+
     if (!file || !file.data) {
         throw new Error('File data is missing.');
     }
@@ -22,7 +22,14 @@ const uploadFile = async (file, data = null) => {
     if (data == 'Secret Dating') {
         console.log('inside secret dating ----')
         key = `${data}/profile_images/${userId}/${current_time}`
-    } else {
+    } 
+    
+    if(data == 'Chat'){
+        let chatId = file.chatId
+        key = `Chat/${chatId}/${userId}/${current_time}`;
+    }
+    
+    if (data == 'Profile image') {
         key = `profile_images/${userId}/${current_time}`;
     }
 
