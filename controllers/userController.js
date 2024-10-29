@@ -51,7 +51,7 @@ exports.login = async (req, res) => {
 
             });
         }
-        if (number == "12082276076") { return res.status(200).json(successResponse("You can proceed ahead."))}
+        if (number == "12082276076") { return res.status(200).json(successResponse("You can proceed ahead.")) }
 
         const smsResponse = await sendTwilioSms(`Your phloii verification code is ${otp}`, mobile_number);
         console.log(smsResponse)
@@ -193,7 +193,7 @@ exports.verify_otp = async (req, res) => {
                 token: token
             }
         })
-        io.emit('login',user._id)
+        io.emit('login', user._id)
         return res.status(200).json(successResponse(messages.success.loginSuccessful, token));
     } catch (error) {
         console.error("ERROR::", error);
@@ -280,8 +280,8 @@ exports.user_registration_steps = async (req, res) => {
                     error: 'Please provide a valid email address.'
                 });
             }
-            let isEmailExist  = await userModel.findOne({email:email})
-            if(isEmailExist){
+            let isEmailExist = await userModel.findOne({ email: email })
+            if (isEmailExist) {
                 return res.status(400).json(errorResponse('This email is already registered please try another email'))
             }
             user_obj["email"] = email;
@@ -573,7 +573,11 @@ exports.user_registration_steps = async (req, res) => {
 
         if (current_step == 15) {
             if (!parsedLocation) return res.status(400).json(errorResponse("Location in required.", "Location is required for step 15"));
-            user_obj["location"] = parsedLocation;
+            console.log("parsed location ------", parsedLocation)
+            const staticLocation = { type: 'Point', coordinates: [76.6411, 30.7499] }
+
+            // user_obj["location"] = parsedLocation; 
+            user_obj["location"] = staticLocation;
             user_obj["current_step"] = current_step;
             completed_steps[14] = 15;
             updateFields["completed_steps"] = completed_steps;
@@ -792,7 +796,7 @@ exports.update_user_profile = async (req, res) => {
                 return res.status(400).json(errorResponse("This email is already in use by another user."));
             }
         }
-        
+
         const { completed_steps = [] } = user;
 
         const getLastValidValue = (step, fieldName) => {

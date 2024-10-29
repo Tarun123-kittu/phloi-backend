@@ -16,19 +16,19 @@ const exploreRoomMatchAlgorithm = async (currentUser, page = 1, limit = 10) => {
         let matchQuery = {
             _id: { $nin: [_id, ...likedUserIds, ...dislikedUserIds] },
             mobile_number: { $nin: blocked_contacts.map(contact => contact.number) },
-            // 'location.coordinates': {
-            //     $geoWithin: {
-            //         $centerSphere: [currentCoordinates, distanceInKm / 6378.1]
-            //     }
-            // },
+            'location.coordinates': {
+                $geoWithin: {
+                    $centerSphere: [currentCoordinates, distanceInKm / 6378.1]
+                }
+            },
             joined_room_id: { $eq: currentUser.joined_room_id, $ne: null }
         };
 
-        if (sexual_orientation_preference_id && sexual_orientation_preference_id.length > 0) {
-            matchQuery['sexual_orientation_preference_id'] = {
-                $in: sexual_orientation_preference_id
-            };
-        }
+        // if (sexual_orientation_preference_id && sexual_orientation_preference_id.length > 0) {
+        //     matchQuery['sexual_orientation_preference_id'] = {
+        //         $in: sexual_orientation_preference_id
+        //     };
+        // }
 
         if (!(intrested_to_see === 'everyone')) {
             matchQuery.gender = { $in: [intrested_to_see] };

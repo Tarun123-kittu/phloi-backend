@@ -15,19 +15,19 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
         let matchQuery = {
             _id: { $nin: [_id, ...likedUsers, ...dislikedUsers] }, 
             mobile_number: {$nin: blocked_contacts.map(contact => contact.number)  },
-            // 'location.coordinates': {
-            //     $geoWithin: {
-            //         $centerSphere: [currentCoordinates, distanceInKm / 6378.1] 
-            //     }
-            // }
+            'location.coordinates': {
+                $geoWithin: {
+                    $centerSphere: [currentCoordinates, distanceInKm / 6378.1] 
+                }
+            }
         };
 
-        if (sexual_orientation_preference_id && sexual_orientation_preference_id.length > 0) {
-            console.log("inside sexual orientaion -----")
-            matchQuery['sexual_orientation_preference_id'] = {
-                $in: sexual_orientation_preference_id
-            };
-        }
+        // if (sexual_orientation_preference_id && sexual_orientation_preference_id.length > 0) {
+        //     console.log("inside sexual orientaion -----")
+        //     matchQuery['sexual_orientation_preference_id'] = {
+        //         $in: sexual_orientation_preference_id
+        //     };
+        // }
 
         let distanceInMetersFiltered
         if (filter) {
