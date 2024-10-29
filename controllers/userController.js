@@ -794,6 +794,13 @@ exports.update_user_profile = async (req, res) => {
         console.log(user)
         if (!user) return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
 
+        if (email && email !== user.email) {
+            const emailExists = await userModel.findOne({ email });
+            if (emailExists) {
+                return res.status(400).json(errorResponse("This email is already in use by another user."));
+            }
+        }
+        
         const { completed_steps = [] } = user;
 
         const getLastValidValue = (step, fieldName) => {
