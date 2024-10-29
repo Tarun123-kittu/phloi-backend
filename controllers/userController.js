@@ -280,6 +280,10 @@ exports.user_registration_steps = async (req, res) => {
                     error: 'Please provide a valid email address.'
                 });
             }
+            let isEmailExist  = await userModel.findOne({email:email})
+            if(isEmailExist){
+                return res.status(400).json(errorResponse('This email is already registered please try another email'))
+            }
             user_obj["email"] = email;
             user_obj["current_step"] = current_step;
             completed_steps[1] = 2;
