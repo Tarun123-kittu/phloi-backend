@@ -6,7 +6,7 @@ const { uploadFile, s3 } = require("../utils/awsUpload")
 let userCharactersticsOptionsModel = require('../models/optionsModel')
 const headingsModel = require("../models/headingsModel")
 const questionsModel = require("../models/questionsModel")
-
+let { io } = require('../index');
 
 
 
@@ -170,7 +170,7 @@ exports.verify_otp = async (req, res) => {
             await userModel.findOneAndUpdate(
                 { mobile_number },
                 {
-                    $set: { current_step: 1, otp: null },
+                    $set: { current_step: 1, otp: null, online_status: true },
                     $push: { completed_steps: 1 }
                 },
                 { new: true }
@@ -181,7 +181,7 @@ exports.verify_otp = async (req, res) => {
             await userModel.findOneAndUpdate(
                 { mobile_number },
                 {
-                    $set: { otp: null }
+                    $set: { otp: null, online_status: true }
                 }
 
             );
@@ -217,7 +217,6 @@ exports.logout = async (req, res) => {
         await userModel.findByIdAndUpdate(userId, {
             $set: {
                 online_status: false,
-                logout_time: new Date()
             }
         })
         io.emit('logout', userId)
@@ -228,6 +227,9 @@ exports.logout = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
     }
 }
+
+
+
 
 
 
@@ -547,7 +549,7 @@ exports.user_registration_steps = async (req, res) => {
                         data: image.data,
                         mimetype: image.mimetype,
                         userId: id
-                    },'Profile image');
+                    }, 'Profile image');
 
                     imageUrls.push({
                         url: uploadResult.Location,
@@ -1034,7 +1036,7 @@ exports.show_profile_to_verified_accounts = async (req, res) => {
         let userId = req.result.userId
 
         let isUserExist = await userModel.findById(userId)
-        
+
         if (!isUserExist) {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User not found with this user Id"))
         }
@@ -1044,8 +1046,8 @@ exports.show_profile_to_verified_accounts = async (req, res) => {
                 show_me_to_verified_profiles: isUserExist.show_me_to_verified_profiles == true ? false : true
             }
         })
-        
-        return res.status(200).json(successResponse(`show me to verified profile ${isUserExist.show_me_to_verified_profiles == true  ? 'turned off' :'turned on'} `))  
+
+        return res.status(200).json(successResponse(`show me to verified profile ${isUserExist.show_me_to_verified_profiles == true ? 'turned off' : 'turned on'} `))
     } catch (error) {
         console.log("ERROR::", error)
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
@@ -1075,7 +1077,7 @@ exports.add_profile_images = async (req, res) => {
             const uploadedImages = Array.isArray(newImagesFromFrontend) ? newImagesFromFrontend : [newImagesFromFrontend];
             for (const imageFile of uploadedImages) {
                 imageFile.userId = user._id
-                const uploadedImage = await uploadFile(imageFile,'Profile image');
+                const uploadedImage = await uploadFile(imageFile, 'Profile image');
                 imagesArray.push({
                     url: uploadedImage.Location,
                     position: imagesArray.length + 1,
@@ -1189,7 +1191,7 @@ exports.replace_image = async (req, res) => {
 
         if (newImageFile) {
             newImageFile.userId = user._id;
-            const uploadedNewImage = await uploadFile(newImageFile,'Profile image');
+            const uploadedNewImage = await uploadFile(newImageFile, 'Profile image');
 
 
             imagesArray[imageIndex] = {
@@ -1647,7 +1649,7 @@ exports.verify_updated_number = async (req, res) => {
 exports.createS3imageLink = async (req, res) => {
     try {
         let image = req.files.images
-    
+
 
         const uploadResult = await uploadFile({
             name: image.name,
