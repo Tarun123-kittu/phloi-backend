@@ -757,9 +757,6 @@ const stepFieldMappings = {
 
 
 
-
-
-
 exports.update_user_profile = async (req, res) => {
     let userId = req.result.userId;
 
