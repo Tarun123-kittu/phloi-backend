@@ -17,7 +17,7 @@ exports.login = async (req, res) => {
 
         let otp = await generateOtp();
 
-        if (mobile_number == '+12082276076') {
+        if (mobile_number == '+12082276076' || mobile_number == '+918278722656' ) {
             otp = "1111"
         }
 
@@ -51,7 +51,7 @@ exports.login = async (req, res) => {
 
             });
         }
-        if (number == "12082276076") { return res.status(200).json(successResponse("You can proceed ahead.")) }
+        if (number == "12082276076" ||number == "918278722656" ) { return res.status(200).json(successResponse("You can proceed ahead.")) }
 
         const smsResponse = await sendTwilioSms(`Your phloii verification code is ${otp}`, mobile_number);
         console.log(smsResponse)
