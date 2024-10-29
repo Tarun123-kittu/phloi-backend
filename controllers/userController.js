@@ -690,11 +690,6 @@ exports.get_user_details = async (req, res) => {
 
 
 
-
-
-
-
-
 exports.update_image_position = async (req, res) => {
     const userId = req.result.userId;
     const { fromPosition, toPosition } = req.body;

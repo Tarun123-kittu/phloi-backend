@@ -94,6 +94,7 @@ router.put("/mark_all_notification_read",authenticateToken,notificationControlle
 
 //settings
 router.get("/get_settings_info",authenticateToken,settingsController.get_settings_info)
+router.get("/get_setting_page_details",authenticateToken,settingsController.get_setting_page_details)
 
  
 

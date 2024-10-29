@@ -5,10 +5,10 @@ const Question = require('./models/questionsModel');
 
 const headings = [
   { step: 7, text: 'Your sexual orientaion?', sub_headings: "" },
-  { step: 8, text: 'What are you looking for ?', sub_headings: "All good if it changes.There's something for everyone." },
-  { step: 11, text: 'What else makes you you?', sub_headings: "Dont hold back. Authenticity attracts auehtenticity." },
+  { step: 8, text: 'What are you looking for ?', sub_headings: "All good if it changes. There’s something for everyone." },
+  { step: 11, text: 'What else makes you, you?', sub_headings: "Don’t hold back. Authenticity attractsauthenticity." },
   { step: 12, text: 'Let\'s talk lifestyle habits', sub_headings: "Do their habits match yours? You go first." },
-  { step: 13, text: 'What are you into?', sub_headings: "You like what you like. Now let everyone know." }
+  { step: 13, text: 'What are you into?', sub_headings: " You like what you like. Now, let everyone know." }
 
 ];
 
