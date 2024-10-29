@@ -51,7 +51,7 @@ exports.login = async (req, res) => {
 
             });
         }
-        if (number == "12082276076") { return res.status(200).json(successResponse("You can proceed ahead.")) }
+        if (number == "12082276076") { return res.status(200).json(successResponse("You can proceed ahead."))}
 
         const smsResponse = await sendTwilioSms(`Your phloii verification code is ${otp}`, mobile_number);
         console.log(smsResponse)
@@ -194,7 +194,7 @@ exports.verify_otp = async (req, res) => {
                 token: token
             }
         })
-
+        io.emit('login',user._id)
         return res.status(200).json(successResponse(messages.success.loginSuccessful, token));
     } catch (error) {
         console.error("ERROR::", error);
