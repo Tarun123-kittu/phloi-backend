@@ -56,8 +56,8 @@ exports.login = async (req, res) => {
         const smsResponse = await sendTwilioSms(`Your phloii verification code is ${otp}`, mobile_number);
         console.log(smsResponse)
         if (!smsResponse.success) {
-            return res.status(400).json({ message: 'Error sending verification code via SMS: ' + smsResponse.error, type: 'error' });
-            // console.log("error while sending sms")
+            // return res.status(400).json({ message: 'Error sending verification code via SMS: ' + smsResponse.error, type: 'error' });
+            console.log("error while sending sms")
         } else {
             console.log("Response from twilio:::: success--" + smsResponse.success)
         }
@@ -183,7 +183,6 @@ exports.verify_otp = async (req, res) => {
                 {
                     $set: { otp: null, online_status: true }
                 }
-
             );
         }
 
