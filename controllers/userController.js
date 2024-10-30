@@ -1539,13 +1539,6 @@ exports.get_blocked_contacts = async (req, res) => {
         let blocked_contacts = isUserExist.blocked_contacts;
 
 
-        if (!blocked_contacts || blocked_contacts.length < 1) {
-            return res.status(400).json(errorResponse("No blocked contacts found for this user"));
-        }
-
-        console.log("Blocked contacts ---", blocked_contacts);
-
-
         return res.status(200).json(successResponse("Data fetched successfully", blocked_contacts));
     } catch (error) {
         console.log("ERROR::", error);
