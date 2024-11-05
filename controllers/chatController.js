@@ -5,7 +5,7 @@ const { errorResponse, successResponse } = require('../utils/responseHandler');
 const messages = require("../utils/messages")
 const { io } = require("../index");
 const notificationModel = require('../models/notificationModel');
-const {uploadFile} = require('../utils/awsUpload')
+const { uploadFile } = require('../utils/awsUpload')
 
 
 
@@ -25,8 +25,10 @@ exports.getChats = async (req, res) => {
         const chats = await chatModel.find({ participants: userId })
             .populate({
                 path: 'lastMessage',
-                populate: { path: 'sender', 
-                select: 'username' }
+                populate: {
+                    path: 'sender',
+                    select: 'username'
+                }
             })
             .populate({
                 path: 'participants',
@@ -50,7 +52,7 @@ exports.getChats = async (req, res) => {
             return res.status(200).json(successResponse("No chats found matching the search query", []));
         }
 
-    
+
         const chatDetails = await Promise.all(filteredChats.map(async chat => {
             const otherParticipant = chat.participants.find(participant => participant._id.toString() !== userId);
             const imageObj = otherParticipant?.images?.find(img => img.position === 1);
@@ -61,16 +63,16 @@ exports.getChats = async (req, res) => {
                 receiver: userId,
                 read_chat: false
             });
- 
+
             return {
                 chatId: chat._id,
                 otherParticipantName: otherParticipant ? otherParticipant.username : null,
                 otherParticipantImage: otherParticipantImage,
                 lastMessage: chat.lastMessage ? chat.lastMessage.text : null,
-                lastMessageSender: chat.lastMessage ? chat.lastMessage.sender.username : null,
+                lastMessageSender: chat.lastMessage ? chat.lastMessage.sender?.username : null,
                 unreadCount: unreadCount,
-                messageSentAt:chat.lastMessage?.createdAt? chat.lastMessage.createdAt:null,
-                onlineStatus:otherParticipant.online_status
+                messageSentAt: chat.lastMessage?.createdAt ? chat.lastMessage.createdAt : null,
+                onlineStatus: otherParticipant.online_status
             };
         }));
 
@@ -148,16 +150,22 @@ exports.sendMessage = async (req, res) => {
     try {
         let { chatId, text } = req.body;
         let senderId = req.result.userId;
-        let image = req.files?.image ;
-         
+        let image = req.files?.image;
+        let hotelName = req.body.hotelName;
+        let timing = req.body.timing
+        let address = req.body.address
+        let status = req.body.status
+        let meetUp = req.body.meetUp || false
 
-        if (!chatId ) { return res.status(400).json(errorResponse(messages.generalError.invalidInput, "Chat ID  are required.")); }
+        var convertToBool = (meetUp == 'true' || meetUp == true);
 
-       
+        if (!chatId) { return res.status(400).json(errorResponse(messages.generalError.invalidInput, "Chat ID  are required.")); }
+
+
         if (!text && !image) {
             return res.status(400).json(errorResponse(messages.generalError.invalidInput, "Either text or image is required."));
         }
-        
+
         const chat = await chatModel.findById(chatId);
         if (!chat) { return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "Chat not found with this chat Id.")); }
 
@@ -166,14 +174,25 @@ exports.sendMessage = async (req, res) => {
         if (!receiverId) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Invalid sender/receiver configuration.")); }
 
         if (image) {
-            image.userId=senderId
+            image.userId = senderId
             image.chatId = chatId
-            let imageData  = await uploadFile(image,'Chat');
+            let imageData = await uploadFile(image, 'Chat');
             text = imageData.Location
         }
 
+        let message
+        if (convertToBool) {
+            if (!hotelName || !timing || !address) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Please provide all the fields of meetUp')) }
+            message = new messageModel({ chat: chatId, sender: senderId, receiver: receiverId, text:'meeting', 
+                'hotelData.hotelName':hotelName,
+                'hotelData.timing':timing,
+                'hotelData.address':address,
+                'hotelData.status':'pending'
+            });
+        } else {
+            message = new messageModel({ chat: chatId, sender: senderId, receiver: receiverId, text });
+        }
 
-        const message = new messageModel({ chat: chatId, sender: senderId, receiver: receiverId, text });
         await message.save();
 
 
@@ -190,8 +209,8 @@ exports.sendMessage = async (req, res) => {
             createdAt: message.createdAt,
             unreadCount: chat.unreadCount
         });
-         
-        
+
+
         res.status(201).json(successResponse("Message sent successfully", message));
 
 
@@ -221,7 +240,7 @@ exports.getMessages = async (req, res) => {
 
 
         const messages = await messageModel.find({ chat: chatId })
-            .select('text sender createdAt read')
+            .select('text sender createdAt read hotelData')
             .populate('sender', 'username')
             .sort({ createdAt: -1 })
             .skip(skip)
@@ -296,9 +315,9 @@ exports.markMessagesAsRead = async (req, res) => {
                 count: result.nModified
             });
 
-           return  res.status(200).json(successResponse("Messages marked as read", { count: result.nModified }));
+            return res.status(200).json(successResponse("Messages marked as read", { count: result.nModified }));
         } else {
-           return  res.status(200).json(successResponse("Read receipts is off.Message not marked seen","Messages not marked as seen due to read receipts is off"));
+            return res.status(200).json(successResponse("Read receipts is off.Message not marked seen", "Messages not marked as seen due to read receipts is off"));
         }
 
     } catch (error) {
@@ -310,3 +329,12 @@ exports.markMessagesAsRead = async (req, res) => {
 
 
 
+
+
+exports.accept_or_reject_invitation = async(req,res)=>{
+    try{
+
+    }catch(error){
+        
+    }
+}

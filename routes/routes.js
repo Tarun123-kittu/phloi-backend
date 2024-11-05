@@ -77,6 +77,7 @@ router.post('/createChat', authenticateToken,chatController.createChat);
 router.post('/sendMessage', authenticateToken,chatController.sendMessage);
 router.get('/getMessages',authenticateToken,chatController.getMessages);
 router.put("/markMessagesAsRead",authenticateToken,chatController.markMessagesAsRead)
+router.put('/accept_or_reject_invitation',authenticateToken,chatController.accept_or_reject_invitation)
 
 
 //explore rooms routes 
@@ -106,6 +107,7 @@ router.get('/get_avatars',authenticateToken,secretDatingUserController.get_avata
 router.put("/switch_secretDating_mode",authenticateToken,secretDatingUserController.switch_secretDating_mode)
 router.post("/secretDating_registration",authenticateToken,secretDatingUserController.secretDating_registration)
 router.get("/get_secret_dating_recommendations",authenticateToken,secretDatingUserController.get_secret_dating_recommendations)
+router.get("/get_secretDating_userDetails",authenticateToken,secretDatingUserController.get_secretDating_userDetails)
 
 
 

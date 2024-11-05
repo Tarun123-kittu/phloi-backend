@@ -6,7 +6,13 @@ const messageSchema = new mongoose.Schema({
     receiver: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     text: { type: String, required: true },
     read: { type: Boolean, default: false },
-    read_chat:{type:Boolean,default:false}
+    read_chat:{type:Boolean,default:false},
+    hotelData:{
+        hotelName:{type:String},
+        timing: {type:Date},
+        address:{type:String},
+        status:{type:String,enum:['accept','reject','pending']}
+    }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Message', messageSchema);

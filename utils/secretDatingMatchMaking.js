@@ -2,6 +2,7 @@ let userModel = require('../models/userModel');
 let secretDatingUserModel = require('../models/secretDatingUserModel');
 
 const secretDatingMatchAlgorithm = async (currentUser, secretDatingCurrentUser, page = 1, limit = 10, filter = null) => {
+    
     let { _id, location, distance_preference, likedUsers, dislikedUsers, blocked_contacts, verified_profile } = currentUser;
     const currentCoordinates = location.coordinates;
     const distanceInKm = distance_preference;
@@ -15,7 +16,7 @@ const secretDatingMatchAlgorithm = async (currentUser, secretDatingCurrentUser, 
         let matchQuery = {
             _id: { $nin: [_id, ...likedUsers, ...dislikedUsers] },
             mobile_number: { $nin: blocked_contacts.map(contact => contact.number) },
-            secret_dating_mode:true,
+            secret_dating_mode: true,
             'location.coordinates': {
                 $geoWithin: {
                     $centerSphere: [currentCoordinates, distanceInKm / 6378.1]
@@ -50,7 +51,7 @@ const secretDatingMatchAlgorithm = async (currentUser, secretDatingCurrentUser, 
                 matchQuery.gender = { $in: [interested_to_see] };
             }
         }
-       
+
         if (!verified_profile) {
             matchQuery.show_me_to_verified_profiles = { $ne: true };
         }
@@ -73,6 +74,7 @@ const secretDatingMatchAlgorithm = async (currentUser, secretDatingCurrentUser, 
                     as: 'secretDatingProfile'
                 }
             },
+
             {
                 $unwind: {
                     path: "$secretDatingProfile",
@@ -80,29 +82,56 @@ const secretDatingMatchAlgorithm = async (currentUser, secretDatingCurrentUser, 
                 }
             },
             {
-                $match: {
-                    'secretDatingProfile.sexual_orientation_preference_id': { $in: sexual_orientation_preference_id || [] }
+                $lookup: {
+                    from: 'options',
+                    localField: 'secretDatingProfile.sexual_orientation_preference_id',
+                    foreignField: '_id',
+                    as: 'sexual_orientation_texts'
                 }
             },
             {
+                $lookup: {
+                    from: 'options',
+                    localField: 'secretDatingProfile.relationship_preference',
+                    foreignField: '_id',
+                    as: 'relationship_preference_text'
+                }
+            },
+            {
+                $unwind: {
+                    path: "$relationship_preference_text",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+
+
+            // {
+            //     $match: {
+            //         'secretDatingProfile.sexual_orientation_preference_id': { $in: sexual_orientation_preference_id || [] }
+            //     }
+            // },
+            {
                 $project: {
                     _id: 1,
-                    // username: 1,
-                    // images: 1,
                     gender: 1,
                     distance: 1,
                     distanceInKm: { $divide: ['$distance', 1000] },
                     age: { $floor: { $divide: [{ $subtract: [new Date(), '$dob'] }, 1000 * 60 * 60 * 24 * 365] } },
+                    'secretDatingProfile.user_id': 1,
                     'secretDatingProfile.name': 1,
                     'secretDatingProfile.avatar': 1,
-                    'secretDatingProfile.sexual_orientation_preference_id': 1,
-                    'secretDatingProfile.relationship_preference': 1
+                    'secretDatingProfile.show_sexual_orientation':1,
+                    'secretDatingProfile.sexual_orientation_texts': { $map: 
+                        { input: "$sexual_orientation_texts", 
+                        as: "orientation", 
+                        in: "$$orientation.text" } },
+                    'secretDatingProfile.relationship_preference_text': "$relationship_preference_text.text"
                 }
             },
             { $skip: (page - 1) * limit },
             { $limit: limit }
         ]);
-        
+
         const usersCount = await userModel.countDocuments(matchQuery);
 
         return { paginatedUsers: users, allUsers: usersCount };

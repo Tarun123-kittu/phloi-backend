@@ -213,3 +213,41 @@ exports.get_secret_dating_recommendations = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
     }
 }
+
+
+
+
+
+
+exports.get_secretDating_userDetails = async(req,res)=>{
+    try{
+    let userId = req.result.userId
+    let TOTAL_STEPS = 4
+
+    let isUserExist = await userModel.findById(userId)
+    if(!isUserExist){
+        return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'User not exist with this user Id'))
+    }
+
+    var secretDatingUser = await secretDatingUserModel.findOne({user_id:userId})
+    if(!secretDatingUser){
+        return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'This user not exist in the secret Dating'))
+    }
+    const validSteps = secretDatingUser?.completed_steps.filter(step => step !== null);
+
+    const completedStepCount = validSteps.length;
+    const completionPercentage = (completedStepCount / TOTAL_STEPS) * 100;
+     
+    let profile_completion_percentage = completionPercentage.toFixed(2)
+
+    let details = {
+        secretDatingUser,
+        profile_completion_percentage
+    }
+
+    return res.status(200).json(successResponse('Data retrieved successfully',details))
+    }catch(error){
+        console.log('ERROR:: ', error)
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
+    }
+}
