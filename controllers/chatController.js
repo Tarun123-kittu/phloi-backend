@@ -57,24 +57,31 @@ exports.getChats = async (req, res) => {
             const otherParticipant = chat.participants.find(participant => participant._id.toString() !== userId);
             const imageObj = otherParticipant?.images?.find(img => img.position === 1);
             const otherParticipantImage = imageObj ? imageObj.url : null;
-
+        
             const unreadCount = await messageModel.countDocuments({
                 chat: chat._id,
                 receiver: userId,
                 read_chat: false
             });
-
+        
+          
+            const lastMessageText = chat.lastMessage ? chat.lastMessage.text : null;
+            const lastMessageSenderName = chat.lastMessage && chat.lastMessage.sender ? chat.lastMessage.sender.username : null;
+            const messageSentAt = chat.lastMessage ? chat.lastMessage.createdAt : null;
+        
             return {
                 chatId: chat._id,
                 otherParticipantName: otherParticipant ? otherParticipant.username : null,
                 otherParticipantImage: otherParticipantImage,
-                lastMessage: chat.lastMessage ? chat.lastMessage.text : null,
-                lastMessageSender: chat.lastMessage ? chat.lastMessage.sender?.username : null,
+                lastMessage: lastMessageText,
+                lastMessageSender: lastMessageSenderName,
                 unreadCount: unreadCount,
-                messageSentAt: chat.lastMessage?.createdAt ? chat.lastMessage.createdAt : null,
-                onlineStatus: otherParticipant.online_status
+                messageSentAt: messageSentAt,
+                onlineStatus: otherParticipant ? otherParticipant.online_status : null
             };
         }));
+        
+      
 
 
         const totalChatsCount = await chatModel.countDocuments({
@@ -333,8 +340,9 @@ exports.markMessagesAsRead = async (req, res) => {
 
 exports.accept_or_reject_invitation = async(req,res)=>{
     try{
-
+    let chatId
     }catch(error){
-        
+        console.log("ERROR::", error)
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message)); 
     }
 }
