@@ -102,9 +102,11 @@ router.get("/get_setting_page_details",authenticateToken,settingsController.get_
 //SECRET DATING
 
 //users routes
+router.get('/get_avatars',authenticateToken,secretDatingUserController.get_avatars)
 router.put("/switch_secretDating_mode",authenticateToken,secretDatingUserController.switch_secretDating_mode)
 router.post("/secretDating_registration",authenticateToken,secretDatingUserController.secretDating_registration)
-// router.get("/get_secret_dating_recommendations",authenticateToken,secretDatingUserController.get_secret_dating_recommendations)
+router.get("/get_secret_dating_recommendations",authenticateToken,secretDatingUserController.get_secret_dating_recommendations)
+
 
 
 module.exports = router

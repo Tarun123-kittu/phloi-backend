@@ -51,7 +51,7 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
 
             
             if (maxDistance) {
-                 distanceInMetersFiltered = maxDistance * 1000;
+                distanceInMetersFiltered = maxDistance * 1000;
                 matchQuery['location.coordinates'] = {
                     $geoWithin: {
                         $centerSphere: [currentCoordinates, maxDistance / 6378.1] // Radius in radians

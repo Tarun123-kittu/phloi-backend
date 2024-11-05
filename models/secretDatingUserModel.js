@@ -10,8 +10,6 @@ let secretDatingUserSchema = new mongoose.Schema({
     sexual_orientation_preference_id: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Options' }],
     show_sexual_orientation: { type: Boolean, default: true },
     relationship_preference: { type: mongoose.Schema.Types.ObjectId, ref: 'Options' },
-    likedUsers: [{ type: mongoose.Schema.Types.ObjectId }],
-    dislikedUsers: [{ type: mongoose.Schema.Types.ObjectId }],
     current_step:{type:Number,default:0},
     completed_steps: { type: Array, default: [] },
 }, { timestamps: true })

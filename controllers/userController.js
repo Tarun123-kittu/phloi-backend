@@ -758,9 +758,6 @@ const stepFieldMappings = {
 
 
 
-
-
-
 exports.update_user_profile = async (req, res) => {
     let userId = req.result.userId;
 
@@ -1158,8 +1155,7 @@ exports.delete_profile_image = async (req, res) => {
 
         user.images = imagesArray;
         await user.save();
-
-
+        
 
         return res.status(200).json({
             message: "Image deleted successfully",
@@ -1167,8 +1163,8 @@ exports.delete_profile_image = async (req, res) => {
         });
 
     } catch (error) {
-        console.log("ERROR::", error);
-        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+        console.log('ERROR::',error)
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message))
     }
 };
 
@@ -1198,8 +1194,8 @@ exports.replace_image = async (req, res) => {
         if (newImageFile) {
             newImageFile.userId = user._id;
             const uploadedNewImage = await uploadFile(newImageFile, 'Profile image');
-
-
+        
+ 
             imagesArray[imageIndex] = {
                 url: uploadedNewImage.Location,
                 position: imageIndex + 1,
@@ -1219,7 +1215,7 @@ exports.replace_image = async (req, res) => {
             } catch (deleteError) {
                 console.error("Error deleting old image from S3:", deleteError);
             }
-
+       
 
             user.images = imagesArray;
             await user.save();
@@ -1233,8 +1229,8 @@ exports.replace_image = async (req, res) => {
         }
 
     } catch (error) {
-        console.log("ERROR::", error);
-        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+       console.log('ERROR::',error)
+       return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message))
     }
 };
 
@@ -1307,7 +1303,6 @@ exports.import_contacts = async (req, res) => {
         if (contact_list.length < 1) {
             return res.status(400).json(errorResponse("You have not added any contact"));
         }
-
 
         const formattedContacts = contact_list.filter(contact => contact.name && contact.number);
 

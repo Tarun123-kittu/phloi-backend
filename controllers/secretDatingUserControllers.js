@@ -1,8 +1,22 @@
 let userModel = require('../models/userModel')
 let secretDatingUserModel = require('../models/secretDatingUserModel')
+let avatarModel = require('../models/avatarsModel')
 let { successResponse, errorResponse } = require('../utils/responseHandler')
 let messages = require('../utils/messages')
 let {uploadFile} = require('../utils/awsUpload')
+let secretDatingMatchAlgorithm = require('../utils/secretDatingMatchMaking')
+
+
+
+exports.get_avatars = async(req,res)=>{
+    try{
+    let allAvatars = await avatarModel.find().select('_id avatar_image').lean()
+    return res.status(200).json(successResponse('Data retrieved',allAvatars))
+    }catch(error){
+        console.log('ERROR::',error)
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message))
+    }
+}
 
 
 
@@ -138,3 +152,64 @@ exports.secretDating_registration = async (req, res) => {
 
 
 
+
+
+
+
+exports.get_secret_dating_recommendations = async (req, res) => {
+    try {
+        const userId = req.result.userId;
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 10;
+
+        const ageMin = parseInt(req.query.age_min, 10)
+        const ageMax = parseInt(req.query.age_max, 10)
+        let maxDistance = parseInt(req.query.max_distance, 10)
+        const interestedIn = req.query.interested_in
+        let show_verified_profiles = req.query.show_verified_profiles
+        const applyFilter = req.query.applyFilter || false
+
+
+        const currentUser = await userModel.findById(userId).lean();
+        if (!currentUser) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
+        }
+        const secretDatingCurrentUser= await secretDatingUserModel.findOne({user_id:currentUser._id})
+  
+        if (applyFilter == 'true' || applyFilter == true) {
+            if (!ageMin || !ageMax || !maxDistance || !interestedIn || !show_verified_profiles) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please provide all the filter values to find match")) }
+            show_verified_profiles = (show_verified_profiles ==='true')
+        }
+       
+        if (currentUser.setting.distance_in === 'mi') {
+            maxDistance = maxDistance * 1.60934;
+        }
+
+       
+        let filterApplied
+        if (applyFilter == 'true' || applyFilter == true) {
+
+            filterApplied = {
+                ageMin: ageMin,
+                ageMax: ageMax,
+                maxDistance: maxDistance,
+                interestedIn: interestedIn,
+                show_verified_profiles: show_verified_profiles
+            }
+        }
+
+        const matchedUsers = await secretDatingMatchAlgorithm(currentUser,secretDatingCurrentUser, page, limit, filterApplied);
+
+        return res.status(200).json({
+            type: 'success',
+            message: 'Users matched successfully',
+            currentPage: page,
+            totalDocuments: matchedUsers.allUsers,
+            users: matchedUsers.paginatedUsers
+        });
+
+    } catch (error) {
+        console.log('ERROR:: ', error)
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
+    }
+}

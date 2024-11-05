@@ -51,3 +51,5 @@ exports.get_setting_page_details = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
     }
 }
+
+
