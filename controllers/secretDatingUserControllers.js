@@ -1,5 +1,6 @@
 let userModel = require('../models/userModel')
 let secretDatingUserModel = require('../models/secretDatingUserModel')
+let optionsModel = require("../models/optionsModel")
 let avatarModel = require('../models/avatarsModel')
 let { successResponse, errorResponse } = require('../utils/responseHandler')
 let messages = require('../utils/messages')
@@ -219,35 +220,48 @@ exports.get_secret_dating_recommendations = async (req, res) => {
 
 
 
-exports.get_secretDating_userDetails = async(req,res)=>{
-    try{
-    let userId = req.result.userId
-    let TOTAL_STEPS = 4
+exports.get_secretDating_userDetails = async(req, res) => {
+    try {
+        let userId = req.result.userId;
+        let TOTAL_STEPS = 4;
 
-    let isUserExist = await userModel.findById(userId)
-    if(!isUserExist){
-        return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'User not exist with this user Id'))
+        // Check if user exists in userModel
+        let isUserExist = await userModel.findById(userId);
+        if (!isUserExist) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'User does not exist with this user ID'));
+        }
+
+        // Check if user exists in secretDatingUserModel
+        let secretDatingUser = await secretDatingUserModel.findOne({ user_id: userId });
+        if (!secretDatingUser) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'This user does not exist in Secret Dating'));
+        }
+
+        // Calculate completion percentage
+        const validSteps = secretDatingUser?.completed_steps.filter(step => step !== null);
+        const completedStepCount = validSteps.length;
+        const completionPercentage = ((completedStepCount / TOTAL_STEPS) * 100).toFixed(2);
+
+        // Fetch texts from options collection
+        const orientationTexts = await optionsModel.find({ 
+            _id: { $in: secretDatingUser.sexual_orientation_preference_id }
+        }).select('text _id');
+
+        const relationshipText = await optionsModel.findOne({ 
+            _id: secretDatingUser.relationship_preference 
+        }).select('text _id');
+
+        // Prepare response object
+        let details = {
+            ...secretDatingUser.toObject(),
+            profile_completion_percentage: completionPercentage,
+            sexual_orientation_texts: orientationTexts,
+            relationship_preference_text: relationshipText ? relationshipText.text : null
+        };
+
+        return res.status(200).json(successResponse('Data retrieved successfully', details));
+    } catch (error) {
+        console.log('ERROR:: ', error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
-
-    var secretDatingUser = await secretDatingUserModel.findOne({user_id:userId})
-    if(!secretDatingUser){
-        return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'This user not exist in the secret Dating'))
-    }
-    const validSteps = secretDatingUser?.completed_steps.filter(step => step !== null);
-
-    const completedStepCount = validSteps.length;
-    const completionPercentage = (completedStepCount / TOTAL_STEPS) * 100;
-     
-    let profile_completion_percentage = completionPercentage.toFixed(2)
-
-    let details = {
-        secretDatingUser,
-        profile_completion_percentage
-    }
-
-    return res.status(200).json(successResponse('Data retrieved successfully',details))
-    }catch(error){
-        console.log('ERROR:: ', error)
-        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
-    }
-}
+};
