@@ -9,7 +9,6 @@ const messageSchema = new mongoose.Schema({
     read_chat:{type:Boolean,default:false},
     hotelData:{
         hotelName:{type:String},
-        timing: {type:Date},
         address:{type:String},
         status:{type:String,enum:['accept','reject','pending']}
     }
