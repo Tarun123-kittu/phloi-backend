@@ -7,6 +7,7 @@ const exploreRoomsController = require("../controllers/exploreRoomsController")
 const secretDatingUserController = require("../controllers/secretDatingUserControllers")
 const notificationController = require("../controllers/notificationController")
 const settingsController = require("../controllers/settingController")
+const secretDatingHomepageController = require("../controllers/secretDatingHomepageController")
 const {
     user_registration_steps_validator,
     validateLogin,
@@ -100,14 +101,22 @@ router.get("/get_setting_page_details",authenticateToken,settingsController.get_
  
 
 
-//SECRET DATING
+//+++++++++++++++++++++++++SECRET DATING++++++++++++++++++++++
 
 //users routes
 router.get('/get_avatars',authenticateToken,secretDatingUserController.get_avatars)
 router.put("/switch_secretDating_mode",authenticateToken,secretDatingUserController.switch_secretDating_mode)
 router.post("/secretDating_registration",authenticateToken,secretDatingUserController.secretDating_registration)
-router.get("/get_secret_dating_recommendations",authenticateToken,secretDatingUserController.get_secret_dating_recommendations)
 router.get("/get_secretDating_userDetails",authenticateToken,secretDatingUserController.get_secretDating_userDetails)
+router.put("/update_user_detals",authenticateToken,secretDatingUserController.update_user_detals)
+
+
+// secretDating homepage
+router.get("/get_secret_dating_recommendations",authenticateToken,secretDatingHomepageController.get_secret_dating_recommendations)
+router.put("/secretDating_like_profile",authenticateToken,secretDatingHomepageController.secretDating_like_profile)
+router.put("/secretDating_dislike_profile",authenticateToken,secretDatingHomepageController.secretDating_dislike_profile)
+router.get('/get_secretDating_liked_you_profiles',authenticateToken,secretDatingHomepageController.get_secretDating_liked_you_profiles)
+router.get('/get_secretDating_topPicks',authenticateToken,secretDatingHomepageController.get_secretDating_topPicks)
 
 
 

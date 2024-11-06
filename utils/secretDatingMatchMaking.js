@@ -2,21 +2,18 @@ let userModel = require('../models/userModel');
 let secretDatingUserModel = require('../models/secretDatingUserModel');
 
 const secretDatingMatchAlgorithm = async (currentUser, secretDatingCurrentUser, page = 1, limit = 10, filter = null) => {
-    
-    let { _id, location, distance_preference, likedUsers, dislikedUsers, blocked_contacts, verified_profile } = currentUser;
+    let { _id, location, distance_preference, blocked_contacts, verified_profile } = currentUser;
     const currentCoordinates = location.coordinates;
     const distanceInKm = distance_preference;
     const distanceInMeters = distanceInKm * 1000;
     blocked_contacts = blocked_contacts.map(contact => parseFloat(contact));
 
-    let { sexual_orientation_preference_id, interested_to_see } = secretDatingCurrentUser;
-
+    let { sexual_orientation_preference_id, interested_to_see, likedUsers, dislikedUsers } = secretDatingCurrentUser;
 
     try {
         let matchQuery = {
-            _id: { $nin: [_id, ...likedUsers, ...dislikedUsers] },
+            _id: { $nin: [_id] },
             mobile_number: { $nin: blocked_contacts.map(contact => contact.number) },
-            secret_dating_mode: true,
             'location.coordinates': {
                 $geoWithin: {
                     $centerSphere: [currentCoordinates, distanceInKm / 6378.1]
@@ -74,11 +71,17 @@ const secretDatingMatchAlgorithm = async (currentUser, secretDatingCurrentUser, 
                     as: 'secretDatingProfile'
                 }
             },
-
             {
                 $unwind: {
                     path: "$secretDatingProfile",
                     preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $match: {
+                    $and: [
+                        { 'secretDatingProfile.user_id': { $nin: [...likedUsers, ...dislikedUsers] } }
+                    ]
                 }
             },
             {
@@ -103,13 +106,6 @@ const secretDatingMatchAlgorithm = async (currentUser, secretDatingCurrentUser, 
                     preserveNullAndEmptyArrays: true
                 }
             },
-
-
-            // {
-            //     $match: {
-            //         'secretDatingProfile.sexual_orientation_preference_id': { $in: sexual_orientation_preference_id || [] }
-            //     }
-            // },
             {
                 $project: {
                     _id: 1,
@@ -120,11 +116,15 @@ const secretDatingMatchAlgorithm = async (currentUser, secretDatingCurrentUser, 
                     'secretDatingProfile.user_id': 1,
                     'secretDatingProfile.name': 1,
                     'secretDatingProfile.avatar': 1,
-                    'secretDatingProfile.show_sexual_orientation':1,
-                    'secretDatingProfile.sexual_orientation_texts': { $map: 
-                        { input: "$sexual_orientation_texts", 
-                        as: "orientation", 
-                        in: "$$orientation.text" } },
+                    'secretDatingProfile.profile_image': 1,
+                    'secretDatingProfile.show_sexual_orientation': 1,
+                    'secretDatingProfile.sexual_orientation_texts': {
+                        $map: {
+                            input: "$sexual_orientation_texts",
+                            as: "orientation",
+                            in: "$$orientation.text"
+                        }
+                    },
                     'secretDatingProfile.relationship_preference_text': "$relationship_preference_text.text"
                 }
             },
@@ -132,9 +132,42 @@ const secretDatingMatchAlgorithm = async (currentUser, secretDatingCurrentUser, 
             { $limit: limit }
         ]);
 
-        const usersCount = await userModel.countDocuments(matchQuery);
 
-        return { paginatedUsers: users, allUsers: usersCount };
+
+        const usersCount = await userModel.aggregate([
+            {
+                $geoNear: {
+                    near: { type: 'Point', coordinates: currentCoordinates },
+                    distanceField: 'distance',
+                    maxDistance: filter ? filter.maxDistance * 1000 : distanceInMeters,
+                    query: matchQuery,
+                    spherical: true
+                }
+            },
+            {
+                $lookup: {
+                    from: 'secret_dating_users',
+                    localField: '_id',
+                    foreignField: 'user_id',
+                    as: 'secretDatingProfile'
+                }
+            },
+            {
+                $unwind: {
+                    path: "$secretDatingProfile",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $match: {
+                    $and: [
+                        { 'secretDatingProfile.user_id': { $nin: [...likedUsers, ...dislikedUsers] } }
+                    ]
+                }
+            },
+        ])
+
+        return { paginatedUsers: users, allUsers: usersCount.length }
     } catch (error) {
         console.error('ERROR::', error);
         throw new Error('Error while finding matching users.');
@@ -142,3 +175,4 @@ const secretDatingMatchAlgorithm = async (currentUser, secretDatingCurrentUser, 
 };
 
 module.exports = secretDatingMatchAlgorithm;
+

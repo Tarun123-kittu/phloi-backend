@@ -1,22 +1,17 @@
-let userModel = require("../models/userModel")
+let secretDatingMatchAlgorithm = require('../utils/secretDatingMatchMaking')
+let userModel = require('../models/userModel')
+let secretDatingUserModel = require('../models/secretDatingUserModel')
 let matchModel = require("../models/matchesModel")
-let QuestionModel = require('../models/questionsModel');
-let AnswerModel = require('../models/optionsModel');
-let notificationModel = require('../models/notificationModel')
-let homepageMatchAlgorithm = require("../utils/homepageMatchMaking")
-let calculateMatchScore = require("../utils/calculateTopPicks")
-let { errorResponse, successResponse } = require("../utils/responseHandler")
+let likeDislikeLimitModel = require("../models/likeDislikeLimit")
+let {errorResponse,successResponse} = require("../utils/responseHandler")
+let topPicksMatchScore = require("../utils/secretDatingTopPicks")
 let messages = require("../utils/messages")
-let { io } = require('../index');
-const likeDislikeLimitModel = require("../models/likeDislikeLimit");
+let {io} = require("../index")
 
 
 
 
-
-
-
-exports.recommended_users = async (req, res) => {
+exports.get_secret_dating_recommendations = async (req, res) => {
     try {
         const userId = req.result.userId;
         const page = parseInt(req.query.page, 10) || 1;
@@ -34,16 +29,18 @@ exports.recommended_users = async (req, res) => {
         if (!currentUser) {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
         }
+        const secretDatingCurrentUser = await secretDatingUserModel.findOne({ user_id: currentUser._id })
+
         if (applyFilter == 'true' || applyFilter == true) {
             if (!ageMin || !ageMax || !maxDistance || !interestedIn || !show_verified_profiles) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please provide all the filter values to find match")) }
-            show_verified_profiles = (show_verified_profiles ==='true')
+            show_verified_profiles = (show_verified_profiles === 'true')
         }
-       
+
         if (currentUser.setting.distance_in === 'mi') {
             maxDistance = maxDistance * 1.60934;
         }
 
-       
+
         let filterApplied
         if (applyFilter == 'true' || applyFilter == true) {
 
@@ -56,7 +53,7 @@ exports.recommended_users = async (req, res) => {
             }
         }
 
-        const matchedUsers = await homepageMatchAlgorithm(currentUser, page, limit, filterApplied);
+        const matchedUsers = await secretDatingMatchAlgorithm(currentUser, secretDatingCurrentUser, page, limit, filterApplied);
 
         return res.status(200).json({
             type: 'success',
@@ -75,15 +72,24 @@ exports.recommended_users = async (req, res) => {
 
 
 
-exports.like_profile = async (req, res) => {
+
+
+
+exports.secretDating_like_profile = async (req, res) => {
     try {
         const currentUserId = req.result.userId;
         const likedUserId = req.query.likedUserId;
 
         if (!likedUserId) { return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "Please provide liked user's id")) }
-
+ 
+       
         const currentUser = await userModel.findById(currentUserId);
         if (!currentUser) {
+            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
+        }
+        
+        const secretDatingUser = await secretDatingUserModel.findOne({user_id:currentUserId});
+        if (!secretDatingUser) {
             return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
         }
 
@@ -115,21 +121,21 @@ exports.like_profile = async (req, res) => {
             }
         }
 
-        const likedUser = await userModel.findById(likedUserId);
+        const likedUser = await secretDatingUserModel.findOne({ user_id: likedUserId });
         if (!likedUser) {
-            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "User to be liked not found"));
+            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "User to be liked not found in secret dating"));
         }
 
 
-        if (currentUser.likedUsers.includes(likedUserId)) {
+        if (secretDatingUser.likedUsers.includes(likedUserId)) {
             return res.status(400).json(errorResponse("You have already liked this user."));
         }
 
 
 
-        currentUser.likedUsers.push(likedUserId);
+        secretDatingUser.likedUsers.push(likedUserId);
 
-        await currentUser.save();
+        await secretDatingUser.save();
 
 
         let todayLimit = await likeDislikeLimitModel.findOne({
@@ -158,21 +164,21 @@ exports.like_profile = async (req, res) => {
         })
 
         if (likedUser.likedUsers.includes(currentUserId)) {
-
+   
             const matchExists = await matchModel.findOne({
                 users: { $all: [currentUserId, likedUserId] },
-                type:'regular dating'
+                type:'secret dating'
             });
 
             if (!matchExists) {
                 const newMatch = new matchModel({
                     users: [currentUserId, likedUserId],
                     createdAt: Date.now(),
-                    type:'regular dating'
+                    type:'secret dating'
                 });
                 await newMatch.save();
 
-                io.emit('its_a_match', {
+                io.emit('its_a_match_in_secretDating', {
                     matchId: newMatch._id,
                     users: [currentUserId, likedUserId],
                     usernames: [currentUser.username, likedUser.username],
@@ -180,7 +186,7 @@ exports.like_profile = async (req, res) => {
                 } );
       
             }
-            await notificationModel.create({ userId: likedUserId,sender_id:currentUserId, notification_text: `You got a match with ${currentUser.username}` })
+            // await notificationModel.create({ userId: likedUserId,sender_id:currentUserId, notification_text: `You got a match with ${currentUser.username}` })
 
             let participants = { currentUserId, likedUserId }
 
@@ -196,7 +202,11 @@ exports.like_profile = async (req, res) => {
 }
 
 
-exports.dislike_profile = async (req, res) => {
+
+
+
+
+exports.secretDating_dislike_profile = async(req,res)=>{
     const currentUserId = req.result.userId;
     const dislikedUserId = req.query.dislikedUserId;
 
@@ -207,6 +217,11 @@ exports.dislike_profile = async (req, res) => {
         const currentUser = await userModel.findById(currentUserId);
         if (!currentUser) {
             return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "Current user not found"));
+        }
+ 
+        const secretDatingUser = await secretDatingUserModel.findOne({user_id:currentUserId});
+        if (!secretDatingUser) {
+            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "Current user not found in secret dating"));
         }
 
         const today = new Date();
@@ -236,18 +251,18 @@ exports.dislike_profile = async (req, res) => {
             }
         }
 
-        const dislikedUser = await userModel.findById(dislikedUserId);
+        const dislikedUser = await secretDatingUserModel.findOne({user_id:dislikedUserId});
         if (!dislikedUser) {
-            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "User to be disliked not found."));
+            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "User to be disliked not found in secret dating."));
         }
 
-        if (currentUser.dislikedUsers.includes(dislikedUserId)) {
+        if (secretDatingUser.dislikedUsers.includes(dislikedUserId)) {
             return res.status(400).json(errorResponse("You have already disliked this user."));
         }
 
 
-        currentUser.dislikedUsers.push(dislikedUserId);
-        await currentUser.save();
+        secretDatingUser.dislikedUsers.push(dislikedUserId);
+        await secretDatingUser.save();
 
 
         let todayLimit = await likeDislikeLimitModel.findOne({
@@ -282,12 +297,13 @@ exports.dislike_profile = async (req, res) => {
         console.error('ERROR::', error);
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
-};
+}
 
 
 
 
-exports.get_users_who_liked_profile = async (req, res) => {
+
+exports.get_secretDating_liked_you_profiles = async (req, res) => {
     const loggedInUserId = req.result.userId;
 
     let { page = 1, limit = 10 } = req.query;
@@ -295,22 +311,18 @@ exports.get_users_who_liked_profile = async (req, res) => {
     limit = parseInt(limit, 10);
 
     try {
-        const totalProfilesCount = await userModel.countDocuments({
+        const totalProfilesCount = await secretDatingUserModel.countDocuments({
             likedUsers: loggedInUserId
         });
 
-        const usersWhoLikedProfile = await userModel.find({
+        const usersWhoLikedProfile = await secretDatingUserModel.find({
             likedUsers: loggedInUserId
         })
-            .select('_id username gender images')
+            .select('_id user_id name avatar profile_image interested_to_see')
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
             .limit(limit)
             .lean();
-
-        // if (usersWhoLikedProfile.length === 0) {
-        //     return res.status(200).json(successResponse("No user have liked your profile"));
-        // }
 
         return res.status(200).json({
             type: 'success',
@@ -330,113 +342,8 @@ exports.get_users_who_liked_profile = async (req, res) => {
 
 
 
-exports.get_profile_details = async (req, res) => {
-    try {
-        let id = req.query.userId;
-        if (!id) {
-            return res.status(404).json(errorResponse("Please provide userId"));
-        }
 
-
-        let user = await userModel.findById(id).lean();
-        if (!user) {
-            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
-        }
-
-
-        const getSingleAnswerStep = async (userSteps) => {
-            const groupedAnswers = [];
-            for (const step of userSteps || []) {
-                const question = await QuestionModel.findById(step.questionId).lean();
-                const answer = await AnswerModel.findById(step.answerId).lean();
-                if (question && answer) {
-                    groupedAnswers.push({
-                        question: question.identify_text,
-                        answers: [answer.text]
-                    });
-                }
-            }
-            return groupedAnswers;
-        };
-
-
-        const getMultipleAnswerStep = async (userSteps) => {
-            const groupedAnswers = [];
-            for (const step of userSteps || []) {
-                const question = await QuestionModel.findById(step.questionId).lean();
-                const answers = await AnswerModel.find({ _id: { $in: step.answerIds } }).lean();
-                if (question) {
-                    groupedAnswers.push({
-                        question: question.identify_text,
-                        answers: answers.map(answer => answer.text)
-                    });
-                }
-            }
-            return groupedAnswers;
-        };
-
-
-        const getAnswerText = async (idOrIds) => {
-
-            if (Array.isArray(idOrIds)) {
-                const answers = await AnswerModel.find({ _id: { $in: idOrIds } }).lean();
-                return answers.map(answer => answer.text);
-            } else {
-                const answer = await AnswerModel.findById(idOrIds).lean();
-                return answer ? answer.text : null;
-            }
-        };
-
-
-        const step11Answers = user.user_characterstics?.step_11
-            ? await getSingleAnswerStep(user.user_characterstics.step_11)
-            : [];
-        const step12Answers = user.user_characterstics?.step_12
-            ? await getSingleAnswerStep(user.user_characterstics.step_12)
-            : [];
-        const step13Answers = user.user_characterstics?.step_13
-            ? await getMultipleAnswerStep(user.user_characterstics.step_13)
-            : [];
-
-
-        const sexualOrientationText = user.sexual_orientation_preference_id
-            ? await getAnswerText(user.sexual_orientation_preference_id)
-            : [];
-
-
-        const lookingForText = user.relationship_type_preference_id
-            ? await getAnswerText(user.relationship_type_preference_id)
-            : null;
-
-
-        const userDetails = {
-            username: user.username,
-            age: user.dob,
-            gender: user.gender,
-            show_gender: user.show_gender,
-            interested_in: user.intrested_to_see,
-            sexual_orientation: sexualOrientationText,
-            show_sexual_orientation: user.show_sexual_orientation,
-            looking_for: lookingForText,
-            study: user.study,
-            images: user.images,
-            step_11: step11Answers,
-            step_12: step12Answers,
-            step_13: step13Answers
-        };
-
-        // Return the response
-        return res.status(200).json(successResponse("Details fetched successfully", userDetails));
-
-    } catch (error) {
-        console.error('ERROR::', error);
-        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
-    }
-};
-
-
-
-exports.getTopPicks = async (req, res) => {
+exports.get_secretDating_topPicks = async(req,res)=>{
     try {
         const userId = req.result.userId;
         const page = parseInt(req.query.page) || 1;
@@ -447,45 +354,83 @@ exports.getTopPicks = async (req, res) => {
             return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "User not found with this user id."));
         }
 
-
-        const preferredGender = user.intrested_to_see;
+        const secretDatingUser = await secretDatingUserModel.findOne({ user_id: userId });
+        if (!secretDatingUser) {
+            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "User not found with this user id in secret dating."));
+        }
+        
+        const preferredGender = secretDatingUser.interested_to_see;
         const maxDistance = user.distance_preference || 50;
-        const likedUsers = user.likedUsers
-        const dislikedUsers = user.dislikedUsers
-        let blocked_contacts = user.blocked_contacts
-
-
-
-        const nearbyUsers = await userModel.find({
-            _id: {
-                $ne: userId,
-                $nin: [...likedUsers, ...dislikedUsers],
+        const blockedContacts = user.blocked_contacts || [];
+        
+        
+        const nearbyUsers = await userModel.aggregate([
+           
+            {
+                $geoNear: {
+                    near: { type: "Point", coordinates: user.location.coordinates },
+                    distanceField: "distance",
+                    maxDistance: maxDistance * 1000, 
+                    query: {
+                        _id: { $ne: userId },
+                        gender: preferredGender === 'everyone' ? { $exists: true } : preferredGender, 
+                        mobile_number: { $nin: blockedContacts.map(contact => contact.number) } 
+                    },
+                    spherical: true
+                }
             },
-            gender: preferredGender === 'everyone' ? { $exists: true } : preferredGender,
-            mobile_number: { $nin: blocked_contacts.map(contact => contact.number) },
-            location: {
-                $near: {
-                    $geometry: { type: 'Point', coordinates: user.location.coordinates },
-                    $maxDistance: maxDistance * 1000,
+           
+            {
+                $lookup: {
+                    from: 'secret_dating_users',
+                    localField: '_id',
+                    foreignField: 'user_id',
+                    as: 'secretDatingInfo'
+                }
+            },
+          
+            {
+                $unwind: {
+                    path: "$secretDatingInfo",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+       
+            {
+                $match: {
+                    'secretDatingInfo.user_id': { $ne: userId }, 
+                    _id: { $nin: secretDatingUser.likedUsers.concat(secretDatingUser.dislikedUsers) } 
+                }
+            },
+           
+            {
+                $project: {
+                    _id: 1,
+                    gender: 1,
+                    'secretDatingInfo.user_id': 1,
+                    'secretDatingInfo.name': 1,
+                    'secretDatingInfo.avatar': 1,
+                    'secretDatingInfo.profile_image': 1,
+                    'secretDatingInfo.sexual_orientation_preference_id': 1,
+                    'secretDatingInfo.relationship_preference':1
                 }
             }
-        });
-
-
+        ]);
 
         const matchedUsers = nearbyUsers.map(nearbyUser => {
-
-            const score = calculateMatchScore(user, nearbyUser);
-            const userImage = nearbyUser.images.find(img => img.position === 1) || {};
-
+            const score = topPicksMatchScore(secretDatingUser, nearbyUser);
+            const userImage = nearbyUser.secretDatingInfo.profile_image
+            const avatar = nearbyUser.secretDatingInfo.avatar
+          
             return {
                 _id: nearbyUser._id,
-                username: nearbyUser.username,
-                age: nearbyUser.dob ? new Date().getFullYear() - new Date(nearbyUser.dob).getFullYear() : null,
-                image: userImage.url || null,
+                userId :nearbyUser.secretDatingInfo.user_id,
+                username: nearbyUser.secretDatingInfo.name,
+                image: userImage || null,
+                avatar:avatar||null,
                 matchScorePercentage: score.toFixed(2)
             };
-        }).filter(user => user.matchScorePercentage >= 60);
+        }).filter(user => user.matchScorePercentage >= 40);
 
 
         matchedUsers.sort((a, b) => b.matchScorePercentage - a.matchScorePercentage);
@@ -504,10 +449,4 @@ exports.getTopPicks = async (req, res) => {
         console.error("ERROR::", error);
         res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
-};
-
-
-
-
-
-
+}
