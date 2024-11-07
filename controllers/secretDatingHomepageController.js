@@ -2,6 +2,7 @@ let secretDatingMatchAlgorithm = require('../utils/secretDatingMatchMaking')
 let userModel = require('../models/userModel')
 let secretDatingUserModel = require('../models/secretDatingUserModel')
 let matchModel = require("../models/matchesModel")
+let optionsModel = require("../models/optionsModel")
 let likeDislikeLimitModel = require("../models/likeDislikeLimit")
 let {errorResponse,successResponse} = require("../utils/responseHandler")
 let topPicksMatchScore = require("../utils/secretDatingTopPicks")
@@ -446,6 +447,50 @@ exports.get_secretDating_topPicks = async(req,res)=>{
             data: paginatedResults
         });
     } catch (error) {
+        console.error("ERROR::", error);
+        res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    }
+}
+
+
+
+
+exports.get_secretDating_profile_details = async(req,res)=>{
+    try{
+     let userId = req.query.userId;
+     
+     if(!userId){
+        return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'User id not present in query params'))
+     }
+
+     let isUserExist = await userModel.findById(userId)
+     if(!isUserExist){
+        return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'User not found with this user Id'))
+     }
+
+     let secretDatingUser = await secretDatingUserModel.findOne({user_id:userId})
+     if(!secretDatingUser){
+        return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'User not found with this user Id in secret dating'))
+     }
+
+     const orientationTexts = await optionsModel.find({
+        _id: { $in: secretDatingUser.sexual_orientation_preference_id }
+    }).select('text _id');
+
+    const relationshipText = await optionsModel.findOne({
+        _id: secretDatingUser.relationship_preference
+    }).select('text _id');
+
+
+    let details = {
+            ...secretDatingUser.toObject(),
+            sexual_orientation_texts: orientationTexts,
+            relationship_preference_text: relationshipText ? relationshipText.text : null,
+        };
+
+        return res.status(200).json(successResponse('Data retrieved successfully', details));
+
+    }catch(error){
         console.error("ERROR::", error);
         res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }

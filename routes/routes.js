@@ -118,11 +118,13 @@ router.put("/secretDating_like_profile",authenticateToken,secretDatingHomepageCo
 router.put("/secretDating_dislike_profile",authenticateToken,secretDatingHomepageController.secretDating_dislike_profile)
 router.get('/get_secretDating_liked_you_profiles',authenticateToken,secretDatingHomepageController.get_secretDating_liked_you_profiles)
 router.get('/get_secretDating_topPicks',authenticateToken,secretDatingHomepageController.get_secretDating_topPicks)
+router.get('/get_secretDating_profile_details',authenticateToken,secretDatingHomepageController.get_secretDating_profile_details)
 
 
 // chat
 router.post('/secretDating_create_chat',authenticateToken,secretDatingChatController.secretDating_create_chat)
 router.get('/secretDating_getChats',authenticateToken,secretDatingChatController.secretDating_getChats)
+router.post('/secretDating_sendMessage',authenticateToken,secretDatingChatController.secretDating_sendMessage)
 
 
 module.exports = router
