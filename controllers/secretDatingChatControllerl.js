@@ -310,3 +310,99 @@ exports.secretDating_sendMessage = async (req, res) => {
 
 
 
+exports.secretDating_getMessages = async (req, res) => {
+    try {
+        const { chatId, page = 1, limit = 10 } = req.query;
+
+        if (!chatId) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Chat ID is required."));
+        }
+
+
+        const skip = (page - 1) * limit;
+
+
+        const messages = await messageModel.find({ chat: chatId })
+            .select('text sender createdAt read hotelData')
+            .populate('sender', 'username')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
+
+
+        if (!messages || messages.length === 0) {
+            return res.status(404).json(successResponse("Say hey to start conversation!", "No messages found for this chat."));
+        }
+
+        const totalMessages = await messageModel.countDocuments({ chat: chatId });
+
+        res.status(200).json(successResponse("Messages retrieved successfully", {
+            messages,
+            currentPage: parseInt(page),
+            totalMessages,
+            totalPages: Math.ceil(totalMessages / limit)
+        }));
+    } catch (error) {
+        console.error("ERROR::", error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    }
+};
+
+
+
+
+
+
+exports.secretDating_markMessagesAsRead = async (req, res) => {
+    try {
+        const { chatId } = req.body;
+        const userId = req.result.userId;
+
+
+        if (!chatId) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Chat ID is required."));
+        }
+
+        let isUserExist = await userModel.findById(userId)
+        if (!isUserExist) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User not found with this user Id.")) }
+
+
+        const chat = await chatModel.findById(chatId);
+        if (!chat) {
+            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "Chat not found."));
+        }
+
+
+        const result = await messageModel.updateMany(
+            { chat: chatId, receiver: userId, read: false },
+            {
+                $set: {
+                    read: isUserExist.setting.read_receipts,
+                    read_chat: true
+                }
+            }
+        );
+
+
+        if (result.nModified > 0) {
+            chat.unreadCount = 0;
+            await chat.save();
+        }
+
+        if (isUserExist.setting.read_receipts == true) {
+            io.emit('secretDating_messages_read', {
+                chatId: chatId,
+                userId: userId,
+                count: result.nModified
+            });
+
+            return res.status(200).json(successResponse("Messages marked as read", { count: result.nModified }));
+        } else {
+            return res.status(200).json(successResponse("Read receipts is off.Message not marked seen", "Messages not marked as seen due to read receipts is off"));
+        }
+
+    } catch (error) {
+        console.log("ERROR::", error)
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    }
+}

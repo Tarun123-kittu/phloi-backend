@@ -125,6 +125,8 @@ router.get('/get_secretDating_profile_details',authenticateToken,secretDatingHom
 router.post('/secretDating_create_chat',authenticateToken,secretDatingChatController.secretDating_create_chat)
 router.get('/secretDating_getChats',authenticateToken,secretDatingChatController.secretDating_getChats)
 router.post('/secretDating_sendMessage',authenticateToken,secretDatingChatController.secretDating_sendMessage)
+router.get('/secretDating_getMessages',authenticateToken,secretDatingChatController.secretDating_getMessages)
+router.get('/secretDating_markMessagesAsRead',authenticateToken,secretDatingChatController.secretDating_markMessagesAsRead)
 
 
 module.exports = router
