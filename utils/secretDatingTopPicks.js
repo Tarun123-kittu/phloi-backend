@@ -2,6 +2,7 @@
 
 
 const topPicksMatchScore = (currentUser, potentialMatch) => {
+
     let score = 0;
     let totalComparisons = 0;
 
