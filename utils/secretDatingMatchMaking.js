@@ -81,7 +81,7 @@ const secretDatingMatchAlgorithm = async (currentUser, secretDatingCurrentUser, 
                 $match: {
                     $and: [
                         { 'secretDatingProfile.user_id': { $nin: [...likedUsers, ...dislikedUsers] } },
-                        { 'current_step': 4 }
+                        { 'secretDatingProfile.current_step': 4 }
                     ]
                 }
             },
@@ -162,7 +162,8 @@ const secretDatingMatchAlgorithm = async (currentUser, secretDatingCurrentUser, 
             {
                 $match: {
                     $and: [
-                        { 'secretDatingProfile.user_id': { $nin: [...likedUsers, ...dislikedUsers] } }
+                        { 'secretDatingProfile.user_id': { $nin: [...likedUsers, ...dislikedUsers] } },
+                        { 'secretDatingProfile.current_step': 4 }
                     ]
                 }
             },
