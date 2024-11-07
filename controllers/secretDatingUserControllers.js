@@ -200,7 +200,10 @@ exports.get_secretDating_userDetails = async (req, res) => {
             ...secretDatingUser.toObject(),
             profile_completion_percentage: completionPercentage,
             sexual_orientation_texts: orientationTexts,
-            relationship_preference_text: relationshipText ? relationshipText.text : null
+            relationship_preference_text: relationshipText ? relationshipText.text : null,
+            distance_preference:isUserExist.distance_preference,
+            verified_profile:isUserExist.verified_profile,
+            setting_details:isUserExist.setting,
         };
 
         return res.status(200).json(successResponse('Data retrieved successfully', details));

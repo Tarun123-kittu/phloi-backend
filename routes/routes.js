@@ -8,6 +8,7 @@ const secretDatingUserController = require("../controllers/secretDatingUserContr
 const notificationController = require("../controllers/notificationController")
 const settingsController = require("../controllers/settingController")
 const secretDatingHomepageController = require("../controllers/secretDatingHomepageController")
+const secretDatingChatController = require('../controllers/secretDatingChatControllerl')
 const {
     user_registration_steps_validator,
     validateLogin,
@@ -118,6 +119,10 @@ router.put("/secretDating_dislike_profile",authenticateToken,secretDatingHomepag
 router.get('/get_secretDating_liked_you_profiles',authenticateToken,secretDatingHomepageController.get_secretDating_liked_you_profiles)
 router.get('/get_secretDating_topPicks',authenticateToken,secretDatingHomepageController.get_secretDating_topPicks)
 
+
+// chat
+router.post('/secretDating_create_chat',authenticateToken,secretDatingChatController.secretDating_create_chat)
+router.get('/secretDating_getChats',authenticateToken,secretDatingChatController.secretDating_getChats)
 
 
 module.exports = router

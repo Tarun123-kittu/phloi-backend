@@ -4,7 +4,6 @@ const userModel = require("../models/userModel")
 const { errorResponse, successResponse } = require('../utils/responseHandler');
 const messages = require("../utils/messages")
 const { io } = require("../index");
-const notificationModel = require('../models/notificationModel');
 const { uploadFile } = require('../utils/awsUpload')
 
 
@@ -22,7 +21,7 @@ exports.getChats = async (req, res) => {
 
         if (!userId) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User ID is required")); }
 
-        const chats = await chatModel.find({ participants: userId })
+        const chats = await chatModel.find({ participants: userId , type: 'regular dating'})
             .populate({
                 path: 'lastMessage',
                 populate: {
@@ -130,12 +129,13 @@ exports.createChat = async (req, res) => {
 
         const existingChat = await chatModel.findOne({
             participants: { $all: sortedParticipants },
+            type: 'regular dating'
         });
 
         if (existingChat) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Chat already exists between these participants.")); }
 
 
-        const chat = new chatModel({ participants });
+        const chat = new chatModel({ participants,type: 'regular dating' });
         await chat.save();
         io.emit(`create_chat`, chat._id)
         res.status(201).json(successResponse("Chat created successfully", chat));
