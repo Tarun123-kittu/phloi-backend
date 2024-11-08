@@ -21,7 +21,7 @@ const uploadFile = async (file, data = null) => {
 
     if (data == 'Secret Dating') {
         console.log('inside secret dating ----')
-        key = `${data}/profile_images/${userId}/${current_time}`
+        key = `${data}/profile_images/${userId}/${filename}`
     } 
     
     if(data == 'Chat'){

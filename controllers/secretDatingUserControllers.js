@@ -201,9 +201,9 @@ exports.get_secretDating_userDetails = async (req, res) => {
             profile_completion_percentage: completionPercentage,
             sexual_orientation_texts: orientationTexts,
             relationship_preference_text: relationshipText ? relationshipText.text : null,
-            distance_preference:isUserExist.distance_preference,
-            verified_profile:isUserExist.verified_profile,
-            setting_details:isUserExist.setting,
+            distance_preference: isUserExist.distance_preference,
+            verified_profile: isUserExist.verified_profile,
+            setting_details: isUserExist.setting,
         };
 
         return res.status(200).json(successResponse('Data retrieved successfully', details));
@@ -222,14 +222,17 @@ exports.update_user_detals = async (req, res) => {
         let userId = req.result.userId
         let step = Number(req.body.step);
         let image = req.files?.image || null;
-        const avatar = req.body.avatar;
+        const avatar = req.body.avatar || null;
+        const secret_name = req.body.secret_name;
+        const bio = req.body.bio
         const interested_in = req.body.interested_in;
         const sexual_orientation = req.body.sexual_orientation;
         const show_sexual_orientation = req.body.show_sexual_orientation;
+        const relationship_preference = req.body.relationship_preference;
 
-        const profileUpdateData = {};
 
-        if (![1, 2, 3, 4].includes(step)) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Invalid step. Step should be between 1 and 4.')) }
+
+        if (![1.1, 1.2, 1.3, 2, 3, 4].includes(step)) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Invalid step. Step should be between 1 and 4.')) }
 
         let isUserExist = await userModel.findById(userId)
         if (!isUserExist) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'User datat not exist with this user Id')) }
@@ -237,38 +240,117 @@ exports.update_user_detals = async (req, res) => {
         let isUserInSecretDating = await secretDatingUserModel.findOne({ user_id: userId })
         if (!isUserInSecretDating) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User doesn't exist in secret dating")) }
 
-        switch (setp) {
-            case 1:
+        let updatedDocument
+        let imageUrl
+        switch (step) {
+
+            case 1.1:
                 if (!avatar && !image) {
                     return res.status(400).json(errorResponse('Please provide either avatar or image'))
                 }
                 if (avatar && image) {
                     return res.status(400).json(errorResponse('You can only add one : Select avatar or upload image'))
                 }
+
+                if (image) {
+                    image.userId = userId
+                    let data = await uploadFile(image, 'Secret Dating');
+                    imageUrl = data.Location
+                }
+                updatedDocument = await secretDatingUserModel.findOneAndUpdate(
+                    { user_id: userId },
+                    {
+                        $set: {
+                            profile_image: imageUrl || null,
+                            avatar: avatar
+                        }
+                    },
+                    { new: true }
+                );
                 break;
+
+
+            case 1.2:
+                if (!secret_name || secret_name.trim() == '') {
+                    return res.status(400).json(errorResponse('Please provide your secret name', 'Provide secret name in body(form-data)'))
+                }
+                updatedDocument = await secretDatingUserModel.findOneAndUpdate({ user_id: userId },
+                    {
+                        $set: {
+                            name: secret_name
+                        }
+                    },
+                    { new: true }
+                )
+
+                break;
+
+            case 1.3:
+                if (!bio || bio.trim() == '') {
+                    return res.status(400).json(errorResponse('Please provide your bio', 'Provide bio in the body(form-data)'))
+                }
+
+                updatedDocument = await secretDatingUserModel.findOneAndUpdate({ user_id: userId },
+                    {
+                        $set: {
+                            bio: bio
+                        }
+                    },
+                    { new: true }
+                )
+                break;
+
 
             case 2:
+                if (!interested_in || interested_in.trim() == '') {
+                    return res.status(400).json(errorResponse('Please provide who are you interested in seeing', 'Prove interested_in field in body(form-data)'))
+                }
 
-                await secretDatingUserModel.findOneAndUpdate({ user_id: userId }, {
-                    $set: {
-                        interested_to_see: interested_in ? interested_in : isUserInSecretDating.interested_to_see
-                    }
-                })
+                updatedDocument = await secretDatingUserModel.findOneAndUpdate({ user_id: userId },
+                    {
+                        $set: {
+                            interested_to_see: interested_in
+                        }
+                    },
+                    { new: true, runValidators: true }
+                )
                 break;
+
 
             case 3:
-                await secretDatingUserModel.findOneAndUpdate({ user_id: userId }, {
-                     $set:{
-                        sexual_orientation_preference_id:sexual_orientation?sexual_orientation:[],
-                        show_sexual_orientation:show_sexual_orientation?show_sexual_orientation: false
-                     }
-                })
+
+                updatedDocument = await secretDatingUserModel.findOneAndUpdate({ user_id: userId }, {
+                    $set: {
+                        sexual_orientation_preference_id: sexual_orientation ? sexual_orientation : [],
+                        show_sexual_orientation: show_sexual_orientation ? show_sexual_orientation : false
+                    }
+                },
+                    { new: true }
+                )
                 break;
 
-            case 4:
 
+            case 4:
+                if (!relationship_preference || relationship_preference.trim == '') {
+                    return res.status(400).json(errorResponse('Please select what are you looking for', 'Provide relationship_preference in body(form-data)'))
+                }
+                updatedDocument = await secretDatingUserModel.findOneAndUpdate({ user_id: userId },
+                    {
+                        $set: {
+                            relationship_preference: relationship_preference
+                        }
+                    },
+                    { new: true }
+                )
+                break;
+
+
+            default:
+                return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Invalid step provided"))
 
         }
+
+        return res.status(200).json(successResponse('Profile updated successfully', updatedDocument))
 
     } catch (error) {
         console.log("ERROR::", error)
