@@ -247,7 +247,7 @@ exports.getMessages = async (req, res) => {
         const messages = await messageModel.find({ chat: chatId })
             .select('text sender createdAt read hotelData')
             .populate('sender', 'username')
-            .sort({ createdAt: 1 })
+            .sort({ createdAt: -1 })
             .skip(skip)
             .limit(parseInt(limit));
 
