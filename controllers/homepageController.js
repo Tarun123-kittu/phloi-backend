@@ -36,14 +36,14 @@ exports.recommended_users = async (req, res) => {
         }
         if (applyFilter == 'true' || applyFilter == true) {
             if (!ageMin || !ageMax || !maxDistance || !interestedIn || !show_verified_profiles) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please provide all the filter values to find match")) }
-            show_verified_profiles = (show_verified_profiles ==='true')
+            show_verified_profiles = (show_verified_profiles === 'true')
         }
-       
+
         if (currentUser.setting.distance_in === 'mi') {
             maxDistance = maxDistance * 1.60934;
         }
 
-       
+
         let filterApplied
         if (applyFilter == 'true' || applyFilter == true) {
 
@@ -161,14 +161,14 @@ exports.like_profile = async (req, res) => {
 
             const matchExists = await matchModel.findOne({
                 users: { $all: [currentUserId, likedUserId] },
-                type:'regular dating'
+                type: 'regular dating'
             });
 
             if (!matchExists) {
                 const newMatch = new matchModel({
                     users: [currentUserId, likedUserId],
                     createdAt: Date.now(),
-                    type:'regular dating'
+                    type: 'regular dating'
                 });
                 await newMatch.save();
 
@@ -177,10 +177,10 @@ exports.like_profile = async (req, res) => {
                     users: [currentUserId, likedUserId],
                     usernames: [currentUser.username, likedUser.username],
                     message: `It's a match between ${currentUser.username} and ${likedUser.username}!`
-                } );
-      
+                });
+
             }
-            await notificationModel.create({ userId: likedUserId,sender_id:currentUserId, notification_text: `You got a match with ${currentUser.username}` })
+            await notificationModel.create({ userId: likedUserId, sender_id: currentUserId, notification_text: `You got a match with ${currentUser.username}` })
 
             let participants = { currentUserId, likedUserId }
 
@@ -295,12 +295,18 @@ exports.get_users_who_liked_profile = async (req, res) => {
     limit = parseInt(limit, 10);
 
     try {
+
+        const loggedInUser = await userModel.findById(loggedInUserId).select('likedUsers').lean();
+        const likedUsersByLoggedInUser = loggedInUser.likedUsers || [];
+
         const totalProfilesCount = await userModel.countDocuments({
-            likedUsers: loggedInUserId
+            likedUsers: loggedInUserId,
+            _id: { $nin: likedUsersByLoggedInUser } 
         });
 
         const usersWhoLikedProfile = await userModel.find({
-            likedUsers: loggedInUserId
+            likedUsers: loggedInUserId,
+            _id: { $nin: likedUsersByLoggedInUser } 
         })
             .select('_id username gender images')
             .sort({ createdAt: -1 })

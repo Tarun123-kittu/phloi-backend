@@ -21,6 +21,8 @@ exports.get_avatars = async (req, res) => {
 
 
 
+
+
 exports.switch_secretDating_mode = async (req, res) => {
     try {
         let userId = req.result.userId
@@ -357,6 +359,11 @@ exports.update_user_detals = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
     }
 }
+
+
+
+
+
 
 
 

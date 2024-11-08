@@ -312,12 +312,18 @@ exports.get_secretDating_liked_you_profiles = async (req, res) => {
     limit = parseInt(limit, 10);
 
     try {
+        const loggedInUser = await secretDatingUserModel.findOne({user_id:loggedInUserId}).select('likedUsers').lean();
+       
+        const likedUsersByLoggedInUser = loggedInUser.likedUsers || [];
+    
         const totalProfilesCount = await secretDatingUserModel.countDocuments({
-            likedUsers: loggedInUserId
+            likedUsers: loggedInUserId,
+            user_id: { $nin: likedUsersByLoggedInUser } 
         });
 
         const usersWhoLikedProfile = await secretDatingUserModel.find({
-            likedUsers: loggedInUserId
+            likedUsers: loggedInUserId,
+            user_id: { $nin: likedUsersByLoggedInUser } 
         })
             .select('_id user_id name avatar profile_image interested_to_see')
             .sort({ createdAt: -1 })

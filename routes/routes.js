@@ -8,7 +8,8 @@ const secretDatingUserController = require("../controllers/secretDatingUserContr
 const notificationController = require("../controllers/notificationController")
 const settingsController = require("../controllers/settingController")
 const secretDatingHomepageController = require("../controllers/secretDatingHomepageController")
-const secretDatingChatController = require('../controllers/secretDatingChatControllerl')
+const secretDatingChatController = require('../controllers/secretDatingChatController')
+const safetyAndPrivacyController = require('../controllers/safetyAndPrivacyController')
 const {
     user_registration_steps_validator,
     validateLogin,
@@ -112,6 +113,7 @@ router.get("/get_secretDating_userDetails",authenticateToken,secretDatingUserCon
 router.put("/update_user_detals",authenticateToken,secretDatingUserController.update_user_detals)
 
 
+
 // secretDating homepage
 router.get("/get_secret_dating_recommendations",authenticateToken,secretDatingHomepageController.get_secret_dating_recommendations)
 router.put("/secretDating_like_profile",authenticateToken,secretDatingHomepageController.secretDating_like_profile)
@@ -128,5 +130,10 @@ router.post('/secretDating_sendMessage',authenticateToken,secretDatingChatContro
 router.get('/secretDating_getMessages',authenticateToken,secretDatingChatController.secretDating_getMessages)
 router.get('/secretDating_markMessagesAsRead',authenticateToken,secretDatingChatController.secretDating_markMessagesAsRead)
 
+
+// safety and privacy
+router.get('/get_reportReasons',authenticateToken,safetyAndPrivacyController.get_reportReasons)
+router.post('/report_user',authenticateToken,safetyAndPrivacyController.report_user)
+router.post('/unmatch_user',authenticateToken,safetyAndPrivacyController.unmatch_user)
 
 module.exports = router

@@ -3,6 +3,7 @@ const config = require('./config/config');
 const exploreRoomModel = require('./models/exploreRoomsModel');
 const avatarModel = require('./models/avatarsModel'); 
 const settingModel = require('./models/settingsModel');
+const reportReasonModel = require('./models/reportReasons'); 
 
 
 const exploreRooms = [
@@ -151,15 +152,22 @@ const settings = [
 ];
 
 
+
+
+const reportReasons = [
+    { reason: "Fake profile, Scammer" },
+    { reason: "Nudity or something sexually explicit" },
+    { reason: "Harassment or bad behaviour" },
+    { reason: "Physical safety concerns" },
+];
+
+
+
 async function syncCollection(dataArray, Model, modelName, queryField) {
     for (let item of dataArray) {
         const query = {};
         query[queryField] = item[queryField];
 
-        // For avatars, change the query to use avatar_image
-        if (modelName === 'Avatars') {
-            query[queryField] = item.avatar_image; // unique query for avatars
-        }
 
         const result = await Model.findOneAndUpdate(
             query,
@@ -172,6 +180,8 @@ async function syncCollection(dataArray, Model, modelName, queryField) {
         }
     }
 }
+
+
 
 async function seedAllData() {
     try {
@@ -196,6 +206,7 @@ async function seedAllData() {
             console.log(`Upserted setting section: ${result.section}`);
 
         }
+        await syncCollection(reportReasons, reportReasonModel, 'Report Reasons', 'reason');
 
         console.log('All data synchronized successfully.');
     } catch (error) {
