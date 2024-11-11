@@ -244,11 +244,11 @@ exports.secretDating_sendMessage = async (req, res) => {
 
         var convertToBool = (meetUp == 'true' || meetUp == true);
 
-        if (!chatId) { return res.status(400).json(errorResponse(messages.generalError.invalidInput, "Chat ID  are required.")); }
+        if (!chatId) { return res.status(400).json(errorResponse(messages.validation.invalidInput, "Chat ID  are required.")); }
 
 
         if (!text && !image) {
-            return res.status(400).json(errorResponse(messages.generalError.invalidInput, "Either text or image is required."));
+            return res.status(400).json(errorResponse(messages.validation.invalidInput, "Either text or image is required."));
         }
 
         const chat = await chatModel.findById(chatId);

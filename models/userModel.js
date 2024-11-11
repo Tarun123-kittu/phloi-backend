@@ -58,7 +58,7 @@ const userSchema = new mongoose.Schema({
   blocked_contacts: {type: [{name: { type: String }, number: { type: Number } }],default: []},
   subscription_type: { type: String, enum: ['free', 'premium'], default: 'free' },
   secret_dating_mode: { type: Boolean, default: false }
-
+  
 }, { timestamps: true });
 
 userSchema.index({ location: '2dsphere' });

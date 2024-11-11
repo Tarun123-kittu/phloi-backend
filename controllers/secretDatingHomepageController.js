@@ -405,11 +405,13 @@ exports.get_secretDating_topPicks = async(req,res)=>{
        
             {
                 $match: {
-                    'secretDatingInfo.user_id': { $ne: userId }, 
-                    _id: { $nin: secretDatingUser.likedUsers.concat(secretDatingUser.dislikedUsers) } 
+                    $and: [
+                        { 'secretDatingInfo.user_id': { $ne: userId } },
+                        { _id: { $nin: [...secretDatingUser.likedUsers, ...secretDatingUser.dislikedUsers] } },
+                        { 'secretDatingInfo.current_step': 4 }
+                    ]
                 }
             },
-           
             {
                 $project: {
                     _id: 1,
@@ -424,7 +426,9 @@ exports.get_secretDating_topPicks = async(req,res)=>{
             }
         ]);
 
+        console.log("heerr ----",nearbyUsers)
         const matchedUsers = nearbyUsers.map(nearbyUser => {
+            
             const score = topPicksMatchScore(secretDatingUser, nearbyUser);
             const userImage = nearbyUser.secretDatingInfo.profile_image
             const avatar = nearbyUser.secretDatingInfo.avatar
@@ -437,7 +441,7 @@ exports.get_secretDating_topPicks = async(req,res)=>{
                 avatar:avatar||null,
                 matchScorePercentage: score.toFixed(2)
             };
-        }).filter(user => user.matchScorePercentage >= 40);
+        }).filter(user => user.matchScorePercentage >= 10);
 
 
         matchedUsers.sort((a, b) => b.matchScorePercentage - a.matchScorePercentage);

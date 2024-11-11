@@ -7,6 +7,10 @@ const chatModel = require('../models/chatModel');
 const messageModel = require('../models/messageModel');
 const notificationModel = require('../models/notificationModel');
 const matchesModel = require('../models/matchesModel');
+const joinedRoomsModel = require('../models/joinedRoomsModel');
+const likeDislikeLimitModel = require('../models/likeDislikeLimit');
+const secretDatingUserModel = require('../models/secretDatingUserModel');
+const deletedUserModel = require('../models/deletedUsersModel')
 
 
 
@@ -65,7 +69,7 @@ exports.report_user = async (req, res) => {
         }
 
         const existingReport = await reportedUserModel.findOne({
-            user_id: reported_userId,
+            user_mobile: isReportedUserExist.mobile_number,
             "reportDetails.user_who_reported": userId
         });
 
@@ -75,7 +79,7 @@ exports.report_user = async (req, res) => {
 
 
         const reportedUser = await reportedUserModel.findOneAndUpdate(
-            { user_id: reported_userId },
+            { user_mobile: isReportedUserExist.mobile_number },
             {
                 $inc: { reportCount: 1 },
                 $push: { reportDetails: { user_who_reported: userId, report_reason_id } }
@@ -157,9 +161,9 @@ exports.get_deleteAccount_reasons = async (req, res) => {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'User not found with this userId'))
         }
 
-        let deleteAccountReasons = await reasonsArchieveModel.find({type:'delete_account'}).select('_id reason').lean()
+        let deleteAccountReasons = await reasonsArchieveModel.find({ type: 'delete_account' }).select('_id reason').lean()
 
-        return res.status(200).json(successResponse('Data retrieved',deleteAccountReasons))
+        return res.status(200).json(successResponse('Data retrieved', deleteAccountReasons))
 
     } catch (error) {
         console.log('ERROR::', error)
@@ -170,11 +174,94 @@ exports.get_deleteAccount_reasons = async (req, res) => {
 
 
 
-exports.delete_account = async(req,res)=>{
-    try{
+exports.delete_account = async (req, res) => {
+    try {
+        const userId = req.result.userId;
+        const deleteReason_id = req.query.deleteReason_id;
+        const deleteReason = req.query.deleteReason;
 
-    }catch(error){
-        console.log('ERROR::',error)
-        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message))
+
+        const isUserExist = await userModel.findById(userId);
+        if (!isUserExist) {
+            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, 'User not found with this user ID.'));
+        }
+
+        if ((!deleteReason_id && !deleteReason) || (deleteReason_id && deleteReason)) {
+            return res.status(400).json(errorResponse(messages.validation.invalidInput, "Please provide either deleteAccount reason ID or deleteAccount reason, but not both."));
+        }
+
+
+        await Promise.all([
+            messageModel.deleteMany({
+                $or: [{ sender: userId }, { receiver: userId }]
+            }).then(result => console.log(`Messages deleted: ${result.deletedCount}`)),
+
+            chatModel.deleteMany({ participants: { $in: [userId] } })
+                .then(result => console.log(`Chats deleted: ${result.deletedCount}`)),
+
+            notificationModel.deleteMany({
+                $or: [{ userId: userId }, { sender_id: userId }]
+            }).then(result => console.log(`Notifications deleted: ${result.deletedCount}`)),
+
+            joinedRoomsModel.deleteMany({ userId: userId })
+                .then(result =>
+                    console.log(`Joined rooms deleted: ${result.deletedCount}`)),
+
+            likeDislikeLimitModel.deleteMany({ userId: userId })
+                .then(result => console.log(`Likes/Dislikes deleted: ${result.deletedCount}`)),
+
+            matchesModel.deleteMany({ users: { $in: [userId] } })
+                .then(result => console.log(`Matches deleted: ${result.deletedCount}`)),
+
+            secretDatingUserModel.findOneAndDelete({ user_id: userId })
+                .then(result => console.log(`Secret dating user deleted: ${result ? "Yes" : "No"}`))
+        ]);
+
+        await deletedUserModel.findOneAndUpdate(
+            { user_mobile: isUserExist.mobile_number },
+            {
+                $inc: { deleteCount: 1 },
+                $push: { deleteAccountDetails: { deleteAccount_reason_id: deleteReason_id, deleteAccountReasonText: deleteReason } }
+            },
+            { new: true, upsert: true }
+        );
+
+        await userModel.findByIdAndDelete(userId);
+
+        res.status(200).json(successResponse("Account deleted successfully", "The user's account and related data have been deleted."));
+    } catch (error) {
+        console.error('ERROR::', error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    }
+};
+
+
+
+
+
+
+exports.block_user = async (req, res) => {
+    try {
+        let userId = req.result.userId
+        let blocked_user_id = req.query.blocked_user_id
+
+        let isUserExist = await userModel.findById(userId)
+        if (!isUserExist) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User not found with this userId"))
+        }
+        if (!blocked_user_id) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Please provide blocked user Id in query params'))
+        }
+
+        let isBlockedUserExist = await userModel.findById(blocked_user_id)
+        if (!isBlockedUserExist) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User with blocked id doesn't exist"))
+        }
+
+        let 
+
+    } catch (error) {
+        console.log('ERROR::', error)
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
     }
 }

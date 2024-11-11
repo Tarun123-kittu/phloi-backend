@@ -2,7 +2,7 @@
 
 
 const topPicksMatchScore = (currentUser, potentialMatch) => {
-
+     console.log("here ---")
     let score = 0;
     let totalComparisons = 0;
 
@@ -24,7 +24,7 @@ const topPicksMatchScore = (currentUser, potentialMatch) => {
 
     totalComparisons = countTotalComparisons();
 
-
+    console.log('potential match info =-----',potentialMatch)
     const currentUserOrientation = currentUser.sexual_orientation_preference_id || [];
     const potentialMatchOrientation = potentialMatch.secretDatingInfo.sexual_orientation_preference_id || [];
 
