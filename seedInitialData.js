@@ -3,7 +3,7 @@ const config = require('./config/config');
 const exploreRoomModel = require('./models/exploreRoomsModel');
 const avatarModel = require('./models/avatarsModel'); 
 const settingModel = require('./models/settingsModel');
-const reportReasonModel = require('./models/reportReasons'); 
+const reasonArchieveModel = require('./models/reasonsArchieve'); 
 
 
 const exploreRooms = [
@@ -154,11 +154,17 @@ const settings = [
 
 
 
-const reportReasons = [
-    { reason: "Fake profile, Scammer" },
-    { reason: "Nudity or something sexually explicit" },
-    { reason: "Harassment or bad behaviour" },
-    { reason: "Physical safety concerns" },
+const reasonsArchieve = [
+    { reason: "Fake profile, Scammer",type:'report' },
+    { reason: "Nudity or something sexually explicit",type:'report' },
+    { reason: "Harassment or bad behaviour",type:'report' },
+    { reason: "Physical safety concerns",type:'report' },
+    { reason: "I want a fresh start",type:'delete_account' },
+    { reason: "I met someone",type:'delete_account' },
+    { reason: "Something is broken",type:'delete_account' },
+    { reason: "I need a break from Phloii",type:'delete_account' },
+    { reason: "I don’t like Phloii",type:'delete_account' },
+    { reason: "Other",type:'delete_account' },
 ];
 
 
@@ -206,7 +212,7 @@ async function seedAllData() {
             console.log(`Upserted setting section: ${result.section}`);
 
         }
-        await syncCollection(reportReasons, reportReasonModel, 'Report Reasons', 'reason');
+        await syncCollection(reasonsArchieve, reasonArchieveModel, 'Reason Archieve', 'reason');
 
         console.log('All data synchronized successfully.');
     } catch (error) {

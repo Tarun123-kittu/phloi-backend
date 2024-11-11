@@ -135,5 +135,7 @@ router.get('/secretDating_markMessagesAsRead',authenticateToken,secretDatingChat
 router.get('/get_reportReasons',authenticateToken,safetyAndPrivacyController.get_reportReasons)
 router.post('/report_user',authenticateToken,safetyAndPrivacyController.report_user)
 router.post('/unmatch_user',authenticateToken,safetyAndPrivacyController.unmatch_user)
+router.get('/get_deleteAccount_reasons',authenticateToken,safetyAndPrivacyController.get_deleteAccount_reasons)
+router.post('/delete_account',authenticateToken,safetyAndPrivacyController.delete_account)
 
 module.exports = router

@@ -1,4 +1,4 @@
-let reportReasonModel = require('../models/reportReasons')
+let reasonsArchieveModel = require('../models/reasonsArchieve')
 let userModel = require("../models/userModel")
 let reportedUserModel = require("../models/reportedUsers")
 const { errorResponse, successResponse } = require('../utils/responseHandler');
@@ -19,7 +19,7 @@ exports.get_reportReasons = async (req, res) => {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'User not found with this user Id'))
         }
 
-        let reportReasons = await reportReasonModel.find().select('_id reason').lean()
+        let reportReasons = await reasonsArchieveModel.find({ type: 'report' }).select('_id reason').lean()
 
         return res.status(200).json(successResponse('Data retreived successfully', reportReasons))
 
@@ -59,6 +59,10 @@ exports.report_user = async (req, res) => {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Reported user not found'))
         }
 
+        let isReportReasonExist = await reasonsArchieveModel.findById(report_reason_id)
+        if (!isReportReasonExist) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "report reason doesn't exist with this report reason id"))
+        }
 
         const existingReport = await reportedUserModel.findOne({
             user_id: reported_userId,
@@ -95,8 +99,8 @@ exports.unmatch_user = async (req, res) => {
         let userId = req.result.userId
         let unmatch_userId = req.body.unmatch_userId
 
-        if(!unmatch_userId){
-            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'Please provide unmatch_userId in body'))
+        if (!unmatch_userId) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Please provide unmatch_userId in body'))
         }
         let isUserExist = await userModel.findById(userId)
         if (!isUserExist) {
@@ -140,3 +144,37 @@ exports.unmatch_user = async (req, res) => {
 
 
 
+
+
+
+
+exports.get_deleteAccount_reasons = async (req, res) => {
+    try {
+        let userId = req.result.userId
+
+        let isUserExist = await userModel.findById(userId)
+        if (!isUserExist) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'User not found with this userId'))
+        }
+
+        let deleteAccountReasons = await reasonsArchieveModel.find({type:'delete_account'}).select('_id reason').lean()
+
+        return res.status(200).json(successResponse('Data retrieved',deleteAccountReasons))
+
+    } catch (error) {
+        console.log('ERROR::', error)
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
+    }
+}
+
+
+
+
+exports.delete_account = async(req,res)=>{
+    try{
+
+    }catch(error){
+        console.log('ERROR::',error)
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message))
+    }
+}
