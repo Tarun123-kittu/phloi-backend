@@ -426,7 +426,7 @@ exports.get_secretDating_topPicks = async(req,res)=>{
             }
         ]);
 
-        console.log("heerr ----",nearbyUsers)
+      
         const matchedUsers = nearbyUsers.map(nearbyUser => {
             
             const score = topPicksMatchScore(secretDatingUser, nearbyUser);

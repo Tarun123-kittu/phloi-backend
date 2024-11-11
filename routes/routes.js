@@ -137,6 +137,6 @@ router.post('/report_user',authenticateToken,safetyAndPrivacyController.report_u
 router.post('/unmatch_user',authenticateToken,safetyAndPrivacyController.unmatch_user)
 router.get('/get_deleteAccount_reasons',authenticateToken,safetyAndPrivacyController.get_deleteAccount_reasons)
 router.post('/delete_account',authenticateToken,safetyAndPrivacyController.delete_account)
-router.post('/block_user',authenticateToken,safetyAndPrivacyController.block_user)
+router.put('/block_user',authenticateToken,safetyAndPrivacyController.block_user)
 
 module.exports = router

@@ -132,11 +132,19 @@ exports.unmatch_user = async (req, res) => {
             ]
         })
 
-        await matchesModel.updateMany({ users: { $all: [userId, unmatch_userId] } }, {
-            $set: {
-                isUnmatched: true
+        await matchesModel.deleteMany({ users: { $all: [userId, unmatch_userId] } })
+
+
+        await userModel.findByIdAndUpdate(userId, {
+            $pull: { likedUsers: unmatch_userId, dislikedUsers: unmatch_userId }
+        });
+
+        await secretDatingUserModel.updateMany(
+            { user_id: userId },
+            {
+                $pull: { likedUsers: unmatch_userId, dislikedUsers: unmatch_userId }
             }
-        })
+        );
 
         return res.status(200).json(successResponse('User unmatched successfully'))
 
@@ -255,11 +263,31 @@ exports.block_user = async (req, res) => {
 
         let isBlockedUserExist = await userModel.findById(blocked_user_id)
         if (!isBlockedUserExist) {
-            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User with blocked id doesn't exist"))
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User to block with this Id doesn't exist"))
         }
 
-        let 
+        await chatModel.deleteMany({ participants: { $all: [userId, blocked_user_id] } });
 
+        await messageModel.deleteMany({
+            $or: [
+                { sender: userId, receiver: blocked_user_id },
+                { sender: blocked_user_id, receiver: userId }
+            ]
+        })
+
+        await notificationModel.deleteMany({
+            $or: [
+                { userId: userId, sender_id: blocked_user_id },
+                { userId: blocked_user_id, sender_id: userId }
+            ]
+        })
+
+        await matchesModel.updateMany({ users: { $all: [userId, blocked_user_id] } }, {
+            $set: {
+                blocked_by: userId
+            }
+        })
+      return res.status(200).json(successResponse('User blocked successfully'))
     } catch (error) {
         console.log('ERROR::', error)
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
