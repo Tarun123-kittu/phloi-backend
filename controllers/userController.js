@@ -1650,7 +1650,7 @@ exports.createS3imageLink = async (req, res) => {
             data: image.data,
             mimetype: image.mimetype,
             userId: 1
-        });
+        },'Reasons Icon');
         res.send(uploadResult)
     } catch (error) {
         console.log("ERROR::", error)

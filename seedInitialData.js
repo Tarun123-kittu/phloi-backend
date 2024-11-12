@@ -159,12 +159,12 @@ const reasonsArchieve = [
     { reason: "Nudity or something sexually explicit",type:'report' },
     { reason: "Harassment or bad behaviour",type:'report' },
     { reason: "Physical safety concerns",type:'report' },
-    { reason: "I want a fresh start",type:'delete_account' },
-    { reason: "I met someone",type:'delete_account' },
-    { reason: "Something is broken",type:'delete_account' },
-    { reason: "I need a break from Phloii",type:'delete_account' },
-    { reason: "I don’t like Phloii",type:'delete_account' },
-    { reason: "Other",type:'delete_account' },
+    { reason: "I want a fresh start",icon_image:'https://phloii.s3.amazonaws.com/Reasons%20Icon/delete_reasons/1/fresh_start_icon.png',type:'delete_account' },
+    { reason: "I met someone",icon_image:'https://phloii.s3.eu-north-1.amazonaws.com/Reasons%20Icon/delete_reasons/1/meet_someone_icon.png',type:'delete_account' },
+    { reason: "Something is broken",icon_image:'https://phloii.s3.eu-north-1.amazonaws.com/Reasons%20Icon/delete_reasons/1/something_broken_icon.png',type:'delete_account' },
+    { reason: "I need a break from Phloii",icon_image:'https://phloii.s3.eu-north-1.amazonaws.com/Reasons%20Icon/delete_reasons/1/need_break_icon.png',type:'delete_account' },
+    { reason: "I don’t like Phloii",icon_image:'https://phloii.s3.amazonaws.com/Reasons%20Icon/delete_reasons/1/dont_like_phloi_icon.png',type:'delete_account' },
+    { reason: "Other",icon_image:'https://phloii.s3.eu-north-1.amazonaws.com/Reasons%20Icon/delete_reasons/1/other_icon.png',type:'delete_account' },
 ];
 
 

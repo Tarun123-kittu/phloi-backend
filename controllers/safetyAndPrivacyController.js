@@ -169,7 +169,7 @@ exports.get_deleteAccount_reasons = async (req, res) => {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'User not found with this userId'))
         }
 
-        let deleteAccountReasons = await reasonsArchieveModel.find({ type: 'delete_account' }).select('_id reason').lean()
+        let deleteAccountReasons = await reasonsArchieveModel.find({ type: 'delete_account' }).select('_id reason icon_image').lean()
 
         return res.status(200).json(successResponse('Data retrieved', deleteAccountReasons))
 

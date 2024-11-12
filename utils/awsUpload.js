@@ -33,6 +33,10 @@ const uploadFile = async (file, data = null) => {
         key = `profile_images/${userId}/${current_time}`;
     }
 
+    if (data == 'Reasons Icon') {
+        key = `${data}/delete_reasons/${userId}/${filename}`
+    } 
+
 
     try {
         const result = await s3.upload({
