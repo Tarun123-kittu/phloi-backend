@@ -45,31 +45,29 @@ exports.getChats = async (req, res) => {
             const otherParticipant = chat.participants.find(participant => participant._id.toString() !== userId);
             return otherParticipant && otherParticipant.username.toLowerCase().includes(searchQuery.toLowerCase());
         });
-
-
-        if (!filteredChats || filteredChats.length === 0) {
-            return res.status(200).json(successResponse("No chats found matching the search query", []));
-        }
-
-
+        
         const chatDetails = await Promise.all(filteredChats.map(async chat => {
             const otherParticipant = chat.participants.find(participant => participant._id.toString() !== userId);
+        
+            // Get the other participant's _id
+            const otherParticipantId = otherParticipant ? otherParticipant._id : null;
+        
             const imageObj = otherParticipant?.images?.find(img => img.position === 1);
             const otherParticipantImage = imageObj ? imageObj.url : null;
-
+        
             const unreadCount = await messageModel.countDocuments({
                 chat: chat._id,
                 receiver: userId,
                 read_chat: false
             });
-
-
+        
             const lastMessageText = chat.lastMessage ? chat.lastMessage.text : null;
             const lastMessageSenderName = chat.lastMessage && chat.lastMessage.sender ? chat.lastMessage.sender.username : null;
             const messageSentAt = chat.lastMessage ? chat.lastMessage.createdAt : null;
-
+        
             return {
                 chatId: chat._id,
+                otherParticipantId: otherParticipantId,  // Add otherParticipantId here
                 otherParticipantName: otherParticipant ? otherParticipant.username : null,
                 otherParticipantImage: otherParticipantImage,
                 lastMessage: lastMessageText,
@@ -79,8 +77,7 @@ exports.getChats = async (req, res) => {
                 onlineStatus: otherParticipant ? otherParticipant.online_status : null
             };
         }));
-
-
+    
 
 
         const totalChatsCount = await chatModel.countDocuments({
