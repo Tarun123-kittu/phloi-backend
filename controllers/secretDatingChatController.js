@@ -62,9 +62,177 @@ exports.secretDating_create_chat = async (req, res) => {
 
 
 
+// exports.secretDating_getChats = async (req, res) => {
+//     try {
+//         const userId = new mongoose.Types.ObjectId(req.result.userId); 
+//         const page = parseInt(req.query.page) || 1;
+//         const limit = parseInt(req.query.limit) || 10;
+//         const skip = (page - 1) * limit;
+//         const searchQuery = req.query.search || "";
+
+//         if (!userId) { 
+//             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User ID is required")); 
+//         }
+
+//         const chats = await chatModel.aggregate([
+
+//             { 
+//                 $match: { 
+//                     participants: { $in: [userId] }, 
+//                     type: 'secret dating'  
+//                 }
+//             },
+        
+//             {
+//                 $lookup: {
+//                     from: 'messages',
+//                     let: { chatId: '$_id' },
+//                     pipeline: [
+//                         { $match: { $expr: { $eq: ['$chat', '$$chatId'] } } },
+//                         { $sort: { createdAt: -1 } },
+//                         { $limit: 1 }  
+//                     ],
+//                     as: 'lastMessage'
+//                 }
+//             },
+        
+          
+//             {
+//                 $unwind: {
+//                     path: '$lastMessage',
+//                     preserveNullAndEmptyArrays: true 
+//                 }
+//             },
+      
+//             {
+//                 $lookup: {
+//                     from: 'messages',
+//                     let: { chatId: '$_id' },
+//                     pipeline: [
+//                         {
+//                             $match: {
+//                                 $expr: { $and: [
+//                                     { $eq: ['$chat', '$$chatId'] },
+//                                     { $eq: ['$read_chat', false] },
+//                                     { $eq: ['$receiver', userId] }  
+//                                 ]}
+//                             }
+//                         }
+//                     ],
+//                     as: 'unreadMessages'
+//                 }
+//             },
+        
+        
+//             {
+//                 $addFields: {
+//                     unreadCount: { $size: '$unreadMessages' }
+//                 }
+//             },
+        
+          
+//             {
+//                 $lookup: {
+//                     from: 'secret_dating_users',
+//                     localField: 'participants',   
+//                     foreignField: 'user_id',      
+//                     as: 'secretDatingParticipants'
+//                 }
+//             },
+        
+           
+//             {
+//                 $lookup: {
+//                     from: 'users',
+//                     localField: 'participants',
+//                     foreignField: '_id',
+//                     as: 'userParticipants'
+//                 }
+//             },
+        
+          
+//             { $unwind: { path: '$secretDatingParticipants', preserveNullAndEmptyArrays: true } },
+//             { $unwind: { path: '$userParticipants', preserveNullAndEmptyArrays: true } },
+        
+            
+//             {
+//                 $project: {
+//                     chatId: '$_id',
+//                     participants: 1,
+//                     lastMessage: '$lastMessage.text',
+//                     otherParticipantName: '$secretDatingParticipants.name',
+//                     otherParticipantAvatar: '$secretDatingParticipants.avatar',
+//                     otherParticipantProfileImage: '$secretDatingParticipants.profile_image',
+//                     // onlineStatus: '$userParticipants.online_status',
+//                     unreadCount: 1,  
+//                     messageSentAt: '$lastMessage.createdAt',
+//                 }
+//             },
+        
+           
+//             {
+//                 $group: {
+//                     _id: '$chatId',
+//                     participants: { $first: '$participants' },
+//                     lastMessage: { $first: '$lastMessage' },
+//                     otherParticipantName: { $first: '$otherParticipantName' },
+//                     otherParticipantAvatar: { $first: '$otherParticipantAvatar' },
+//                     otherParticipantProfileImage: { $first: '$otherParticipantProfileImage' },
+//                     // onlineStatus: { $first: '$onlineStatus' },
+//                     unreadCount: { $first: '$unreadCount' },
+//                     messageSentAt: { $first: '$messageSentAt' }
+//                 }
+//             },
+        
+          
+//             { $skip: skip },
+//             { $limit: limit },
+        
+        
+//             { $sort: { 'messageSentAt': -1 } }
+//         ]);
+        
+
+        
+//         if (!chats || chats.length === 0) {
+//             return res.status(200).json(successResponse("No chats found", []));
+//         }
+
+       
+//         const filteredChats = chats.filter(chat => {
+//             return chat.otherParticipantName.toLowerCase().includes(searchQuery.toLowerCase());
+//         });
+
+//         if (!filteredChats || filteredChats.length === 0) {
+//             return res.status(200).json(successResponse("No chats found matching the search query", []));
+//         }
+
+      
+//         const totalChatsCount = await chatModel.countDocuments({
+//             participants: userId,  
+//             type: 'secret dating',
+//         });
+
+     
+//         res.status(200).json(successResponse("Chats retrieved successfully", {
+//             chats: filteredChats,
+//             currentPage: page,
+//             totalChats: totalChatsCount,
+//             totalPages: Math.ceil(totalChatsCount / limit)
+//         }));
+
+//     } catch (error) {
+//         console.error("ERROR::", error);
+//         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+//     }
+// };
+
+
+
+
 exports.secretDating_getChats = async (req, res) => {
     try {
-        const userId = new mongoose.Types.ObjectId(req.result.userId); 
+        const userId = req.result.userId;
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
@@ -74,148 +242,71 @@ exports.secretDating_getChats = async (req, res) => {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User ID is required")); 
         }
 
-        const chats = await chatModel.aggregate([
+        // Fetch chats where type is 'secret dating' and the current user is a participant
+        const chats = await chatModel.find({ 
+                participants: userId, 
+                type: 'secret dating' 
+            })
+            .populate({
+                path: 'lastMessage',
+                populate: {
+                    path: 'sender',
+                    select: 'username'
+                }
+            })
+            .populate({
+                path: 'participants',
+                select: 'username online_status', // Populate basic fields from participants
+                match: { _id: { $ne: userId } } // Only get the other participant
+            })
+            .sort({ 'lastMessage.createdAt': -1 })
+            .skip(skip)
+            .limit(limit);
 
-            { 
-                $match: { 
-                    participants: { $in: [userId] }, 
-                    type: 'secret dating'  
-                }
-            },
-        
-            {
-                $lookup: {
-                    from: 'messages',
-                    let: { chatId: '$_id' },
-                    pipeline: [
-                        { $match: { $expr: { $eq: ['$chat', '$$chatId'] } } },
-                        { $sort: { createdAt: -1 } },
-                        { $limit: 1 }  
-                    ],
-                    as: 'lastMessage'
-                }
-            },
-        
-          
-            {
-                $unwind: {
-                    path: '$lastMessage',
-                    preserveNullAndEmptyArrays: true 
-                }
-            },
-      
-            {
-                $lookup: {
-                    from: 'messages',
-                    let: { chatId: '$_id' },
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: { $and: [
-                                    { $eq: ['$chat', '$$chatId'] },
-                                    { $eq: ['$read_chat', false] },
-                                    { $eq: ['$receiver', userId] }  
-                                ]}
-                            }
-                        }
-                    ],
-                    as: 'unreadMessages'
-                }
-            },
-        
-        
-            {
-                $addFields: {
-                    unreadCount: { $size: '$unreadMessages' }
-                }
-            },
-        
-          
-            {
-                $lookup: {
-                    from: 'secret_dating_users',
-                    localField: 'participants',   
-                    foreignField: 'user_id',      
-                    as: 'secretDatingParticipants'
-                }
-            },
-        
-           
-            {
-                $lookup: {
-                    from: 'users',
-                    localField: 'participants',
-                    foreignField: '_id',
-                    as: 'userParticipants'
-                }
-            },
-        
-          
-            { $unwind: { path: '$secretDatingParticipants', preserveNullAndEmptyArrays: true } },
-            { $unwind: { path: '$userParticipants', preserveNullAndEmptyArrays: true } },
-        
-            
-            {
-                $project: {
-                    chatId: '$_id',
-                    participants: 1,
-                    lastMessage: '$lastMessage.text',
-                    otherParticipantName: '$secretDatingParticipants.name',
-                    otherParticipantAvatar: '$secretDatingParticipants.avatar',
-                    otherParticipantProfileImage: '$secretDatingParticipants.profile_image',
-                    // onlineStatus: '$userParticipants.online_status',
-                    unreadCount: 1,  
-                    messageSentAt: '$lastMessage.createdAt',
-                }
-            },
-        
-           
-            {
-                $group: {
-                    _id: '$chatId',
-                    participants: { $first: '$participants' },
-                    lastMessage: { $first: '$lastMessage' },
-                    otherParticipantName: { $first: '$otherParticipantName' },
-                    otherParticipantAvatar: { $first: '$otherParticipantAvatar' },
-                    otherParticipantProfileImage: { $first: '$otherParticipantProfileImage' },
-                    // onlineStatus: { $first: '$onlineStatus' },
-                    unreadCount: { $first: '$unreadCount' },
-                    messageSentAt: { $first: '$messageSentAt' }
-                }
-            },
-        
-          
-            { $skip: skip },
-            { $limit: limit },
-        
-        
-            { $sort: { 'messageSentAt': -1 } }
-        ]);
-        
-
-        
         if (!chats || chats.length === 0) {
             return res.status(200).json(successResponse("No chats found", []));
         }
 
-       
-        const filteredChats = chats.filter(chat => {
-            return chat.otherParticipantName.toLowerCase().includes(searchQuery.toLowerCase());
-        });
+        const chatDetails = await Promise.all(chats.map(async chat => {
+            const otherParticipant = chat.participants[0];
 
-        if (!filteredChats || filteredChats.length === 0) {
-            return res.status(200).json(successResponse("No chats found matching the search query", []));
-        }
+            // Fetch additional details from the secret_dating_users collection
+            const secretUserData = await secretDatingUserModel.findOne({
+                user_id: otherParticipant._id
+            }).select('name avatar profile_image');
 
-      
+            const unreadCount = await messageModel.countDocuments({
+                chat: chat._id,
+                receiver: userId,
+                read_chat: false
+            });
+        
+            const lastMessageText = chat.lastMessage ? chat.lastMessage.text : null;
+            const lastMessageSenderName = chat.lastMessage && chat.lastMessage.sender ? chat.lastMessage.sender.username : null;
+            const messageSentAt = chat.lastMessage ? chat.lastMessage.createdAt : null;
+        
+            return {
+                chatId: chat._id,
+                otherParticipantId: otherParticipant ? otherParticipant._id : null,
+                otherParticipantName: secretUserData ? secretUserData.name : null,
+                otherParticipantAvatar: secretUserData ? secretUserData.avatar : null,
+                otherParticipantImage: secretUserData ? secretUserData.profile_image : null,
+                lastMessage: lastMessageText,
+                lastMessageSender: lastMessageSenderName,
+                unreadCount: unreadCount,
+                messageSentAt: messageSentAt,
+                onlineStatus: otherParticipant ? otherParticipant.online_status : null
+            };
+        }));
+    
         const totalChatsCount = await chatModel.countDocuments({
-            participants: userId,  
+            participants: userId,
             type: 'secret dating',
+            'participants.username': { $regex: searchQuery, $options: "i" }
         });
 
-     
-        res.status(200).json(successResponse("Chats retrieved successfully", {
-            chats: filteredChats,
+        res.status(200).json(successResponse("Secret dating chats retrieved successfully", {
+            chats: chatDetails,
             currentPage: page,
             totalChats: totalChatsCount,
             totalPages: Math.ceil(totalChatsCount / limit)
@@ -226,6 +317,7 @@ exports.secretDating_getChats = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
+
 
 
 
