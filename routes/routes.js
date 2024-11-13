@@ -128,7 +128,7 @@ router.post('/secretDating_create_chat',authenticateToken,secretDatingChatContro
 router.get('/secretDating_getChats',authenticateToken,secretDatingChatController.secretDating_getChats)
 router.post('/secretDating_sendMessage',authenticateToken,secretDatingChatController.secretDating_sendMessage)
 router.get('/secretDating_getMessages',authenticateToken,secretDatingChatController.secretDating_getMessages)
-router.get('/secretDating_markMessagesAsRead',authenticateToken,secretDatingChatController.secretDating_markMessagesAsRead)
+router.put('/secretDating_markMessagesAsRead',authenticateToken,secretDatingChatController.secretDating_markMessagesAsRead)
 
 
 // safety and privacy
