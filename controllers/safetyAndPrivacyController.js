@@ -185,8 +185,8 @@ exports.get_deleteAccount_reasons = async (req, res) => {
 exports.delete_account = async (req, res) => {
     try {
         const userId = req.result.userId;
-        const deleteReason_id = req.query.deleteReason_id;
-        const deleteReason = req.query.deleteReason;
+        const deleteReason_id = req.body.deleteReason_id;
+        const deleteReason = req.body.deleteReason;
 
 
         const isUserExist = await userModel.findById(userId);
