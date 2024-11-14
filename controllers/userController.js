@@ -574,10 +574,10 @@ exports.user_registration_steps = async (req, res) => {
         if (current_step == 15) {
             if (!parsedLocation) return res.status(400).json(errorResponse("Location in required.", "Location is required for step 15"));
             console.log("parsed location ------", parsedLocation)
-            const staticLocation = { type: 'Point', coordinates: [76.6411, 30.7499] }
+            // const staticLocation = { type: 'Point', coordinates: [76.6411, 30.7499] }
 
-            // user_obj["location"] = parsedLocation; 
-            user_obj["location"] = staticLocation;
+            user_obj["location"] = parsedLocation; 
+            // user_obj["location"] = staticLocation;
             user_obj["current_step"] = current_step;
             completed_steps[14] = 15;
             updateFields["completed_steps"] = completed_steps;

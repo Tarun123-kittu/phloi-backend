@@ -146,12 +146,9 @@ exports.createChat = async (req, res) => {
 
 
 
-
-
-
-
 exports.sendMessage = async (req, res) => {
     try {
+       
         let { chatId, text } = req.body;
         let senderId = req.result.userId;
         let image = req.files?.image;
@@ -201,7 +198,7 @@ exports.sendMessage = async (req, res) => {
         chat.lastMessage = message._id;
         chat.unreadCount += 1;
         await chat.save();
-
+       
         io.emit(`send_message`, {
             chatId: chatId,
             messageId: message._id,
@@ -263,14 +260,6 @@ exports.getMessages = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
-
-
-
-
-
-
-
-
 
 
 
