@@ -46,6 +46,122 @@ exports.switch_secretDating_mode = async (req, res) => {
 
 
 
+// exports.secretDating_registration = async (req, res) => {
+//     try {
+//         const userId = req.result.userId;
+//         const step = Number(req.body.step);
+//         let image = req.files?.image || null;
+//         const avatar = req.body.avatar;
+//         const secret_name = req.body.secret_name;
+//         const bio = req.body.bio;
+//         const interested_in = req.body.interested_in;
+//         const sexual_orientation = req.body.sexual_orientation;
+//         const show_sexual_orientation = req.body.show_sexual_orientation;
+//         const relationship_preference = req.body.relationship_preference;
+//         const login_type = req.body.login_type
+
+//         if(login_type){
+//           if(login_type !=='no_thanks_selected'){
+//             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'Login type must be : no_thanks_selected'))
+//           }
+//         }
+
+
+//         if (![1, 2, 3, 4].includes(step)) {
+//             return res.status(400).json({
+//                 type: 'error',
+//                 message: 'Invalid step. Step should be between 1 and 4.'
+//             });
+//         }
+
+
+//         const user = await userModel.findById(userId);
+//         if (!user) {
+//             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'User not found with this userId'));
+//         }
+
+
+//         let profile = await secretDatingUserModel.findOne({ user_id: userId });
+
+
+//         const profileUpdateData = {};
+
+
+//         switch (step) {
+//             case 1:
+//                 if (!avatar && !image) {
+//                     return res.status(400).json(errorResponse('Please provide either avatar or image'));
+//                 }
+//                 if (avatar && image) {
+//                     return res.status(400).json(errorResponse('You can only add one : Select avatar or upload image'))
+//                 }
+//                 if (!secret_name || !bio) {
+//                     return res.status(400).json(errorResponse('Secret name and bio are required'));
+//                 }
+//                 if (image) {
+//                     image.userId = userId
+//                     let data = await uploadFile(image, 'Secret Dating');
+//                     profileUpdateData.profile_image = data.Location
+//                 }
+//                 profileUpdateData.avatar = avatar || null;
+//                 profileUpdateData.name = secret_name;
+//                 profileUpdateData.bio = bio;
+//                 break;
+
+//             case 2:
+//                 if (!interested_in) { return res.status(400).json(errorResponse('Interested in field is required')); }
+//                 profileUpdateData.interested_to_see = interested_in;
+//                 break;
+
+//             case 3:
+//                 if (!sexual_orientation || typeof show_sexual_orientation === 'undefined') {
+//                     return res.status(400).json(errorResponse('Sexual orientation and show sexual orientation are required'));
+//                 }
+//                 profileUpdateData.sexual_orientation_preference_id = sexual_orientation;
+//                 profileUpdateData.show_sexual_orientation = show_sexual_orientation;
+//                 break;
+
+//             case 4:
+//                 if (!relationship_preference) { return res.status(400).json(errorResponse('Relationship preference is required.')); }
+//                 profileUpdateData.relationship_preference = relationship_preference;
+//                 break;
+
+//             default:
+//                 return res.status(400).json(errorResponse('Invalid step provided'));
+//         }
+
+
+//         profileUpdateData.current_step = step;
+
+
+//         if (!profile) {
+//             profileUpdateData.completed_steps = [step];
+//             profile = new secretDatingUserModel({
+//                 user_id: userId,
+//                 ...profileUpdateData
+//             });
+//         } else {
+
+//             profile.completed_steps = profile.completed_steps || [];
+//             if (!profile.completed_steps.includes(step)) {
+//                 profile.completed_steps.push(step);
+//             }
+//             Object.assign(profile, profileUpdateData);
+//         }
+
+
+//         await profile.save();
+
+//         return res.status(200).json(successResponse('Profile updated successfully', profile));
+
+//     } catch (error) {
+//         console.error('ERROR::', error);
+//         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+//     }
+// };
+
+
+
 exports.secretDating_registration = async (req, res) => {
     try {
         const userId = req.result.userId;
@@ -58,51 +174,63 @@ exports.secretDating_registration = async (req, res) => {
         const sexual_orientation = req.body.sexual_orientation;
         const show_sexual_orientation = req.body.show_sexual_orientation;
         const relationship_preference = req.body.relationship_preference;
+        const login_type = req.body.login_type;
+        const profile_image_url = req.body.profile_image_url; 
 
 
-        if (![1, 2, 3, 4].includes(step)) {
-            return res.status(400).json({
-                type: 'error',
-                message: 'Invalid step. Step should be between 1 and 4.'
-            });
+        
+        if (login_type) {
+            if (login_type !== 'no_thanks_selected') {
+                return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'Login type must be: no_thanks_selected'));
+            }
         }
 
+        if (![1, 2, 3, 4].includes(step)) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'Invalid step. Step should be between 1 and 4'));
+        }
 
         const user = await userModel.findById(userId);
         if (!user) {
-            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'User not found with this userId'));
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'User not found with this userId'));
         }
 
-
         let profile = await secretDatingUserModel.findOne({ user_id: userId });
-
-
         const profileUpdateData = {};
-
 
         switch (step) {
             case 1:
-                if (!avatar && !image) {
-                    return res.status(400).json(errorResponse('Please provide either avatar or image'));
+                if (login_type === 'no_thanks_selected') {
+                    if (!profile_image_url) {
+                        return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'Profile image URL is required when login type is no_thanks_selected'));
+                    }
+                   
+                    profileUpdateData.profile_image = profile_image_url;
+                } else {
+                    if (!avatar && !image) {
+                        return res.status(400).json(errorResponse('Please provide either avatar or image'));
+                    }
+                    if (avatar && image) {
+                        return res.status(400).json(errorResponse('You can only add one: Select avatar or upload image'));
+                    }
+                    if (!secret_name || !bio) {
+                        return res.status(400).json(errorResponse('Secret name and bio are required'));
+                    }
+                    if (image) {
+                        image.userId = userId;
+                        let data = await uploadFile(image, 'Secret Dating');
+                        profileUpdateData.profile_image = data.Location;
+                    }
+                    profileUpdateData.avatar = avatar || null;
                 }
-                if (avatar && image) {
-                    return res.status(400).json(errorResponse('You can only add one : Select avatar or upload image'))
-                }
-                if (!secret_name || !bio) {
-                    return res.status(400).json(errorResponse('Secret name and bio are required'));
-                }
-                if (image) {
-                    image.userId = userId
-                    let data = await uploadFile(image, 'Secret Dating');
-                    profileUpdateData.profile_image = data.Location
-                }
-                profileUpdateData.avatar = avatar || null;
+
                 profileUpdateData.name = secret_name;
                 profileUpdateData.bio = bio;
                 break;
 
             case 2:
-                if (!interested_in) { return res.status(400).json(errorResponse('Interested in field is required')); }
+                if (!interested_in) {
+                    return res.status(400).json(errorResponse('Interested in field is required'));
+                }
                 profileUpdateData.interested_to_see = interested_in;
                 break;
 
@@ -115,17 +243,17 @@ exports.secretDating_registration = async (req, res) => {
                 break;
 
             case 4:
-                if (!relationship_preference) { return res.status(400).json(errorResponse('Relationship preference is required.')); }
+                if (!relationship_preference) {
+                    return res.status(400).json(errorResponse('Relationship preference is required.'));
+                }
                 profileUpdateData.relationship_preference = relationship_preference;
                 break;
 
             default:
-                return res.status(400).json(errorResponse('Invalid step provided'));
+                return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'Invalid step provided'));
         }
 
-
         profileUpdateData.current_step = step;
-
 
         if (!profile) {
             profileUpdateData.completed_steps = [step];
@@ -134,7 +262,6 @@ exports.secretDating_registration = async (req, res) => {
                 ...profileUpdateData
             });
         } else {
-
             profile.completed_steps = profile.completed_steps || [];
             if (!profile.completed_steps.includes(step)) {
                 profile.completed_steps.push(step);
@@ -142,24 +269,15 @@ exports.secretDating_registration = async (req, res) => {
             Object.assign(profile, profileUpdateData);
         }
 
-
         await profile.save();
 
         return res.status(200).json(successResponse('Profile updated successfully', profile));
 
     } catch (error) {
         console.error('ERROR::', error);
-        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+        return res.status(500).json(errorResponse('Something went wrong', error.message));
     }
 };
-
-
-
-
-
-
-
-
 
 
 
