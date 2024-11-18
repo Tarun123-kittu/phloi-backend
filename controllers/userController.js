@@ -795,12 +795,12 @@ exports.update_user_profile = async (req, res) => {
             }
         }
 
-        const { completed_steps = [] } = user;
-        // if(completed_steps.length!=15){
-        //     return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'User not completed the registration process'));
-        // }else{
-        //     completed_steps = completed_steps.length === 15 ? completed_steps : new Array(15).fill(null);
-        // }
+        let { completed_steps = [] } = user;
+        if(completed_steps.length!=15){
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'User not completed the registration process'));
+        }else{
+            completed_steps = completed_steps.length === 15 ? completed_steps : new Array(15).fill(null);
+        }
 
 
 
@@ -853,7 +853,8 @@ exports.update_user_profile = async (req, res) => {
                 const lastValidValue = getLastValidValue(step, fieldName);
 
                 if (lastValidValue === null) {
-                    return res.status(400).json(errorResponse(`${fieldName} is required for step ${step}`));
+                
+                    throw new Error(`${fieldName} is required for step ${step}`);
                 }
                 updateFields[fieldName] = lastValidValue;
             } else {
@@ -873,6 +874,7 @@ exports.update_user_profile = async (req, res) => {
             case 7:
                 updateStep(7, 'sexual_orientation_preference_id', sexual_orientation_preference_id);
                 updateStep(7, 'show_sexual_orientation', show_sexual_orientation);
+                
                 break;
             case 8: updateStep(8, 'relationship_type_preference_id', relationship_type_preference_id); break;
             case 9: updateStep(9, 'study', study); break;
@@ -900,6 +902,7 @@ exports.update_user_profile = async (req, res) => {
                 } else {
                     updateFields['user_characterstics.step_11'] = getLastValidValue(11);
                 }
+                
                 break;
             case 12:
                 if (Array.isArray(step_12_answer) && step_12_answer.length > 0) {
@@ -963,11 +966,13 @@ exports.update_user_profile = async (req, res) => {
             default: return res.status(400).json(errorResponse(messages.validation.invalidStep));
         }
 
-        // if (completed_steps[current_step - 1] === null) {
-        //     completed_steps[current_step - 1] = current_step;
-        // }
-        // updateFields['completed_steps'] = completed_steps;
+   
+        if (completed_steps[current_step - 1] === null) {
+            completed_steps[current_step - 1] = current_step;
+        }
+        updateFields['completed_steps'] = completed_steps;
 
+      
         const updatedUser = await userModel.findByIdAndUpdate(userId, updateFields, { new: true, runValidators: true });
 
         if (!updatedUser) {
