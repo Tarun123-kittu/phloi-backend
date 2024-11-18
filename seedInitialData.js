@@ -4,6 +4,8 @@ const exploreRoomModel = require('./models/exploreRoomsModel');
 const avatarModel = require('./models/avatarsModel'); 
 const settingModel = require('./models/settingsModel');
 const reasonArchieveModel = require('./models/reasonsArchieve'); 
+const adminModel = require("./models/adminModel")
+const bcrypt = require('bcrypt')
 
 
 const exploreRooms = [
@@ -169,6 +171,11 @@ const reasonsArchieve = [
 
 
 
+const admin = [
+    {username:'phloiiAdmin777',email:"phloiiadmin777@gmail.com",password:config.development.admin_initial_password}
+]
+
+
 async function syncCollection(dataArray, Model, modelName, queryField) {
     for (let item of dataArray) {
         const query = {};
@@ -213,6 +220,19 @@ async function seedAllData() {
 
         }
         await syncCollection(reasonsArchieve, reasonArchieveModel, 'Reason Archieve', 'reason');
+
+
+        for (let adminData of admin) {
+            const hashedPassword = await bcrypt.hash(adminData.password, 10); 
+            adminData.password = hashedPassword;
+
+            const result = await adminModel.findOneAndUpdate(
+                { username: adminData.username },
+                { $set: adminData },
+                { new: true, upsert: true }
+            );
+            console.log(`Upserted admin: ${result.username}`);
+        }
 
         console.log('All data synchronized successfully.');
     } catch (error) {

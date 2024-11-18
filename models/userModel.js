@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 
 
 const userSchema = new mongoose.Schema({
-  role:{type:String,enum:['admin','user']},
   verified_profile:{type:Boolean,default:false},
   show_me_to_verified_profiles:{type:Boolean,default:false},
   username: { type: String, default: null },

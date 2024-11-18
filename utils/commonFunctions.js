@@ -3,6 +3,7 @@ let config = require('../config/config')
 let otpGenerator = require('otp-generator');
 let twilio = require('twilio')
 let client = new twilio(config.development.twilio_account_sid, config.development.twilio_auth_token)
+let bcrypt = require('bcrypt')
 
 
 
@@ -39,7 +40,7 @@ const generateOtp = () => {
 
 
 
-const sendTwilioSms = async (msg,mobile_number) => {
+const sendTwilioSms = async (msg, mobile_number) => {
     try {
         const message = await client.messages.create({
             body: msg,
@@ -49,9 +50,32 @@ const sendTwilioSms = async (msg,mobile_number) => {
         return { success: true, message };
     } catch (error) {
         console.error('Error sending SMS:', error);
-        return { success: false, error };
+        throw new Error('Unable send SMS');
     }
 };
+
+
+
+const generateHashedPassword = async (password) => {
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        return hashedPassword
+    } catch (error) {
+        console.error('Error sending SMS:', error);
+        throw new Error('Unable to generate hashed password');
+    }
+}
+
+
+const compareHashedPassword = async(password,userActualPassword)=>{
+    try {
+        const hashedPassword = await bcrypt.compareSync(password, userActualPassword);
+        return hashedPassword
+    } catch (error) {
+        console.error('Error sending SMS:', error);
+        throw new Error('Unable to generate hashed password');
+    }
+}
 
 
 
@@ -59,5 +83,7 @@ const sendTwilioSms = async (msg,mobile_number) => {
 module.exports = {
     generateToken,
     generateOtp,
-    sendTwilioSms
+    sendTwilioSms,
+    generateHashedPassword,
+    compareHashedPassword
 }
