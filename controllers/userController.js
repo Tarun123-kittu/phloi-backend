@@ -18,14 +18,14 @@ exports.login = async (req, res) => {
         let otp = await generateOtp();
         otp = '1111'
 
-        if (mobile_number == '+12082276076' || mobile_number == '+918278722656' ) {
+        if (mobile_number == '+12082276076' || mobile_number == '+918278722656') {
             otp = "1111"
         }
 
         const currentTime = new Date();
 
         let user = await userModel.findOne({ mobile_number });
- console.log('otp-----',otp)
+
         if (user) {
 
             await userModel.findOneAndUpdate(
@@ -52,7 +52,7 @@ exports.login = async (req, res) => {
 
             });
         }
-        if (number == "12082276076" ||number == "918278722656" ) { return res.status(200).json(successResponse("You can proceed ahead.")) }
+        if (number == "12082276076" || number == "918278722656") { return res.status(200).json(successResponse("You can proceed ahead.")) }
 
         const smsResponse = await sendTwilioSms(`Your phloii verification code is ${otp}`, mobile_number);
         console.log(smsResponse)
@@ -260,7 +260,7 @@ exports.user_registration_steps = async (req, res) => {
     }
 
     const images = req.files;
-
+    console.log('images ------', images)
     try {
         const find_user_id = await userModel.findById(id);
 
@@ -577,7 +577,7 @@ exports.user_registration_steps = async (req, res) => {
             console.log("parsed location ------", parsedLocation)
             // const staticLocation = { type: 'Point', coordinates: [76.6411, 30.7499] }
 
-            user_obj["location"] = parsedLocation; 
+            user_obj["location"] = parsedLocation;
             // user_obj["location"] = staticLocation;
             user_obj["current_step"] = current_step;
             completed_steps[14] = 15;
@@ -785,7 +785,7 @@ exports.update_user_profile = async (req, res) => {
 
     try {
         const user = await userModel.findById(userId);
-        console.log(user)
+
         if (!user) return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
 
         if (email && email !== user.email) {
@@ -796,6 +796,13 @@ exports.update_user_profile = async (req, res) => {
         }
 
         const { completed_steps = [] } = user;
+        // if(completed_steps.length!=15){
+        //     return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'User not completed the registration process'));
+        // }else{
+        //     completed_steps = completed_steps.length === 15 ? completed_steps : new Array(15).fill(null);
+        // }
+
+
 
         const getLastValidValue = (step, fieldName) => {
             const lastValidStep = completed_steps[step - 1];
@@ -955,6 +962,11 @@ exports.update_user_profile = async (req, res) => {
                 break;
             default: return res.status(400).json(errorResponse(messages.validation.invalidStep));
         }
+
+        // if (completed_steps[current_step - 1] === null) {
+        //     completed_steps[current_step - 1] = current_step;
+        // }
+        // updateFields['completed_steps'] = completed_steps;
 
         const updatedUser = await userModel.findByIdAndUpdate(userId, updateFields, { new: true, runValidators: true });
 
@@ -1156,7 +1168,7 @@ exports.delete_profile_image = async (req, res) => {
 
         user.images = imagesArray;
         await user.save();
-        
+
 
         return res.status(200).json({
             message: "Image deleted successfully",
@@ -1164,8 +1176,8 @@ exports.delete_profile_image = async (req, res) => {
         });
 
     } catch (error) {
-        console.log('ERROR::',error)
-        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message))
+        console.log('ERROR::', error)
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
     }
 };
 
@@ -1195,8 +1207,8 @@ exports.replace_image = async (req, res) => {
         if (newImageFile) {
             newImageFile.userId = user._id;
             const uploadedNewImage = await uploadFile(newImageFile, 'Profile image');
-        
- 
+
+
             imagesArray[imageIndex] = {
                 url: uploadedNewImage.Location,
                 position: imageIndex + 1,
@@ -1216,7 +1228,7 @@ exports.replace_image = async (req, res) => {
             } catch (deleteError) {
                 console.error("Error deleting old image from S3:", deleteError);
             }
-       
+
 
             user.images = imagesArray;
             await user.save();
@@ -1230,8 +1242,8 @@ exports.replace_image = async (req, res) => {
         }
 
     } catch (error) {
-       console.log('ERROR::',error)
-       return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong,error.message))
+        console.log('ERROR::', error)
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
     }
 };
 
@@ -1651,7 +1663,7 @@ exports.createS3imageLink = async (req, res) => {
             data: image.data,
             mimetype: image.mimetype,
             userId: 1
-        },'Reasons Icon');
+        }, 'Reasons Icon');
         res.send(uploadResult)
     } catch (error) {
         console.log("ERROR::", error)
@@ -1678,3 +1690,43 @@ exports.get_user_images = async (req, res) => {
     }
 }
 
+
+
+
+
+exports.update_user_location = async (req, res) => {
+    try {
+        let userId = req.result.userId
+        let location = req.body.location
+
+        let isUserExist = await userModel.findById(userId)
+        if (!isUserExist) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User not found")) }
+
+        if (!location) {
+            return res.status(400).json(errorResponse('Please provide location', 'Please provide cordinates to update location'))
+        }
+
+
+        let parsedLocation = location;
+        if (typeof location === 'string') {
+            try {
+                parsedLocation = JSON.parse(location);
+            } catch (error) {
+                return res.status(400).json(errorResponse("Location must be a valid JSON object"));
+            }
+        }
+
+        let updatedDoc = await userModel.findByIdAndUpdate(userId, {
+            $set: {
+                location: parsedLocation
+            }
+        },
+            { new: true }
+        )
+
+        return res.status(200).json(successResponse('Location updated successfully', updatedDoc))
+    } catch (error) {
+        console.log('ERROR::', error)
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
+    }
+}

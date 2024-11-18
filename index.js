@@ -41,8 +41,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
 app.use(fileUpload())
 
-let routes = require('./routes/routes');
-app.use('/api/v1',routes);  
+let apiRoutes = require('./routes/appRoutes/routes');
+app.use('/api/v1',apiRoutes);  
+
+let adminRoutes = require('./routes/adminRoutes/routes')
+app.use('/api/v1',adminRoutes)
 
 
 phloi_db_connection();

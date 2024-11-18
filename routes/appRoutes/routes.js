@@ -1,23 +1,22 @@
 let express = require('express')
 let router = express.Router()
-const userController = require("../controllers/userController")
-const matchMakingController = require("../controllers/homepageController")
-const chatController = require("../controllers/chatController")
-const exploreRoomsController = require("../controllers/exploreRoomsController")
-const secretDatingUserController = require("../controllers/secretDatingUserControllers")
-const notificationController = require("../controllers/notificationController")
-const settingsController = require("../controllers/settingController")
-const secretDatingHomepageController = require("../controllers/secretDatingHomepageController")
-const secretDatingChatController = require('../controllers/secretDatingChatController')
-const safetyAndPrivacyController = require('../controllers/safetyAndPrivacyController')
+const userController = require("../../controllers/userController")
+const matchMakingController = require("../../controllers/homepageController")
+const chatController = require("../../controllers/chatController")
+const exploreRoomsController = require("../../controllers/exploreRoomsController")
+const secretDatingUserController = require("../../controllers/secretDatingUserControllers")
+const notificationController = require("../../controllers/notificationController")
+const settingsController = require("../../controllers/settingController")
+const secretDatingHomepageController = require("../../controllers/secretDatingHomepageController")
+const secretDatingChatController = require('../../controllers/secretDatingChatController')
+const safetyAndPrivacyController = require('../../controllers/safetyAndPrivacyController')
 const {
-    user_registration_steps_validator,
     validateLogin,
     validateSocialLogin,
     validateVerifyOtp,
     validateUpdateImagePositions
-} = require("../middlewares/validationMiddleware")
-let authenticateToken = require('../middlewares/authMiddleware')
+} = require("../../middlewares/validationMiddleware")
+let authenticateToken = require('../../middlewares/authMiddleware')
 
 
 
@@ -47,6 +46,7 @@ router.get("/get_blocked_contacts",authenticateToken,userController.get_blocked_
 router.put("/update_phone_number",authenticateToken,userController.update_phone_number)
 router.put("/verify_updated_number",authenticateToken,userController.verify_updated_number)
 router.get("/get_user_images",authenticateToken,userController.get_user_images)
+router.put("/update_user_location",authenticateToken,userController.update_user_location)
 
 
 
