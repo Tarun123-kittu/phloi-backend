@@ -32,8 +32,8 @@ io.on('connection', (socket) => {
   });
 
 
-  socket.on('user_login',()=>{
-    console.log('user login is confirmed ...')
+  socket.on('user_login',(data)=>{
+    console.log('user login is confirmed ...',data)
     })
 });
 
