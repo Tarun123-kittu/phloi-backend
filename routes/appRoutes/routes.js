@@ -47,6 +47,7 @@ router.put("/update_phone_number",authenticateToken,userController.update_phone_
 router.put("/verify_updated_number",authenticateToken,userController.verify_updated_number)
 router.get("/get_user_images",authenticateToken,userController.get_user_images)
 router.put("/update_user_location",authenticateToken,userController.update_user_location)
+router.put("/request_profile_verification",authenticateToken,userController.request_profile_verification)
 
 
 

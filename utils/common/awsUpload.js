@@ -37,6 +37,11 @@ const uploadFile = async (file, data = null) => {
         key = `${data}/delete_reasons/${userId}/${filename}`
     } 
 
+    if(data == 'Verification Selfies'){
+        key = `${data}/${userId}/${current_time}`
+    }
+
+
 
     try {
         const result = await s3.upload({
