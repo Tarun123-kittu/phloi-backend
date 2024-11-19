@@ -236,21 +236,21 @@ exports.getMessages = async (req, res) => {
 
         const skip = (page - 1) * limit;
 
-        const messages = await messageModel.find({ chat: chatId })
+        const message = await messageModel.find({ chat: chatId })
             .select('text sender createdAt read hotelData')
             .populate('sender', 'username _id')
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(parseInt(limit));
 
-        if (!messages || messages.length === 0) {
+        if (!message || message.length === 0) {
             return res.status(404).json(successResponse("Say hey to start conversation!", "No messages found for this chat."));
         }
 
         const totalMessages = await messageModel.countDocuments({ chat: chatId });
 
         res.status(200).json(successResponse("Messages retrieved successfully", {
-            messages,
+            message,
             currentPage: parseInt(page),
             totalMessages,
             totalPages: Math.ceil(totalMessages / limit)
