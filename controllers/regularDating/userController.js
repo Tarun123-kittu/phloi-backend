@@ -18,14 +18,14 @@ exports.login = async (req, res) => {
         let otp = await generateOtp();
         otp = '1111'
 
-        if (mobile_number == '+12082276076' || mobile_number == '+918278722656') {
+        if (mobile_number == '+12082276076' || mobile_number == '+918278722656' ) {
             otp = "1111"
         }
 
         const currentTime = new Date();
 
         let user = await userModel.findOne({ mobile_number });
-
+ console.log('otp-----',otp)
         if (user) {
 
             await userModel.findOneAndUpdate(
@@ -52,7 +52,7 @@ exports.login = async (req, res) => {
 
             });
         }
-        if (number == "12082276076" || number == "918278722656") { return res.status(200).json(successResponse("You can proceed ahead.")) }
+        if (number == "12082276076" ||number == "918278722656" ) { return res.status(200).json(successResponse("You can proceed ahead.")) }
 
         const smsResponse = await sendTwilioSms(`Your phloii verification code is ${otp}`, mobile_number);
         console.log(smsResponse)
@@ -70,6 +70,7 @@ exports.login = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
+
 
 
 

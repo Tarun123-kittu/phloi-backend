@@ -40,7 +40,7 @@ const generateOtp = () => {
 
 
 
-const sendTwilioSms = async (msg, mobile_number) => {
+const sendTwilioSms = async (msg,mobile_number) => {
     try {
         const message = await client.messages.create({
             body: msg,
@@ -50,7 +50,7 @@ const sendTwilioSms = async (msg, mobile_number) => {
         return { success: true, message };
     } catch (error) {
         console.error('Error sending SMS:', error);
-        throw new Error('Unable send SMS');
+        return { success: false, error };
     }
 };
 
