@@ -1,6 +1,6 @@
-let settingModel = require('../models/settingsModel')
-let { errorResponse, successResponse } = require("../utils/responseHandler")
-let messages = require('../utils/messages')
+let settingModel = require('../../models/settingsModel')
+let { errorResponse, successResponse } = require("../../utils/common/responseHandler")
+let messages = require('../../utils/common/messages')
 
 
 exports.get_settings_info = async (req, res) => {

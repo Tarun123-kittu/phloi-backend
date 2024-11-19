@@ -1,16 +1,16 @@
-let reasonsArchieveModel = require('../models/reasonsArchieve')
-let userModel = require("../models/userModel")
-let reportedUserModel = require("../models/reportedUsers")
-const { errorResponse, successResponse } = require('../utils/responseHandler');
-const messages = require("../utils/messages");
-const chatModel = require('../models/chatModel');
-const messageModel = require('../models/messageModel');
-const notificationModel = require('../models/notificationModel');
-const matchesModel = require('../models/matchesModel');
-const joinedRoomsModel = require('../models/joinedRoomsModel');
-const likeDislikeLimitModel = require('../models/likeDislikeLimit');
-const secretDatingUserModel = require('../models/secretDatingUserModel');
-const deletedUserModel = require('../models/deletedUsersModel')
+let reasonsArchieveModel = require('../../models/reasonsArchieve')
+let userModel = require("../../models/userModel")
+let reportedUserModel = require("../../models/reportedUsers")
+const { errorResponse, successResponse } = require('../../utils/common/responseHandler');
+const messages = require("../../utils/common/messages");
+const chatModel = require('../../models/chatModel');
+const messageModel = require('../../models/messageModel');
+const notificationModel = require('../../models/notificationModel');
+const matchesModel = require('../../models/matchesModel');
+const joinedRoomsModel = require('../../models/joinedRoomsModel');
+const likeDislikeLimitModel = require('../../models/likeDislikeLimit');
+const secretDatingUserModel = require('../../models/secretDatingUserModel');
+const deletedUserModel = require('../../models/deletedUsersModel')
 
 
 

@@ -1,7 +1,7 @@
 let adminModel = require('../../models/adminModel')
-let { errorResponse, successResponse } = require('../../utils/responseHandler')
-let messages = require('../../utils/messages')
-let { compareHashedPassword, generateToken } = require("../../utils/commonFunctions")
+let { errorResponse, successResponse } = require('../../utils/common/responseHandler')
+let messages = require('../../utils/common/messages')
+let { compareHashedPassword, generateToken } = require("../../utils/common/commonFunctions")
 
 
 
@@ -37,7 +37,7 @@ exports.admin_login = async (req, res) => {
         if (!comparePassword) {
             return res.status(400).json("Incorrect password", 'Entered password is incorrect')
         }
-        let token = await generateToken(isAdminExist._id)
+        let token = await generateToken(isAdminExist._id,isAdminExist.username,isAdminExist.email)
 
         let userObj = {
             username: isAdminExist.username,
@@ -52,3 +52,8 @@ exports.admin_login = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 }
+
+
+
+
+

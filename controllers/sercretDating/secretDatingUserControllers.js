@@ -1,10 +1,10 @@
-let userModel = require('../models/userModel')
-let secretDatingUserModel = require('../models/secretDatingUserModel')
-let optionsModel = require("../models/optionsModel")
-let avatarModel = require('../models/avatarsModel')
-let { successResponse, errorResponse } = require('../utils/responseHandler')
-let messages = require('../utils/messages')
-let { uploadFile } = require('../utils/awsUpload')
+let userModel = require('../../models/userModel')
+let secretDatingUserModel = require('../../models/secretDatingUserModel')
+let optionsModel = require("../../models/optionsModel")
+let avatarModel = require('../../models/avatarsModel')
+let { successResponse, errorResponse } = require('../../utils/common/responseHandler')
+let messages = require('../../utils/common/messages')
+let { uploadFile } = require('../../utils/common/awsUpload')
 
 
 

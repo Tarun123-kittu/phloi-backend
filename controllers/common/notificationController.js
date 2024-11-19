@@ -1,7 +1,7 @@
-let notificationModel = require('../models/notificationModel')
-let { errorResponse, successResponse } = require("../utils/responseHandler")
-let messages = require('../utils/messages')
-const userModel = require('../models/userModel')
+let notificationModel = require('../../models/notificationModel')
+let { errorResponse, successResponse } = require("../../utils/common/responseHandler")
+let messages = require('../../utils/common/messages')
+const userModel = require('../../models/userModel')
 
 
 

@@ -1,10 +1,10 @@
-let userModel = require('../models/userModel')
-let roomsModel = require("../models/exploreRoomsModel")
-let joinedRoomsModel = require("../models/joinedRoomsModel")
-let messages = require("../utils/messages")
-let { errorResponse, successResponse } = require("../utils/responseHandler")
-let exploreRoomMatchAlgorithm = require("../utils/exploreRoomMatch")
-let { io } = require("../index")
+let userModel = require('../../models/userModel')
+let roomsModel = require("../../models/exploreRoomsModel")
+let joinedRoomsModel = require("../../models/joinedRoomsModel")
+let messages = require("../../utils/common/messages")
+let { errorResponse, successResponse } = require("../../utils/common/responseHandler")
+let exploreRoomMatchAlgorithm = require("../../utils/regularDating/exploreRoomMatch")
+let { io } = require("../../index")
 
 
 

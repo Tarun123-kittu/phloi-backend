@@ -1,5 +1,5 @@
 const AWS = require('aws-sdk');
-const config = require('../config/config');
+const config = require('../../config/config');
 const moment = require('moment-timezone');
 
 const s3 = new AWS.S3({

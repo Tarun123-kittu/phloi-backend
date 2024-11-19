@@ -1,5 +1,5 @@
-let userModel = require('../models/userModel');
-let secretDatingUserModel = require('../models/secretDatingUserModel');
+let userModel = require('../../models/userModel');
+
 
 const secretDatingMatchAlgorithm = async (currentUser, secretDatingCurrentUser, page = 1, limit = 10, filter = null) => {
     let { _id, location, distance_preference, blocked_contacts, verified_profile } = currentUser;

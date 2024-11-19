@@ -1,10 +1,10 @@
-const chatModel = require('../models/chatModel');
-const messageModel = require('../models/messageModel');
-const userModel = require("../models/userModel")
-const { errorResponse, successResponse } = require('../utils/responseHandler');
-const messages = require("../utils/messages")
-const { io } = require("../index");
-const { uploadFile } = require('../utils/awsUpload')
+const chatModel = require('../../models/chatModel');
+const messageModel = require('../../models/messageModel');
+const userModel = require("../../models/userModel")
+const { errorResponse, successResponse } = require('../../utils/common/responseHandler');
+const messages = require("../../utils/common/messages")
+const { io } = require("../../index");
+const { uploadFile } = require('../../utils/common/awsUpload')
 
 
 

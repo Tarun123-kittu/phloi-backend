@@ -1,12 +1,12 @@
-let userModel = require("../models/userModel")
-let { errorResponse, successResponse } = require("../utils/responseHandler")
-let { generateToken, generateOtp, sendTwilioSms } = require("../utils/commonFunctions")
-let messages = require("../utils/messages")
-const { uploadFile, s3 } = require("../utils/awsUpload")
-let userCharactersticsOptionsModel = require('../models/optionsModel')
-const headingsModel = require("../models/headingsModel")
-const questionsModel = require("../models/questionsModel")
-let { io } = require('../index');
+let userModel = require("../../models/userModel")
+let { errorResponse, successResponse } = require("../../utils/common/responseHandler")
+let { generateToken, generateOtp, sendTwilioSms } = require("../../utils/common/commonFunctions")
+let messages = require("../../utils/common/messages")
+const { uploadFile, s3 } = require("../../utils/common/awsUpload")
+let userCharactersticsOptionsModel = require('../../models/optionsModel')
+const headingsModel = require("../../models/headingsModel")
+const questionsModel = require("../../models/questionsModel")
+let { io } = require('../../index');
 
 
 

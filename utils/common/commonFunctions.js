@@ -1,5 +1,5 @@
 let jwt = require('jsonwebtoken')
-let config = require('../config/config')
+let config = require('../../config/config')
 let otpGenerator = require('otp-generator');
 let twilio = require('twilio')
 let client = new twilio(config.development.twilio_account_sid, config.development.twilio_auth_token)
@@ -7,9 +7,9 @@ let bcrypt = require('bcrypt')
 
 
 
-const generateToken = (userId) => {
+const generateToken = (userId, username, email) => {
     return new Promise((resolve, reject) => {
-        const payload = { userId: userId };
+        const payload = { userId: userId, username: username, email: email };
         jwt.sign(payload, config.development.jwt_secret_key, (err, token) => {
             if (err) {
                 return reject(err);
@@ -67,7 +67,7 @@ const generateHashedPassword = async (password) => {
 }
 
 
-const compareHashedPassword = async(password,userActualPassword)=>{
+const compareHashedPassword = async (password, userActualPassword) => {
     try {
         const hashedPassword = await bcrypt.compareSync(password, userActualPassword);
         return hashedPassword
