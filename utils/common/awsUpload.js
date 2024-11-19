@@ -1,7 +1,7 @@
 const AWS = require('aws-sdk');
 const config = require('../../config/config');
 const moment = require('moment-timezone');
-const {generateOtp} = require('./commonFunctions')
+// const {generateOtp} = require('./commonFunctions')
  
 
 const s3 = new AWS.S3({
@@ -33,7 +33,7 @@ const uploadFile = async (file, data = null) => {
     
     if (data == 'Profile image') {
         let code = generateOtp()
-        key = `profile_images/${userId}/${code}`;
+        key = `profile_images/${userId}/${current_time}`;
     }
 
     if (data == 'Reasons Icon') {
