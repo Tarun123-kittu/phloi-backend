@@ -26,10 +26,16 @@ io.on('connection', (socket) => {
   console.log("New client connected with socket ID ::", socket.id);
 
 
+
   socket.on('disconnect', () => {
     console.log("Client disconnected with socket ID ::", socket.id);
   });
 });
+
+
+socket.on('user_login',()=>{
+console.log('user login is confirmed ...')
+})
 
 
 app.use(cors())
