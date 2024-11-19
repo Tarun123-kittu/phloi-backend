@@ -7,13 +7,14 @@ let config = require('./config/config')
 const http = require('http');
 const socketIo = require('socket.io');
 const server = http.createServer(app);
+const userModel = require('./models/userModel')
 
 
 
 const io = socketIo(server, {
   cors: {
-    transports: ['polling'],  
-    origin: "*",             
+    transports: ['polling'],
+    origin: "*",
   },
 });
 
@@ -32,9 +33,29 @@ io.on('connection', (socket) => {
   });
 
 
-  socket.on('user_login',(data)=>{
-    console.log('user login is confirmed ...',data)
+  socket.on('user_login', async (data) => {
+    console.log('user login is confirmed ...', data)
+    await userModel.findByIdAndUpdate(data.userId, {
+      $set: {
+        online_status: true
+      }
     })
+    io.emit('login',data.userId)
+  })
+
+
+  socket.on('user_logout', async (data) => {
+    console.log('user logout is confirmed ...', data)
+    await userModel.findByIdAndUpdate(data.userId, {
+      $set: {
+        online_status: false
+      }
+    })
+    io.emit('logout',data.userId)
+  })
+
+
+
 });
 
 
@@ -43,7 +64,7 @@ io.on('connection', (socket) => {
 
 app.use(cors())
 app.use(cors({
-    origin: '*',
+  origin: '*',
 }));
 app.use(express.text());
 app.use(express.json());
@@ -51,10 +72,10 @@ app.use(express.urlencoded({ extended: true }))
 app.use(fileUpload())
 
 let apiRoutes = require('./routes/appRoutes/routes');
-app.use('/api/v1',apiRoutes);  
+app.use('/api/v1', apiRoutes);
 
 let adminRoutes = require('./routes/adminRoutes/routes')
-app.use('/api/v1',adminRoutes)
+app.use('/api/v1', adminRoutes)
 
 
 phloi_db_connection();
@@ -65,7 +86,7 @@ app.get('/api/v1/test_phloii', (req, res) => {
 });
 
 
-const PORT = config.development.port || 8000;  
+const PORT = config.development.port || 8000;
 server.listen(PORT, () => {
   console.log(`App is listening on PORT ${PORT}`);
 });
