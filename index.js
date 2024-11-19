@@ -30,12 +30,15 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log("Client disconnected with socket ID ::", socket.id);
   });
+
+
+  socket.on('user_login',()=>{
+    console.log('user login is confirmed ...')
+    })
 });
 
 
-socket.on('user_login',()=>{
-console.log('user login is confirmed ...')
-})
+
 
 
 app.use(cors())
