@@ -15,7 +15,7 @@ exports.login = async (req, res) => {
     try {
         const { mobile_number, country_code, number } = req.body;
 
-        let otp = await generateOtp();
+        let otp =  generateOtp();
         otp = '1111'
 
         if (mobile_number == '+12082276076' || mobile_number == '+918278722656' ) {

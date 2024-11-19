@@ -97,9 +97,15 @@ exports.get_all_users = async (req, res) => {
 
 exports.get_profile_verification_requests = async (req, res) => {
     try {
-        res.end()
+        const { page = 1, limit = 10, search = "" } = req.query;
+        const skip = (page - 1) * limit;
+
+        // let verificationRequests = 
     } catch (error) {
         console.error("ERROR::", error);
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 }
+
+
+

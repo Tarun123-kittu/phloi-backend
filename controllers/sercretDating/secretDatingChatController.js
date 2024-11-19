@@ -6,7 +6,7 @@ const { errorResponse, successResponse } = require('../../utils/common/responseH
 const messages = require("../../utils/common/messages")
 const { io } = require("../../index");
 const { uploadFile } = require('../../utils/common/awsUpload')
-let mongoose = require('mongoose')
+
 
 
 

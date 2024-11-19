@@ -58,7 +58,8 @@ const sendTwilioSms = async (msg,mobile_number) => {
 
 const generateHashedPassword = async (password) => {
     try {
-        const hashedPassword = await bcrypt.hash(password, 10);
+        let salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
         return hashedPassword
     } catch (error) {
         console.error('Error sending SMS:', error);
@@ -79,11 +80,24 @@ const compareHashedPassword = async (password, userActualPassword) => {
 
 
 
+const validateEmail = (email) => {
+    const emailFormat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    if (!email) {
+        return { isValid: false, message: 'Enter your registered email' };
+    }
+    if (!emailFormat.test(email)) {
+        return { isValid: false, message: 'Enter correct email format' };
+    }
+    return { isValid: true };
+};
+
+
 
 module.exports = {
     generateToken,
     generateOtp,
     sendTwilioSms,
     generateHashedPassword,
-    compareHashedPassword
+    compareHashedPassword,
+    validateEmail
 }

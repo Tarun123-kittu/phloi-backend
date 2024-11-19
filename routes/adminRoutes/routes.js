@@ -7,6 +7,9 @@ let adminUserController = require('../../controllers/admin/usersController')
 
 // auth
 router.post('/admin_login',adminAuthController.admin_login)
+router.put('/forget_password',adminAuthController.forget_password)
+router.put('/change_password',verifyAdminToken,adminAuthController.change_password)
+
 
 
 // users
