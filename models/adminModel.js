@@ -6,7 +6,7 @@ let adminSchema = new mongoose.Schema({
     password:{type:String},
     forgetPsd_otp:{type:Number},
     forgetPsd_otpCreatedAt:{type:Date},
-
+    forgetPsd_otpVerified:{type:Boolean,default:false}
 }, { timestamps: true })
 
 module.exports = mongoose.model('admin', adminSchema)

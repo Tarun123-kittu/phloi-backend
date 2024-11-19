@@ -8,6 +8,9 @@ let adminUserController = require('../../controllers/admin/usersController')
 // auth
 router.post('/admin_login',adminAuthController.admin_login)
 router.put('/forget_password',adminAuthController.forget_password)
+router.put('/forgetPassword_verifyOtp',adminAuthController.forgetPassword_verifyOtp)
+router.put("/resend_otp",adminAuthController.resend_otp)
+router.put("/reset_password",adminAuthController.reset_password)
 router.put('/change_password',verifyAdminToken,adminAuthController.change_password)
 
 
@@ -15,6 +18,7 @@ router.put('/change_password',verifyAdminToken,adminAuthController.change_passwo
 // users
 router.get("/get_all_users",verifyAdminToken,adminUserController.get_all_users)
 router.get("/get_profile_verification_requests",verifyAdminToken,adminUserController.get_profile_verification_requests)
+
 
 
 module.exports = router
