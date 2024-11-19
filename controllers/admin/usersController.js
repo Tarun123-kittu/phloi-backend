@@ -89,3 +89,17 @@ exports.get_all_users = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
+
+
+
+
+
+
+exports.get_profile_verification_requests = async (req, res) => {
+    try {
+        res.end()
+    } catch (error) {
+        console.error("ERROR::", error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    }
+}
