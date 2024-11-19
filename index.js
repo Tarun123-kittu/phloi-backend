@@ -40,7 +40,7 @@ io.on('connection', (socket) => {
         online_status: true
       }
     })
-    io.emit('login',data.userId)
+    io.emit('login', data.userId)
   })
 
 
@@ -51,10 +51,8 @@ io.on('connection', (socket) => {
         online_status: false
       }
     })
-    io.emit('logout',data.userId)
+    io.emit('logout', data.userId)
   })
-
-
 
 });
 
