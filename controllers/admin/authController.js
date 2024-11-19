@@ -35,7 +35,7 @@ exports.admin_login = async (req, res) => {
 
         let comparePassword = await compareHashedPassword(password, isAdminExist.password)
         if (!comparePassword) {
-            return res.status(400).json("Incorrect password", 'Entered password is incorrect')
+            return res.status(400).json(errorResponse("Incorrect password", 'Entered password is incorrect'))
         }
         let token = await generateToken(isAdminExist._id,isAdminExist.username,isAdminExist.email)
 
