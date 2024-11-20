@@ -219,10 +219,10 @@ exports.reset_password = async (req, res) => {
 
 
     const user = await adminModel.findOne({ email });
-    if (!user) { return res.status(404).json({ message: 'User not found', type: 'error' }); }
+    if (!user) { return res.status(404).json(errorResponse('User not found')); }
 
 
-    if (!user.forgetPsd_otpVerified) { return res.status(400).json({ message: 'OTP not verified. Cannot reset password.', type: 'error' }); }
+    if (!user.forgetPsd_otpVerified) { return res.status(400).json(errorResponse('OTP not verified. Cannot reset password.')); }
 
     const hashedPassword = await generateHashedPassword(password);
 

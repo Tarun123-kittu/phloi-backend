@@ -1,16 +1,18 @@
 let userModel = require('../../models/userModel')
 let { errorResponse, successResponse } = require('../../utils/common/responseHandler')
 let messages = require('../../utils/common/messages')
+let questionsModel = require("../../models/questionsModel")
+let userCharactersticsOptionsModel = require("../../models/optionsModel")
 
 
 exports.get_all_users = async (req, res) => {
     try {
-        const { page = 1, limit = 10, search = "" } = req.query;
+        const page = req.query?.page || 1
+        const limit = req.query?.limit || 10
+        const search = req.query?.search || ""
         const skip = (page - 1) * limit;
 
-
         const pipeline = [];
-
 
         pipeline.push({
             $match: {
@@ -97,13 +99,78 @@ exports.get_all_users = async (req, res) => {
 
 exports.get_profile_verification_requests = async (req, res) => {
     try {
-        const { page = 1, limit = 10, search = "" } = req.query;
-        const skip = (page - 1) * limit;
- 
-        let verificationRequests = await userModel.find({current_step:15,initiate_verification_request:true}).select('images username dob gender online_status')
-        if(verificationRequests.length<1){
-            return res.status(400).json(errorResponse("No verification requests till now"))
+
+        const page = req.query?.page || 1
+        const limit = req.query?.limit || 10
+        const search = req.query?.search || ""
+        const skip = (page - 1) * limit
+
+        const pipeline = [];
+
+        pipeline.push({
+            $match: {
+                current_step: 15,
+                initiate_verification_request: true
+            },
+        });
+
+
+        if (search && search.trim()) {
+            const searchFilters = {
+                $or: [
+                    { online_status: { $regex: search, $options: "i" } },
+                ],
+            };
+            pipeline.push({ $match: searchFilters });
         }
+
+
+        pipeline.push({
+            $project: {
+                username: 1,
+                images: 1,
+                dob: 1,
+                gender: 1,
+                online_status: 1,
+            },
+        });
+
+
+        pipeline.push({
+            $sort: { _id: -1 },
+        });
+
+
+        pipeline.push({ $skip: skip });
+        pipeline.push({ $limit: parseInt(limit) });
+
+        const countPipeline = [...pipeline];
+        countPipeline.pop();
+        countPipeline.pop();
+        countPipeline.push({ $count: "total" });
+
+
+        const [users, totalResult] = await Promise.all([
+            userModel.aggregate(pipeline),
+            userModel.aggregate(countPipeline),
+        ]);
+
+        if (users.length < 1) {
+            return res.status(400).json(errorResponse('No user found'))
+        }
+
+        const totalUsers = totalResult[0]?.total || 0;
+        let resultObj = {
+            pagination: {
+                currentPage: parseInt(page),
+                totalPages: Math.ceil(totalUsers / limit),
+                totalUsers,
+            },
+            users,
+        }
+
+        return res.status(200).json(successResponse('Data retrieved successfully', resultObj))
+
     } catch (error) {
         console.error("ERROR::", error);
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
@@ -112,3 +179,81 @@ exports.get_profile_verification_requests = async (req, res) => {
 
 
 
+
+
+
+exports.user_Details = async (req, res) => {
+    try {
+        const userId = req.query?.userId;
+        const TOTAL_STEPS = 15;
+
+        if (!userId) {
+            return res.status(400).json({
+                type: "error",
+                message: "Please provide a user Id in the query params",
+            });
+        }
+
+        const user_detail = await userModel
+            .findById(userId)
+            .select('_id username verified_profile show_me_to_verified_profiles mobile_number email dob images gender show_gender intrested_to_see online_status sexual_orientation_preference_id distance_preference user_characterstics subscription_type relationship_type_preference_id location')
+            .lean();
+
+        if (!user_detail) {
+            return res.status(400).json({
+                type: "error",
+                message: "User not found",
+            });
+        }
+
+        const { completed_steps = [], user_characterstics } = user_detail;
+        const validSteps = completed_steps.filter(step => step !== null);
+        const completedStepCount = validSteps.length;
+        const completionPercentage = (completedStepCount / TOTAL_STEPS) * 100;
+
+        // Simplify user_characterstics by fetching only required data
+        for (const step in user_characterstics) {
+            if (user_characterstics.hasOwnProperty(step)) {
+                const stepData = user_characterstics[step];
+                for (const characteristic of stepData) {
+                    const question = await questionsModel
+                        .findById(characteristic.questionId)
+                        .select('text') // Fetch only the question text
+                        .lean();
+
+                    const answer = await userCharactersticsOptionsModel
+                        .findById(characteristic.answerId)
+                        .select('text') // Fetch only the answer text
+                        .lean();
+
+                    characteristic.questionText = question ? question.text : null;
+                    characteristic.answerText = answer ? answer.text : null;
+
+                    // Remove unnecessary fields
+                    delete characteristic.questionId;
+                    delete characteristic.answerId;
+                    delete characteristic.answerIds;
+                    delete characteristic.answerTexts;
+                    delete characteristic.identifyText;
+                    delete characteristic._id;
+                }
+            }
+        }
+
+        return res.status(200).json({
+            type: "success",
+            user_detail: {
+                ...user_detail,
+                user_characterstics, // Modified user_characterstics with only questionText and answerText
+            },
+            profile_completion_percentage: completionPercentage.toFixed(2),
+        });
+    } catch (error) {
+        console.error("ERROR::", error);
+        return res.status(500).json({
+            type: "error",
+            message: "Something went wrong",
+            error: error.message,
+        });
+    }
+};
