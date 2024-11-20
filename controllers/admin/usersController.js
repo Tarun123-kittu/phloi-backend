@@ -185,18 +185,16 @@ exports.get_profile_verification_requests = async (req, res) => {
 exports.user_Details = async (req, res) => {
     try {
         const userId = req.query?.userId;
-        const TOTAL_STEPS = 15;
+   
 
         if (!userId) {
-            return res.status(400).json({
-                type: "error",
-                message: "Please provide a user Id in the query params",
-            });
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Please provide a user Id in the query params'));
         }
 
+      
         const user_detail = await userModel
             .findById(userId)
-            .select('_id username verified_profile show_me_to_verified_profiles mobile_number email dob images gender show_gender intrested_to_see online_status sexual_orientation_preference_id distance_preference user_characterstics subscription_type relationship_type_preference_id location')
+            .select('_id username verified_profile completed_steps show_me_to_verified_profiles mobile_number email dob images gender show_gender intrested_to_see online_status sexual_orientation_preference_id distance_preference user_characterstics subscription_type relationship_type_preference_id')
             .lean();
 
         if (!user_detail) {
@@ -206,54 +204,78 @@ exports.user_Details = async (req, res) => {
             });
         }
 
-        const { completed_steps = [], user_characterstics } = user_detail;
-        const validSteps = completed_steps.filter(step => step !== null);
-        const completedStepCount = validSteps.length;
-        const completionPercentage = (completedStepCount / TOTAL_STEPS) * 100;
+       
+        const { user_characterstics } = user_detail;
+       
 
-        // Simplify user_characterstics by fetching only required data
+       
+        const [
+            sexualOrientationOptions,
+            relationshipTypeOption,
+            allQuestionTexts,
+            allAnswerTexts
+        ] = await Promise.all([
+            userCharactersticsOptionsModel.find({ _id: { $in: user_detail.sexual_orientation_preference_id } })
+                .select('_id text')
+                .lean(),
+            userCharactersticsOptionsModel.findById(user_detail.relationship_type_preference_id)
+                .select('_id text')
+                .lean(),
+            questionsModel.find({})
+                .select('_id text')
+                .lean(),
+            userCharactersticsOptionsModel.find({})
+                .select('_id text')
+                .lean()
+        ]);
+
+      
+        const questionTextMap = Object.fromEntries(allQuestionTexts.map(q => [q._id.toString(), q.text]));
+        const answerTextMap = Object.fromEntries(allAnswerTexts.map(a => [a._id.toString(), a.text]));
+
+       
+        const processedUserCharacteristics = {};
         for (const step in user_characterstics) {
             if (user_characterstics.hasOwnProperty(step)) {
-                const stepData = user_characterstics[step];
-                for (const characteristic of stepData) {
-                    const question = await questionsModel
-                        .findById(characteristic.questionId)
-                        .select('text') // Fetch only the question text
-                        .lean();
-
-                    const answer = await userCharactersticsOptionsModel
-                        .findById(characteristic.answerId)
-                        .select('text') // Fetch only the answer text
-                        .lean();
-
-                    characteristic.questionText = question ? question.text : null;
-                    characteristic.answerText = answer ? answer.text : null;
-
-                    // Remove unnecessary fields
-                    delete characteristic.questionId;
-                    delete characteristic.answerId;
-                    delete characteristic.answerIds;
-                    delete characteristic.answerTexts;
-                    delete characteristic.identifyText;
-                    delete characteristic._id;
-                }
+                processedUserCharacteristics[step] = user_characterstics[step].map(characteristic => {
+                    const processedCharacteristic = {
+                        questionText: questionTextMap[characteristic.questionId?.toString()] || null,
+                        answerText: characteristic.answerId
+                            ? answerTextMap[characteristic.answerId?.toString()] || null
+                            : null,
+                        answerTexts: characteristic.answerIds
+                            ? characteristic.answerIds.map(id => answerTextMap[id?.toString()] || null).filter(Boolean)
+                            : [],
+                    };
+                    return processedCharacteristic;
+                });
             }
         }
 
-        return res.status(200).json({
-            type: "success",
-            user_detail: {
-                ...user_detail,
-                user_characterstics, // Modified user_characterstics with only questionText and answerText
-            },
-            profile_completion_percentage: completionPercentage.toFixed(2),
-        });
+    
+        const sexualOrientationPreferences = sexualOrientationOptions.map(option => ({
+            id: option._id,
+            value: option.text,
+        }));
+
+        const relationshipTypePreference = relationshipTypeOption
+            ? { id: relationshipTypeOption._id, value: relationshipTypeOption.text }
+            : null;
+
+        
+        const userObj = {
+            ...user_detail,
+            sexual_orientation_preference_id: sexualOrientationPreferences,
+            relationship_type_preference_id: relationshipTypePreference,
+            user_characterstics: processedUserCharacteristics,
+         
+        };
+
+        delete userObj.completed_steps; 
+
+        return res.status(200).json(successResponse('Data retrieved successfully', userObj));
     } catch (error) {
         console.error("ERROR::", error);
-        return res.status(500).json({
-            type: "error",
-            message: "Something went wrong",
-            error: error.message,
-        });
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
