@@ -189,6 +189,7 @@ exports.secretDating_like_profile = async (req, res) => {
             }
             // await notificationModel.create({ userId: likedUserId,sender_id:currentUserId, notification_text: `You got a match with ${currentUser.username}` })
 
+
             let participants = { currentUserId, likedUserId }
 
             return res.status(200).json(successResponse("Mutual like! A new match has been created.", participants));

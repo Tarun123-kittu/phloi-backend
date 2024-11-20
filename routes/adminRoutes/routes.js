@@ -19,6 +19,7 @@ router.put('/change_password',verifyAdminToken,adminAuthController.change_passwo
 router.get("/get_all_users",verifyAdminToken,adminUserController.get_all_users)
 router.get("/get_profile_verification_requests",verifyAdminToken,adminUserController.get_profile_verification_requests)
 router.get('/user_Details',verifyAdminToken,adminUserController.user_Details)
+router.put('/approve_or_reject_verification',verifyAdminToken,adminUserController.approve_or_reject_verification)
 
 
 module.exports = router

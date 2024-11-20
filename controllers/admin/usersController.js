@@ -61,7 +61,7 @@ exports.get_all_users = async (req, res) => {
 
 
         if (verified !== undefined) {
-            const isVerified = verified === "true" ||verified == true;
+            const isVerified = verified === "true" || verified == true;
             pipeline.push({
                 $match: {
                     verified_profile: isVerified,
@@ -320,3 +320,31 @@ exports.user_Details = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
+
+
+
+
+exports.approve_or_reject_verification = async (req, res) => {
+    try {
+    let userId = req.query?.userId
+    let verificationStatus = req.query?.verificationStatus 
+
+    if(!userId){
+      return res.status(400).json(errorResponse(errorResponse(messages.generalError.somethingWentWrong,'Please provide user Id in query params')))
+    }
+
+    let isUserExist = await userModel.findById(userId)
+    if(!isUserExist){
+        return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'User do not exist with this user Id'))
+    }
+
+    if(!verificationStatus){
+        return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'Please provide verifiction status '))
+    }
+
+    // if(verificationStatus !== '')
+    } catch (error) {
+        console.log('ERROR::', error)
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    }
+}
