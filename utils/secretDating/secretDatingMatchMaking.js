@@ -2,13 +2,13 @@ let userModel = require('../../models/userModel');
 
 
 const secretDatingMatchAlgorithm = async (currentUser, secretDatingCurrentUser, page = 1, limit = 10, filter = null) => {
-    let { _id, location, distance_preference, blocked_contacts, verified_profile } = currentUser;
+    let { _id, location, distance_preference,gender, blocked_contacts, verified_profile } = currentUser;
     const currentCoordinates = location.coordinates;
     const distanceInKm = distance_preference;
     const distanceInMeters = distanceInKm * 1000;
     blocked_contacts = blocked_contacts.map(contact => parseFloat(contact));
 
-    let { sexual_orientation_preference_id, interested_to_see, likedUsers, dislikedUsers } = secretDatingCurrentUser;
+    let { sexual_orientation_preference_id,interested_to_see, likedUsers, dislikedUsers } = secretDatingCurrentUser;
 
     try {
         let matchQuery = {
@@ -46,6 +46,7 @@ const secretDatingMatchAlgorithm = async (currentUser, secretDatingCurrentUser, 
         } else {
             if (interested_to_see !== 'everyone') {
                 matchQuery.gender = { $in: [interested_to_see] };
+                matchQuery.intrested_to_see = { $in: [gender] };
             }
         }
 

@@ -69,8 +69,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
 app.use(fileUpload())
 
-let apiRoutes = require('./routes/appRoutes/routes');
-app.use('/api/v1', apiRoutes);
+let appRoutes = require('./routes/appRoutes/routes');
+app.use('/api/v1', appRoutes);
 
 let adminRoutes = require('./routes/adminRoutes/routes')
 app.use('/api/v1', adminRoutes)

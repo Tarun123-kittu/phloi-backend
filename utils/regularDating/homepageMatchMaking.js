@@ -62,6 +62,7 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
            
             if (intrested_to_see !== 'everyone') {
                 matchQuery.gender = { $in: [intrested_to_see] };
+                matchQuery.intrested_to_see = { $in: [gender] };
             }
         }
 

@@ -5,12 +5,17 @@ let questionsModel = require("../../models/questionsModel")
 let userCharactersticsOptionsModel = require("../../models/optionsModel")
 
 
+
+
 exports.get_all_users = async (req, res) => {
     try {
         const page = req.query?.page || 1
         const limit = req.query?.limit || 10
         const search = req.query?.search || ""
         const skip = (page - 1) * limit;
+        const minAge = parseInt(req.query?.minAge);
+        const maxAge = parseInt(req.query?.maxAge);
+        const verified = req.query?.verified;
 
         const pipeline = [];
 
@@ -27,13 +32,41 @@ exports.get_all_users = async (req, res) => {
                     { username: { $regex: search, $options: "i" } },
                     { email: { $regex: search, $options: "i" } },
                     { gender: { $regex: search, $options: "i" } },
-                    ...(Date.parse(search)
-                        ? [{ dob: new Date(search) }]
-                        : []),
-                    { verified_profile: { $regex: search, $options: "i" } },
                 ],
             };
             pipeline.push({ $match: searchFilters });
+        }
+
+
+        if (minAge || maxAge) {
+            const currentDate = new Date();
+            const dobFilter = {};
+
+            if (minAge) {
+                const minDob = new Date(new Date().setFullYear(currentDate.getFullYear() - minAge));
+                dobFilter.$lte = minDob;
+            }
+
+            if (maxAge) {
+                const maxDob = new Date(new Date().setFullYear(currentDate.getFullYear() - maxAge));
+                dobFilter.$gte = maxDob;
+            }
+
+            pipeline.push({
+                $match: {
+                    dob: dobFilter,
+                },
+            });
+        }
+
+
+        if (verified !== undefined) {
+            const isVerified = verified === "true" ||verified == true;
+            pipeline.push({
+                $match: {
+                    verified_profile: isVerified,
+                },
+            });
         }
 
 
@@ -94,8 +127,6 @@ exports.get_all_users = async (req, res) => {
 
 
 
-
-
 exports.get_profile_verification_requests = async (req, res) => {
     try {
 
@@ -104,7 +135,7 @@ exports.get_profile_verification_requests = async (req, res) => {
         let search = req.query?.search || ""
         const skip = (page - 1) * limit
 
-        
+
         const pipeline = [];
         pipeline.push({
             $match: {
@@ -114,7 +145,7 @@ exports.get_profile_verification_requests = async (req, res) => {
         });
 
 
-        if (search ) {
+        if (search) {
             let parsedSearch = null;
 
             if (search == "true" || search == true) {
@@ -122,7 +153,7 @@ exports.get_profile_verification_requests = async (req, res) => {
             } else if (search === "false" || search == false) {
                 parsedSearch = false;
             }
-        
+
             if (parsedSearch !== null) {
                 pipeline.push({
                     $match: {
@@ -195,16 +226,16 @@ exports.get_profile_verification_requests = async (req, res) => {
 exports.user_Details = async (req, res) => {
     try {
         const userId = req.query?.userId;
-   
+
 
         if (!userId) {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Please provide a user Id in the query params'));
         }
 
-      
+
         const user_detail = await userModel
             .findById(userId)
-            .select('_id username verified_profile completed_steps show_me_to_verified_profiles mobile_number email dob images gender show_gender intrested_to_see online_status sexual_orientation_preference_id distance_preference user_characterstics subscription_type relationship_type_preference_id')
+            .select('_id username verified_profile completed_steps show_me_to_verified_profiles  mobile_number email dob images gender show_gender intrested_to_see online_status sexual_orientation_preference_id distance_preference user_characterstics subscription_type relationship_type_preference_id profile_verification_image')
             .lean();
 
         if (!user_detail) {
@@ -214,11 +245,11 @@ exports.user_Details = async (req, res) => {
             });
         }
 
-       
-        const { user_characterstics } = user_detail;
-       
 
-       
+        const { user_characterstics } = user_detail;
+
+
+
         const [
             sexualOrientationOptions,
             relationshipTypeOption,
@@ -239,11 +270,11 @@ exports.user_Details = async (req, res) => {
                 .lean()
         ]);
 
-      
+
         const questionTextMap = Object.fromEntries(allQuestionTexts.map(q => [q._id.toString(), q.text]));
         const answerTextMap = Object.fromEntries(allAnswerTexts.map(a => [a._id.toString(), a.text]));
 
-       
+
         const processedUserCharacteristics = {};
         for (const step in user_characterstics) {
             if (user_characterstics.hasOwnProperty(step)) {
@@ -262,7 +293,7 @@ exports.user_Details = async (req, res) => {
             }
         }
 
-    
+
         const sexualOrientationPreferences = sexualOrientationOptions.map(option => ({
             id: option._id,
             value: option.text,
@@ -272,16 +303,16 @@ exports.user_Details = async (req, res) => {
             ? { id: relationshipTypeOption._id, value: relationshipTypeOption.text }
             : null;
 
-        
+
         const userObj = {
             ...user_detail,
             sexual_orientation_preference_id: sexualOrientationPreferences,
             relationship_type_preference_id: relationshipTypePreference,
             user_characterstics: processedUserCharacteristics,
-         
+
         };
 
-        delete userObj.completed_steps; 
+        delete userObj.completed_steps;
 
         return res.status(200).json(successResponse('Data retrieved successfully', userObj));
     } catch (error) {
