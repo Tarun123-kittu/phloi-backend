@@ -30,7 +30,6 @@ exports.get_all_users = async (req, res) => {
                     ...(Date.parse(search)
                         ? [{ dob: new Date(search) }]
                         : []),
-                    { online_status: { $regex: search, $options: "i" } },
                     { verified_profile: { $regex: search, $options: "i" } },
                 ],
             };
@@ -102,11 +101,11 @@ exports.get_profile_verification_requests = async (req, res) => {
 
         const page = req.query?.page || 1
         const limit = req.query?.limit || 10
-        const search = req.query?.search || ""
+        let search = req.query?.search || ""
         const skip = (page - 1) * limit
 
+        
         const pipeline = [];
-
         pipeline.push({
             $match: {
                 current_step: 15,
@@ -115,13 +114,24 @@ exports.get_profile_verification_requests = async (req, res) => {
         });
 
 
-        if (search && search.trim()) {
-            const searchFilters = {
-                $or: [
-                    { online_status: { $regex: search, $options: "i" } },
-                ],
-            };
-            pipeline.push({ $match: searchFilters });
+        if (search ) {
+            let parsedSearch = null;
+
+            if (search == "true" || search == true) {
+                parsedSearch = true;
+            } else if (search === "false" || search == false) {
+                parsedSearch = false;
+            }
+        
+            if (parsedSearch !== null) {
+                pipeline.push({
+                    $match: {
+                        online_status: parsedSearch
+                    },
+                });
+            } else {
+                console.warn("Invalid search value; skipping online_status filter.");
+            }
         }
 
 

@@ -261,7 +261,7 @@ exports.user_registration_steps = async (req, res) => {
     }
 
     const images = req.files;
-    console.log('images ------', images)
+   
     try {
         const find_user_id = await userModel.findById(id);
 
