@@ -99,8 +99,11 @@ exports.get_profile_verification_requests = async (req, res) => {
     try {
         const { page = 1, limit = 10, search = "" } = req.query;
         const skip = (page - 1) * limit;
-
-        // let verificationRequests = 
+ 
+        let verificationRequests = await userModel.find({current_step:15,initiate_verification_request:true}).select('images username dob gender online_status')
+        if(verificationRequests.length<1){
+            return res.status(400).json(errorResponse("No verification requests till now"))
+        }
     } catch (error) {
         console.error("ERROR::", error);
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
