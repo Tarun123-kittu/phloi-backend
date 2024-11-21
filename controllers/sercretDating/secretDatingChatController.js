@@ -2,6 +2,7 @@ const chatModel = require('../../models/chatModel');
 const messageModel = require('../../models/messageModel');
 const userModel = require("../../models/userModel")
 const secretDatingUserModel = require('../../models/secretDatingUserModel')
+const hotelInvitationsModel = require('../../models/hotelInvitationsModel')
 const { errorResponse, successResponse } = require('../../utils/common/responseHandler');
 const messages = require("../../utils/common/messages")
 const { io } = require("../../index");
@@ -198,7 +199,7 @@ exports.secretDating_sendMessage = async (req, res) => {
                 'hotelData.status': 'pending'
             });
 
-            await chatHotelRecordsModel.create({
+            await hotelInvitationsModel.create({
                 chatId: chatId,
                 messageId: message._id
             })
@@ -249,7 +250,7 @@ exports.secretDating_getMessages = async (req, res) => {
 
         const skip = (page - 1) * limit;
 
-        let checkLastHotelStatus = await chatHotelRecordsModel.findOne({ chatId: chatId }).sort({ createdAt: -1 }).lean();
+        let checkLastHotelStatus = await hotelInvitationsModel.findOne({ chatId: chatId }).sort({ createdAt: -1 }).lean();
 
         const messages = await messageModel.find({ chat: chatId })
             .select('text sender createdAt read hotelData')

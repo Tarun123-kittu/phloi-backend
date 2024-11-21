@@ -1,7 +1,7 @@
 const chatModel = require('../../models/chatModel');
 const messageModel = require('../../models/messageModel');
 const userModel = require("../../models/userModel")
-const chatHotelRecordsModel = require('../../models/chatHotelRecordsModel')
+const hotelInvitationsModel = require('../../models/hotelInvitationsModel')
 const { errorResponse, successResponse } = require('../../utils/common/responseHandler');
 const messages = require("../../utils/common/messages")
 const { io } = require("../../index");
@@ -189,7 +189,7 @@ exports.sendMessage = async (req, res) => {
                 'hotelData.address': address,
                 'hotelData.status': 'pending'
             });
-            await chatHotelRecordsModel.create({
+            await hotelInvitationsModel.create({
                 chatId: chatId,
                 messageId: message._id
             })
@@ -243,7 +243,7 @@ exports.getMessages = async (req, res) => {
         }
 
         const skip = (page - 1) * limit;
-        let checkLastHotelStatus = await chatHotelRecordsModel.findOne({ chatId: chatId }).sort({ createdAt: -1 }).lean();
+        let checkLastHotelStatus = await hotelInvitationsModel.findOne({ chatId: chatId }).sort({ createdAt: -1 }).lean();
 
 
         const message = await messageModel.find({ chat: chatId })
@@ -359,7 +359,7 @@ exports.accept_or_reject_invitation = async (req, res) => {
             { new: true }
         );
 
-        await chatHotelRecordsModel.findOneAndUpdate({messageId:messageId},{
+        await hotelInvitationsModel.findOneAndUpdate({messageId:messageId},{
             $set:{
                 status:invitationResponse
             }
@@ -377,3 +377,6 @@ exports.accept_or_reject_invitation = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 }
+
+
+
