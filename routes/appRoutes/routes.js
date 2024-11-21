@@ -82,6 +82,7 @@ router.post('/sendMessage', authenticateToken,chatController.sendMessage);
 router.get('/getMessages',authenticateToken,chatController.getMessages);
 router.put("/markMessagesAsRead",authenticateToken,chatController.markMessagesAsRead)
 router.put('/accept_or_reject_invitation',authenticateToken,chatController.accept_or_reject_invitation)
+router.get('/get_hotelInviations',authenticateToken,chatController.get_hotelInviations)
 
 
 //explore rooms routes 

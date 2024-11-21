@@ -265,7 +265,7 @@ exports.getMessages = async (req, res) => {
             totalPages: Math.ceil(totalMessages / limit)
         }
 
-        res.status(200).json({ type: 'success', message: 'Messages retrieved successfully', hotelInvitationStatus: checkLastHotelStatus?.status?checkLastHotelStatus.status:null, data: messageObj })
+        res.status(200).json({ type: 'success', message: 'Messages retrieved successfully', hotelInvitationStatus: checkLastHotelStatus?.status ? checkLastHotelStatus.status : null, data: messageObj })
 
     } catch (error) {
         console.error("ERROR::", error);
@@ -359,9 +359,9 @@ exports.accept_or_reject_invitation = async (req, res) => {
             { new: true }
         );
 
-        await hotelInvitationsModel.findOneAndUpdate({messageId:messageId},{
-            $set:{
-                status:invitationResponse
+        await hotelInvitationsModel.findOneAndUpdate({ messageId: messageId }, {
+            $set: {
+                status: invitationResponse
             }
         })
 
@@ -371,6 +371,46 @@ exports.accept_or_reject_invitation = async (req, res) => {
             invitationSenderId: updatedMessage.sender
         })
         return res.status(200).json(successResponse('Status Updated', updatedMessage))
+
+    } catch (error) {
+        console.log("ERROR::", error)
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    }
+}
+
+
+
+
+
+exports.get_hotelInviations = async (req, res) => {
+    try {
+        let userId = req.result.userId
+        let chatId = req.query?.chatId
+
+        let isUserExist = await userModel.findById(userId)
+        if(!isUserExist){
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"User not exist with this userId"))
+        }
+
+        let isChatExist = await chatModel.findById(chatId)
+        if(!isChatExist){
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'Chat not exist with this chat Id'))
+        }
+
+        let checkHotelInvitations = await hotelInvitationsModel.findOne({chatId:chatId,status:'pending'})
+        if(checkHotelInvitations.length<1){
+            return res.status(200).json(successResponse('No hotel invitations shared yet!',checkHotelInvitations))
+        }
+      
+        let getHotelDetailsMessage = await messageModel.findOne({_id:checkHotelInvitations.messageId})
+        
+        let hotelDetailsObj = {
+            message_id: getHotelDetailsMessage._id,
+            hotelName: getHotelDetailsMessage.hotelData.hotelName,
+            hotelAddress:getHotelDetailsMessage.hotelData.address,
+            status:getHotelDetailsMessage.hotelData.status
+        }
+        return res.status(200).json(successResponse('Invitations fetched successfully',hotelDetailsObj))
 
     } catch (error) {
         console.log("ERROR::", error)
