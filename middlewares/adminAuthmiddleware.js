@@ -16,6 +16,7 @@ let verifyAdminToken = async(req, res, next) => {
             let user = jwt.verify(token, config.development.jwt_secret_key)
             
             let isAdminExist =  await adminModel.findById(user.userId)
+            
             if(!isAdminExist){
                 return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"Unauthorized user! Admin account with this Id is not findable"))
             }
@@ -23,7 +24,7 @@ let verifyAdminToken = async(req, res, next) => {
             req.result = user
 
         } else {
-            return res.status(401).json({ message: "Token is required for authentication." ,type:'error'})
+            return res.status(401).json(errorResponse('Token is required for authentication.'))
         }
         next();
 
@@ -31,7 +32,7 @@ let verifyAdminToken = async(req, res, next) => {
 
         console.log("ERROR::", error)
 
-        return res.status(401).json({ message: "Unauthorized user", type: "error", data: error.message })
+        return res.status(401).json(errorResponse('Unauthorized user'))
     }
 }
 

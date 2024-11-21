@@ -406,6 +406,7 @@ exports.get_hotelInviations = async (req, res) => {
         
         let hotelDetailsObj = {
             message_id: getHotelDetailsMessage._id,
+            sender_id:getHotelDetailsMessage.sender,
             hotelName: getHotelDetailsMessage.hotelData.hotelName,
             hotelAddress:getHotelDetailsMessage.hotelData.address,
             status:getHotelDetailsMessage.hotelData.status

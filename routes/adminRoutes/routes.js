@@ -3,6 +3,7 @@ let router = express.Router()
 let verifyAdminToken = require("../../middlewares/adminAuthmiddleware")
 let adminAuthController = require('../../controllers/admin/authController')
 let adminUserController = require('../../controllers/admin/usersController')
+let safetyAndPrivacyController = require("../../controllers/admin/safteyAndPrivacyController")
 
 
 // auth
@@ -21,5 +22,8 @@ router.get("/get_profile_verification_requests",verifyAdminToken,adminUserContro
 router.get('/user_Details',verifyAdminToken,adminUserController.user_Details)
 router.put('/approve_or_reject_verification',verifyAdminToken,adminUserController.approve_or_reject_verification)
 
+
+//safety and privacy
+router.post('/add_section',verifyAdminToken,safetyAndPrivacyController.add_section)
 
 module.exports = router
