@@ -265,7 +265,7 @@ exports.getMessages = async (req, res) => {
             totalPages: Math.ceil(totalMessages / limit)
         }
 
-        res.status(200).json({ type: 'success', message: 'Messages retrieved successfully', hotelInvitationStatus: checkLastHotelStatus.status, data: messageObj })
+        res.status(200).json({ type: 'success', message: 'Messages retrieved successfully', hotelInvitationStatus: checkLastHotelStatus.status?checkLastHotelStatus.status:'null', data: messageObj })
 
     } catch (error) {
         console.error("ERROR::", error);
