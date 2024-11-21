@@ -287,7 +287,7 @@ exports.secretDating_getMessages = async (req, res) => {
 
 
 
-exports.secretDating_markMessagesAsRead = async (req, res) => {aa
+exports.secretDating_markMessagesAsRead = async (req, res) => {
     try {
         const { chatId } = req.body;
         const userId = req.result.userId;
