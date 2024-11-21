@@ -3,6 +3,8 @@ let { errorResponse, successResponse } = require('../../utils/common/responseHan
 let messages = require('../../utils/common/messages')
 let questionsModel = require("../../models/questionsModel")
 let userCharactersticsOptionsModel = require("../../models/optionsModel")
+let notificationModel = require('../../models/notificationModel')
+let { io } = require("../../index")
 
 
 
@@ -326,25 +328,47 @@ exports.user_Details = async (req, res) => {
 
 exports.approve_or_reject_verification = async (req, res) => {
     try {
-    let userId = req.query?.userId
-    let verificationStatus = req.query?.verificationStatus 
+        const adminId = req.result.userId
+        const { userId, verificationStatus } = req.body;
 
-    if(!userId){
-      return res.status(400).json(errorResponse(errorResponse(messages.generalError.somethingWentWrong,'Please provide user Id in query params')))
-    }
 
-    let isUserExist = await userModel.findById(userId)
-    if(!isUserExist){
-        return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'User do not exist with this user Id'))
-    }
+        if (!userId) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'Please provide user Id in the body'));
+        }
 
-    if(!verificationStatus){
-        return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'Please provide verifiction status '))
-    }
+        if (typeof verificationStatus !== 'boolean') {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'Verification status must be a boolean value: true or false'));
+        }
 
-    // if(verificationStatus !== '')
+
+        const isUserExist = await userModel.findById(userId);
+        if (!isUserExist) {
+            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong,'User does not exist with this user Id'));
+        }
+
+
+        await userModel.findByIdAndUpdate(userId, {
+            $set: {
+                verified_profile: verificationStatus,
+                initiate_verification_request: false
+            }
+        });
+
+
+        const notificationText = `Your verification request has been ${verificationStatus ? 'approved' : 'rejected'} by the admin.`;
+        await notificationModel.create({
+            userId,
+            sender_id: adminId,
+            notification_text: notificationText
+        });
+
+
+        io.emit('verification_update', userId);
+
+        return res.status(200).json(successResponse('Verification status updated successfully'));
     } catch (error) {
-        console.log('ERROR::', error)
+        console.log('ERROR::', error);
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 }
+

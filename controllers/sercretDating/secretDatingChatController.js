@@ -69,15 +69,15 @@ exports.secretDating_getChats = async (req, res) => {
         const skip = (page - 1) * limit;
         const searchQuery = req.query.search || "";
 
-        if (!userId) { 
-            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User ID is required")); 
+        if (!userId) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User ID is required"));
         }
 
-        
-        const chats = await chatModel.find({ 
-                participants: userId, 
-                type: 'secret dating' 
-            })
+
+        const chats = await chatModel.find({
+            participants: userId,
+            type: 'secret dating'
+        })
             .populate({
                 path: 'lastMessage',
                 populate: {
@@ -87,8 +87,8 @@ exports.secretDating_getChats = async (req, res) => {
             })
             .populate({
                 path: 'participants',
-                select: 'username online_status', 
-                match: { _id: { $ne: userId } } 
+                select: 'username online_status',
+                match: { _id: { $ne: userId } }
             })
             .sort({ 'lastMessage.createdAt': -1 })
             .skip(skip)
@@ -101,7 +101,7 @@ exports.secretDating_getChats = async (req, res) => {
         const chatDetails = await Promise.all(chats.map(async chat => {
             const otherParticipant = chat.participants[0];
 
-           
+
             const secretUserData = await secretDatingUserModel.findOne({
                 user_id: otherParticipant._id
             }).select('name avatar profile_image');
@@ -111,11 +111,11 @@ exports.secretDating_getChats = async (req, res) => {
                 receiver: userId,
                 read_chat: false
             });
-        
+
             const lastMessageText = chat.lastMessage ? chat.lastMessage.text : null;
             const lastMessageSenderName = chat.lastMessage && chat.lastMessage.sender ? chat.lastMessage.sender.username : null;
             const messageSentAt = chat.lastMessage ? chat.lastMessage.createdAt : null;
-        
+
             return {
                 chatId: chat._id,
                 otherParticipantId: otherParticipant ? otherParticipant._id : null,
@@ -129,7 +129,7 @@ exports.secretDating_getChats = async (req, res) => {
                 onlineStatus: otherParticipant ? otherParticipant.online_status : null
             };
         }));
-    
+
         const totalChatsCount = await chatModel.countDocuments({
             participants: userId,
             type: 'secret dating',
@@ -197,6 +197,11 @@ exports.secretDating_sendMessage = async (req, res) => {
                 'hotelData.address': address,
                 'hotelData.status': 'pending'
             });
+
+            await chatHotelRecordsModel.create({
+                chatId: chatId,
+                messageId: message._id
+            })
         } else {
             message = new messageModel({ chat: chatId, sender: senderId, receiver: receiverId, text });
         }
@@ -220,7 +225,7 @@ exports.secretDating_sendMessage = async (req, res) => {
 
 
         res.status(201).json(successResponse("Message sent successfully", message));
-        
+
     } catch (error) {
         console.error("ERROR::", error);
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
@@ -244,6 +249,7 @@ exports.secretDating_getMessages = async (req, res) => {
 
         const skip = (page - 1) * limit;
 
+        let checkLastHotelStatus = await chatHotelRecordsModel.findOne({ chatId: chatId }).sort({ createdAt: -1 }).lean();
 
         const messages = await messageModel.find({ chat: chatId })
             .select('text sender createdAt read hotelData')
@@ -259,12 +265,15 @@ exports.secretDating_getMessages = async (req, res) => {
 
         const totalMessages = await messageModel.countDocuments({ chat: chatId });
 
-        res.status(200).json(successResponse("Messages retrieved successfully", {
+        let messageObj = {
             messages,
             currentPage: parseInt(page),
             totalMessages,
             totalPages: Math.ceil(totalMessages / limit)
-        }));
+        }
+
+        res.status(200).json({ type: 'success', message: 'Messages retrieved successfully', hotelInvitationStatus: checkLastHotelStatus.status, data: messageObj })
+
     } catch (error) {
         console.error("ERROR::", error);
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));

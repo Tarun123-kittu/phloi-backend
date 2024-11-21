@@ -1,6 +1,7 @@
 const chatModel = require('../../models/chatModel');
 const messageModel = require('../../models/messageModel');
 const userModel = require("../../models/userModel")
+const chatHotelRecordsModel = require('../../models/chatHotelRecordsModel')
 const { errorResponse, successResponse } = require('../../utils/common/responseHandler');
 const messages = require("../../utils/common/messages")
 const { io } = require("../../index");
@@ -21,7 +22,7 @@ exports.getChats = async (req, res) => {
 
         if (!userId) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User ID is required")); }
 
-        const chats = await chatModel.find({ participants: userId , type: 'regular dating'})
+        const chats = await chatModel.find({ participants: userId, type: 'regular dating' })
             .populate({
                 path: 'lastMessage',
                 populate: {
@@ -45,26 +46,26 @@ exports.getChats = async (req, res) => {
             const otherParticipant = chat.participants.find(participant => participant._id.toString() !== userId);
             return otherParticipant && otherParticipant.username.toLowerCase().includes(searchQuery.toLowerCase());
         });
-        
+
         const chatDetails = await Promise.all(filteredChats.map(async chat => {
             const otherParticipant = chat.participants.find(participant => participant._id.toString() !== userId);
-        
+
             // Get the other participant's _id
             const otherParticipantId = otherParticipant ? otherParticipant._id : null;
-        
+
             const imageObj = otherParticipant?.images?.find(img => img.position === 1);
             const otherParticipantImage = imageObj ? imageObj.url : null;
-        
+
             const unreadCount = await messageModel.countDocuments({
                 chat: chat._id,
                 receiver: userId,
                 read_chat: false
             });
-        
+
             const lastMessageText = chat.lastMessage ? chat.lastMessage.text : null;
             const lastMessageSenderName = chat.lastMessage && chat.lastMessage.sender ? chat.lastMessage.sender.username : null;
             const messageSentAt = chat.lastMessage ? chat.lastMessage.createdAt : null;
-        
+
             return {
                 chatId: chat._id,
                 otherParticipantId: otherParticipantId,  // Add otherParticipantId here
@@ -77,7 +78,7 @@ exports.getChats = async (req, res) => {
                 onlineStatus: otherParticipant ? otherParticipant.online_status : null
             };
         }));
-    
+
 
 
         const totalChatsCount = await chatModel.countDocuments({
@@ -132,7 +133,7 @@ exports.createChat = async (req, res) => {
         if (existingChat) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Chat already exists between these participants.")); }
 
 
-        const chat = new chatModel({ participants,type: 'regular dating' });
+        const chat = new chatModel({ participants, type: 'regular dating' });
         await chat.save();
         io.emit(`create_chat`, chat._id)
         res.status(201).json(successResponse("Chat created successfully", chat));
@@ -148,7 +149,7 @@ exports.createChat = async (req, res) => {
 
 exports.sendMessage = async (req, res) => {
     try {
-       
+
         let { chatId, text } = req.body;
         let senderId = req.result.userId;
         let image = req.files?.image;
@@ -188,6 +189,11 @@ exports.sendMessage = async (req, res) => {
                 'hotelData.address': address,
                 'hotelData.status': 'pending'
             });
+            await chatHotelRecordsModel.create({
+                chatId: chatId,
+                messageId: message._id
+            })
+
         } else {
             message = new messageModel({ chat: chatId, sender: senderId, receiver: receiverId, text });
         }
@@ -198,7 +204,9 @@ exports.sendMessage = async (req, res) => {
         chat.lastMessage = message._id;
         chat.unreadCount += 1;
         await chat.save();
-       
+
+
+
         io.emit(`send_message`, {
             chatId: chatId,
             messageId: message._id,
@@ -235,6 +243,8 @@ exports.getMessages = async (req, res) => {
         }
 
         const skip = (page - 1) * limit;
+        let checkLastHotelStatus = await chatHotelRecordsModel.findOne({ chatId: chatId }).sort({ createdAt: -1 }).lean();
+
 
         const message = await messageModel.find({ chat: chatId })
             .select('text sender createdAt read hotelData')
@@ -248,13 +258,15 @@ exports.getMessages = async (req, res) => {
         }
 
         const totalMessages = await messageModel.countDocuments({ chat: chatId });
-
-        res.status(200).json(successResponse("Messages retrieved successfully", {
+        let messageObj = {
             message,
             currentPage: parseInt(page),
             totalMessages,
             totalPages: Math.ceil(totalMessages / limit)
-        }));
+        }
+
+        res.status(200).json({ type: 'success', message: 'Messages retrieved successfully', hotelInvitationStatus: checkLastHotelStatus.status, data: messageObj })
+
     } catch (error) {
         console.error("ERROR::", error);
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
@@ -344,15 +356,21 @@ exports.accept_or_reject_invitation = async (req, res) => {
         const updatedMessage = await messageModel.findOneAndUpdate(
             { _id: messageId },
             { $set: { 'hotelData.status': invitationResponse } },
-            { new: true } 
+            { new: true }
         );
-    
-        io.emit('invitation_updated',{
-            chatId:updatedMessage.chat,
-            messagId:updatedMessage._id,
-            invitationSenderId:updatedMessage.sender
+
+        await chatHotelRecordsModel.findOneAndUpdate({messageId:messageId},{
+            $set:{
+                status:invitationResponse
+            }
         })
-        return res.status(200).json(successResponse('Status Updated',updatedMessage))
+
+        io.emit('invitation_updated', {
+            chatId: updatedMessage.chat,
+            messagId: updatedMessage._id,
+            invitationSenderId: updatedMessage.sender
+        })
+        return res.status(200).json(successResponse('Status Updated', updatedMessage))
 
     } catch (error) {
         console.log("ERROR::", error)
