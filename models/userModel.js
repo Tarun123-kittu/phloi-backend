@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 
 const userSchema = new mongoose.Schema({
+  deviceToken:{type:String},
   verified_profile:{type:Boolean,default:false},
   initiate_verification_request:{type:Boolean,default:false},
   profile_verification_image:{type:String},

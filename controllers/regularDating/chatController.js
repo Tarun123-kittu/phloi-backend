@@ -398,7 +398,7 @@ exports.get_hotelInviations = async (req, res) => {
         }
 
         let checkHotelInvitations = await hotelInvitationsModel.findOne({chatId:chatId,status:'pending'})
-        if(checkHotelInvitations.length<1){
+        if(!checkHotelInvitations.length){
             return res.status(200).json(successResponse('No hotel invitations shared yet!',checkHotelInvitations))
         }
       

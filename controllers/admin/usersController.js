@@ -4,6 +4,7 @@ let messages = require('../../utils/common/messages')
 let questionsModel = require("../../models/questionsModel")
 let userCharactersticsOptionsModel = require("../../models/optionsModel")
 let notificationModel = require('../../models/notificationModel')
+const { androidPushNotification } = require("../../utils/common/pushNotifications");
 let { io } = require("../../index")
 
 
@@ -248,7 +249,7 @@ exports.user_Details = async (req, res) => {
         }
 
 
-        const { user_characterstics,dob } = user_detail;
+        const { user_characterstics, dob } = user_detail;
 
         let age = null;
         if (dob) {
@@ -343,17 +344,17 @@ exports.approve_or_reject_verification = async (req, res) => {
 
 
         if (!userId) {
-            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'Please provide user Id in the body'));
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Please provide user Id in the body'));
         }
 
         if (typeof verificationStatus !== 'boolean') {
-            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'Verification status must be a boolean value: true or false'));
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Verification status must be a boolean value: true or false'));
         }
 
 
         const isUserExist = await userModel.findById(userId);
         if (!isUserExist) {
-            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong,'User does not exist with this user Id'));
+            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, 'User does not exist with this user Id'));
         }
 
 
@@ -372,6 +373,19 @@ exports.approve_or_reject_verification = async (req, res) => {
             notification_text: notificationText
         });
 
+        // androidPushNotification(
+        //     isUserExist.deviceToken,
+        //     `You verification request is ${verificationStatus==true?'accepted':'rejected'}`,
+        //     "Phloii",
+        //     { type: "verification_update", userId: isUserExist._id },
+        //     (err, response) => {
+        //         if (err) {
+        //             console.error("Notification Error:", err);
+        //         } else {
+        //             console.log("Notification Sent:", response);
+        //         }
+        //     }
+        // );
 
         io.emit('verification_update', userId);
 

@@ -14,7 +14,8 @@ const development = {
     aws_s3_secret_key: process.env.AWS_S3_SECRET_KEY,
     admin_initial_password:process.env.ADMIN_INITIAL_PASSWORD,
     gmail:process.env.GMAIL,
-    gmail_password: process.env.TWO_STEP_VERIFIED_PASSWORD
+    gmail_password: process.env.TWO_STEP_VERIFIED_PASSWORD,
+    fcm_server_key:process.env.FCM_SERVER_KEY
 
 };
 
