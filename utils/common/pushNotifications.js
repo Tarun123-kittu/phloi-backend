@@ -1,7 +1,7 @@
 const FCM = require("fcm-node");
 let config = require('../../config/config')
 
-module.exports.androidPushNotification = (deviceToken, messageBody, title = "Ladygo", additionalData = {}, callback) => {
+module.exports.androidPushNotification = (deviceToken, messageBody, title = "Phloii", additionalData = {}, callback) => {
     const serverKey = config.development.fcm_server_key; 
     const fcm = new FCM(serverKey);
 
