@@ -229,15 +229,13 @@ exports.user_Details = async (req, res) => {
     try {
         const userId = req.query?.userId;
 
-
         if (!userId) {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Please provide a user Id in the query params'));
         }
 
-
         const user_detail = await userModel
             .findById(userId)
-            .select('_id username verified_profile completed_steps show_me_to_verified_profiles  mobile_number email dob images gender show_gender intrested_to_see online_status sexual_orientation_preference_id distance_preference user_characterstics subscription_type relationship_type_preference_id profile_verification_image')
+            .select('_id username verified_profile completed_steps show_me_to_verified_profiles mobile_number email dob images gender show_gender intrested_to_see online_status sexual_orientation_preference_id distance_preference user_characterstics subscription_type relationship_type_preference_id profile_verification_image')
             .lean();
 
         if (!user_detail) {
@@ -247,10 +245,23 @@ exports.user_Details = async (req, res) => {
             });
         }
 
+      
+        const calculateAge = (dob) => {
+            const birthDate = new Date(dob);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDifference = today.getMonth() - birthDate.getMonth();
+            if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            return age;
+        };
+
+        if (user_detail.dob) {
+            user_detail.age = calculateAge(user_detail.dob); 
+        }
 
         const { user_characterstics } = user_detail;
-
-
 
         const [
             sexualOrientationOptions,
@@ -272,10 +283,8 @@ exports.user_Details = async (req, res) => {
                 .lean()
         ]);
 
-
         const questionTextMap = Object.fromEntries(allQuestionTexts.map(q => [q._id.toString(), q.text]));
         const answerTextMap = Object.fromEntries(allAnswerTexts.map(a => [a._id.toString(), a.text]));
-
 
         const processedUserCharacteristics = {};
         for (const step in user_characterstics) {
@@ -295,7 +304,6 @@ exports.user_Details = async (req, res) => {
             }
         }
 
-
         const sexualOrientationPreferences = sexualOrientationOptions.map(option => ({
             id: option._id,
             value: option.text,
@@ -305,13 +313,11 @@ exports.user_Details = async (req, res) => {
             ? { id: relationshipTypeOption._id, value: relationshipTypeOption.text }
             : null;
 
-
         const userObj = {
             ...user_detail,
             sexual_orientation_preference_id: sexualOrientationPreferences,
             relationship_type_preference_id: relationshipTypePreference,
             user_characterstics: processedUserCharacteristics,
-
         };
 
         delete userObj.completed_steps;
@@ -322,6 +328,7 @@ exports.user_Details = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
+
 
 
 

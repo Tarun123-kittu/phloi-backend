@@ -24,6 +24,6 @@ router.put('/approve_or_reject_verification',verifyAdminToken,adminUserControlle
 
 
 //safety and privacy
-router.post('/add_section',verifyAdminToken,safetyAndPrivacyController.add_section)
+router.post('/addSection',verifyAdminToken,safetyAndPrivacyController.addSection)
 
 module.exports = router
