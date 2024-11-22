@@ -4,7 +4,7 @@ let messages = require('../../utils/common/messages')
 let questionsModel = require("../../models/questionsModel")
 let userCharactersticsOptionsModel = require("../../models/optionsModel")
 let notificationModel = require('../../models/notificationModel')
-const { androidPushNotification } = require("../../utils/common/pushNotifications");
+// const { androidPushNotification } = require("../../utils/common/pushNotifications");
 let { io } = require("../../index")
 
 
