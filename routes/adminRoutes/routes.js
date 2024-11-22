@@ -24,6 +24,12 @@ router.put('/approve_or_reject_verification',verifyAdminToken,adminUserControlle
 
 
 //safety and privacy
-router.post('/addSection',verifyAdminToken,safetyAndPrivacyController.addSection)
+router.post('/add_section',verifyAdminToken,safetyAndPrivacyController.add_section)
+router.get('/get_sections',verifyAdminToken,safetyAndPrivacyController.get_sections)
+router.get("/get_section_by_id",verifyAdminToken,safetyAndPrivacyController.get_section_by_id)
+router.put("/update_section",verifyAdminToken,safetyAndPrivacyController.update_section)
+router.delete("/delete_section",verifyAdminToken,safetyAndPrivacyController.delete_section)
+router.put("/add_page_to_section",verifyAdminToken,safetyAndPrivacyController.add_page_to_section)
+router.delete("/delete_page",verifyAdminToken,safetyAndPrivacyController.delete_page)
 
 module.exports = router
