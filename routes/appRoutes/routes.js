@@ -24,6 +24,7 @@ let authenticateToken = require('../../middlewares/authMiddleware')
 router.put("/user_registration_steps", authenticateToken, userController.user_registration_steps)
 router.get("/get_user_details/:id?", authenticateToken, userController.get_user_details)
 router.post("/login", validateLogin, userController.login)
+router.put("/add_device_token",userController.add_device_token)
 router.post("/social_login", validateSocialLogin, userController.social_login)
 router.post("/verify_otp", validateVerifyOtp, userController.verify_otp)
 router.put('/logout',authenticateToken,userController.logout)
@@ -48,6 +49,7 @@ router.put("/verify_updated_number",authenticateToken,userController.verify_upda
 router.get("/get_user_images",authenticateToken,userController.get_user_images)
 router.put("/update_user_location",authenticateToken,userController.update_user_location)
 router.put("/request_profile_verification",authenticateToken,userController.request_profile_verification)
+
 
 
 

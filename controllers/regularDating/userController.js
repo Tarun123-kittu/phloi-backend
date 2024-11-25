@@ -15,17 +15,17 @@ exports.login = async (req, res) => {
     try {
         const { mobile_number, country_code, number } = req.body;
 
-        let otp =  generateOtp();
+        let otp = generateOtp();
         otp = '1111'
 
-        if (mobile_number == '+12082276076' || mobile_number == '+918278722656' ) {
+        if (mobile_number == '+12082276076' || mobile_number == '+918278722656') {
             otp = "1111"
         }
 
         const currentTime = new Date();
 
         let user = await userModel.findOne({ mobile_number });
- console.log('otp-----',otp)
+        console.log('otp-----', otp)
         if (user) {
 
             await userModel.findOneAndUpdate(
@@ -52,7 +52,7 @@ exports.login = async (req, res) => {
 
             });
         }
-        if (number == "12082276076" ||number == "918278722656" ) { return res.status(200).json(successResponse("You can proceed ahead.")) }
+        if (number == "12082276076" || number == "918278722656") { return res.status(200).json(successResponse("You can proceed ahead.")) }
 
         const smsResponse = await sendTwilioSms(`Your phloii verification code is ${otp}`, mobile_number);
         console.log(smsResponse)
@@ -74,7 +74,43 @@ exports.login = async (req, res) => {
 
 
 
+exports.add_device_token = async (req, res) => {
+    try {
+        let number = req.body.number;
+        let deviceType = req.body.deviceType;
+        let deviceToken = req.body.deviceToken;
 
+        if (!deviceToken) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please provide device token"))
+        }
+
+
+        if (!number) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Please enter the phone number for which the user token will be saved.'))
+        }
+        if (!(deviceType === "android" || deviceType === "ios")) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'The device must be either Android or iOS.'))
+        }
+
+        let isUserExist = await userModel.findOneAndUpdate({ mobile_number: number }, {
+            $set: {
+                deviceToken: deviceToken,
+                deviceType: deviceType
+            }
+        })
+
+
+        if (!isUserExist) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'User not found with this number'))
+        } else {
+
+            return res.status(200).json({ message: 'Device token saved', type: "success" })
+        }
+    } catch (error) {
+        console.log("ERROR::", error)
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
+    }
+}
 
 
 
@@ -261,7 +297,7 @@ exports.user_registration_steps = async (req, res) => {
     }
 
     const images = req.files;
-   
+
     try {
         const find_user_id = await userModel.findById(id);
 
@@ -1750,19 +1786,19 @@ exports.request_profile_verification = async (req, res) => {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'User not exist with this user Id'))
         }
 
-    
-        if (uploadedSelfie == undefined || uploadedSelfie == null ){
+
+        if (uploadedSelfie == undefined || uploadedSelfie == null) {
             return res.status(400).json(errorResponse('Please proide selfie which you want to send for verification', 'Please provide user selfie in body(form-data)'))
         }
 
         uploadedSelfie.userId = userId
         const uploadedNewSelfie = await uploadFile(uploadedSelfie, 'Verification Selfies')
         let selfie = uploadedNewSelfie.Location
-        
-        await userModel.findByIdAndUpdate(userId,{
-            $set:{
-                initiate_verification_request:true,
-                profile_verification_image:selfie
+
+        await userModel.findByIdAndUpdate(userId, {
+            $set: {
+                initiate_verification_request: true,
+                profile_verification_image: selfie
             }
         })
 

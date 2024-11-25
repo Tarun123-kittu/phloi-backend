@@ -9,6 +9,7 @@ const socketIo = require('socket.io');
 const server = http.createServer(app);
 const userModel = require('./models/userModel')
 const joinedRoomsModel = require('./models/joinedRoomsModel')
+const roomsModel = require('./models/exploreRoomsModel')
 
 
 
@@ -46,19 +47,36 @@ io.on('connection', (socket) => {
 
 
   socket.on('user_logout', async (data) => {
+
     console.log('user logout is confirmed ...', data)
     let user = await userModel.findByIdAndUpdate(data.userId, {
       $set: {
         online_status: false
       }
     }, { new: true })
+
+
     if (user.room_joined == true) {
-      let userRoom = await joinedRoomsModel.findOneAndDelete({ userId: data.userId });
+      let roomId = user.joined_room_id
+      let userId = data.userId
+      await joinedRoomsModel.findOneAndDelete({ userId: userId });
+      await roomsModel.findByIdAndUpdate(roomId, {
+        $inc: { joined_user_count: -1 },
+      });
+
+      await userModel.findByIdAndUpdate(userId, {
+        $set: {
+          room_joined: false,
+          joined_room_id: null
+        }
+      });
+      let joinedUserCount = await roomsModel.findById(roomId)
+
+      let count = joinedUserCount.joined_user_count
+      io.emit("room_left", { roomId, count });
     }
     io.emit('logout', data.userId)
-
   })
-
 });
 
 

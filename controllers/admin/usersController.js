@@ -373,7 +373,7 @@ exports.approve_or_reject_verification = async (req, res) => {
             notification_text: notificationText
         });
 
-        // androidPushNotification(
+        //  androidPushNotification(
         //     isUserExist.deviceToken,
         //     `You verification request is ${verificationStatus==true?'accepted':'rejected'}`,
         //     "Phloii",
