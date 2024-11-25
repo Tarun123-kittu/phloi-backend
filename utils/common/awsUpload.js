@@ -1,8 +1,8 @@
 const AWS = require('aws-sdk');
 const config = require('../../config/config');
 const moment = require('moment-timezone');
-const {generateOtp} = require('./commonFunctions')
- 
+const { generateOtp } = require('./commonFunctions')
+
 
 const s3 = new AWS.S3({
     accessKeyId: config?.development?.aws_s3_access_key,
@@ -23,13 +23,13 @@ const uploadFile = async (file, data = null) => {
 
     if (data == 'Secret Dating') {
         key = `${data}/profile_images/${userId}/${filename}`
-    } 
-    
-    if(data == 'Chat'){
+    }
+
+    if (data == 'Chat') {
         let chatId = file.chatId
         key = `Chat/${chatId}/${userId}/${current_time}`;
     }
-    
+
     if (data == 'Profile image') {
         let code = generateOtp()
         key = `profile_images/${userId}/${code}`;
@@ -37,10 +37,14 @@ const uploadFile = async (file, data = null) => {
 
     if (data == 'Reasons Icon') {
         key = `${data}/delete_reasons/${userId}/${filename}`
-    } 
+    }
 
-    if(data == 'Verification Selfies'){
+    if (data == 'Verification Selfies') {
         key = `${data}/${userId}/${current_time}`
+    }
+
+    if (data == 'Explore Rooms') {
+        key = `${data}/${current_time}`
     }
 
 

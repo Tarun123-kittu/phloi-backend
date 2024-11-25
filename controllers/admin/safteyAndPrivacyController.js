@@ -157,7 +157,7 @@ exports.delete_page = async (req, res) => {
 
   } catch (error) {
     console.error('ERROR::', error);
-    return res.status(500).json(errorResponse('Something went wrong', error.message));
+    return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
   }
 }
 

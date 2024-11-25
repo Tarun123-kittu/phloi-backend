@@ -4,6 +4,8 @@ let verifyAdminToken = require("../../middlewares/adminAuthmiddleware")
 let adminAuthController = require('../../controllers/admin/authController')
 let adminUserController = require('../../controllers/admin/usersController')
 let safetyAndPrivacyController = require("../../controllers/admin/safteyAndPrivacyController")
+let generalSettingController = require("../../controllers/admin/generalSettings")
+
 
 
 // auth
@@ -31,5 +33,15 @@ router.put("/update_section",verifyAdminToken,safetyAndPrivacyController.update_
 router.delete("/delete_section",verifyAdminToken,safetyAndPrivacyController.delete_section)
 router.put("/add_page_to_section",verifyAdminToken,safetyAndPrivacyController.add_page_to_section)
 router.delete("/delete_page",verifyAdminToken,safetyAndPrivacyController.delete_page)
+
+
+
+// general settings
+router.put('/update_maximum_distance_preference',verifyAdminToken,generalSettingController.update_maximum_distance_preference)
+router.post('/add_explore_room', verifyAdminToken,generalSettingController.add_explore_room)
+router.get('/get_expore_room',verifyAdminToken,generalSettingController.get_expore_room)
+router.put('/update_explore_room',verifyAdminToken,generalSettingController.update_explore_room)
+router.get('/get_explore_rooms', verifyAdminToken,generalSettingController.get_explore_rooms);
+
 
 module.exports = router
