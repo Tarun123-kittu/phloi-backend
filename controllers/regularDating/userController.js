@@ -729,6 +729,27 @@ exports.get_user_details = async (req, res) => {
 
 
 
+exports.update_demo_step = async(req,res)=>{
+    try{
+    let userId = req.result.userId
+    
+    let isUserExist = await userModel.findById(userId)
+    if(!isUserExist){
+        return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"User not exist with this user Id"))
+    }
+
+    await userModel.findByIdAndUpdate(userId,{
+        $set:{
+            demo_steps:true 
+        }
+    })
+    return res.status(200).json(successResponse("Data updated successfully"))
+    }catch(error){
+        console.error('Error updating image positions:', error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    }
+    
+}
 
 
 
@@ -767,7 +788,7 @@ exports.update_image_position = async (req, res) => {
 
     } catch (err) {
         console.error('Error updating image positions:', err);
-        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, err.message));
     }
 };
 

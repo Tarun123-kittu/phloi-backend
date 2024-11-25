@@ -2,12 +2,12 @@ const mongoose = require('mongoose');
 
 
 const userSchema = new mongoose.Schema({
-  deviceToken:{type:String},
-  deviceType:{type:String,enum:['android','ios']},
-  verified_profile:{type:Boolean,default:false},
-  initiate_verification_request:{type:Boolean,default:false},
-  profile_verification_image:{type:String},
-  show_me_to_verified_profiles:{type:Boolean,default:false},
+  deviceToken: { type: String },
+  deviceType: { type: String, enum: ['android', 'ios'] },
+  verified_profile: { type: Boolean, default: false },
+  initiate_verification_request: { type: Boolean, default: false },
+  profile_verification_image: { type: String },
+  show_me_to_verified_profiles: { type: Boolean, default: false },
   username: { type: String, default: null },
   mobile_number: { type: Number, default: null },
   country_code: { type: Number, default: null },
@@ -58,11 +58,12 @@ const userSchema = new mongoose.Schema({
       answerIds: [mongoose.Schema.Types.ObjectId]
     }]
   },
-  contacts: { type: [ { name: { type: String }, number: { type: Number } }],default: [] },
-  blocked_contacts: {type: [{name: { type: String }, number: { type: Number } }],default: []},
+  contacts: { type: [{ name: { type: String }, number: { type: Number } }], default: [] },
+  blocked_contacts: { type: [{ name: { type: String }, number: { type: Number } }], default: [] },
   subscription_type: { type: String, enum: ['free', 'premium'], default: 'free' },
-  secret_dating_mode: { type: Boolean, default: false }
-  
+  secret_dating_mode: { type: Boolean, default: false },
+  demo_steps: { type: Boolean, default: false }
+
 }, { timestamps: true });
 
 userSchema.index({ location: '2dsphere' });
