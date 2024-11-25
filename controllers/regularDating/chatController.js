@@ -188,6 +188,7 @@ exports.sendMessage = async (req, res) => {
                 'hotelData.hotelName': hotelName,
                 'hotelData.address': address,
                 'hotelData.status': 'pending'
+
             });
             await hotelInvitationsModel.create({
                 chatId: chatId,

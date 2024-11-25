@@ -8,6 +8,7 @@ const http = require('http');
 const socketIo = require('socket.io');
 const server = http.createServer(app);
 const userModel = require('./models/userModel')
+const joinedRoomsModel = require('./models/joinedRoomsModel')
 
 
 
@@ -46,12 +47,16 @@ io.on('connection', (socket) => {
 
   socket.on('user_logout', async (data) => {
     console.log('user logout is confirmed ...', data)
-    await userModel.findByIdAndUpdate(data.userId, {
+    let user = await userModel.findByIdAndUpdate(data.userId, {
       $set: {
         online_status: false
       }
-    })
+    }, { new: true })
+    if (user.room_joined == true) {
+      let userRoom = await joinedRoomsModel.findOneAndDelete({ userId: data.userId });
+    }
     io.emit('logout', data.userId)
+
   })
 
 });
