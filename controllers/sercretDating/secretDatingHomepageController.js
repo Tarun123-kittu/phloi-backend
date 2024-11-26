@@ -403,11 +403,11 @@ exports.get_secretDating_topPicks = async(req,res)=>{
                     preserveNullAndEmptyArrays: true
                 }
             },
-       
+   
             {
                 $match: {
                     $and: [
-                        { 'secretDatingInfo.user_id': { $ne: userId } },
+                        { 'secretDatingInfo._id': { $ne: secretDatingUser._id } },
                         { _id: { $nin: [...secretDatingUser.likedUsers, ...secretDatingUser.dislikedUsers] } },
                         { 'secretDatingInfo.current_step': 4 }
                     ]
@@ -417,7 +417,7 @@ exports.get_secretDating_topPicks = async(req,res)=>{
                 $project: {
                     _id: 1,
                     gender: 1,
-                    'secretDatingInfo.user_id': 1,
+                    'secretDatingInfo._id': 1,
                     'secretDatingInfo.name': 1,
                     'secretDatingInfo.avatar': 1,
                     'secretDatingInfo.profile_image': 1,
@@ -427,7 +427,7 @@ exports.get_secretDating_topPicks = async(req,res)=>{
             }
         ]);
 
-      
+    
         const matchedUsers = nearbyUsers.map(nearbyUser => {
             
             const score = topPicksMatchScore(secretDatingUser, nearbyUser);
@@ -435,8 +435,8 @@ exports.get_secretDating_topPicks = async(req,res)=>{
             const avatar = nearbyUser.secretDatingInfo.avatar
           
             return {
-                _id: nearbyUser._id,
-                userId :nearbyUser.secretDatingInfo.user_id,
+                _id: nearbyUser.secretDatingInfo._id,
+                userId :nearbyUser._id,
                 username: nearbyUser.secretDatingInfo.name,
                 image: userImage || null,
                 avatar:avatar||null,
