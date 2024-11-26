@@ -12,6 +12,7 @@ admin.initializeApp({
 
 
 const sendPushNotification = async (registrationToken, message, data = {}, title = "Phloii") => {
+    console.log("data ----",data)
     try {
         const messageSend = {
             token: registrationToken,

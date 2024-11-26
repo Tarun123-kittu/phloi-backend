@@ -209,14 +209,14 @@ exports.sendMessage = async (req, res) => {
 
         let sender = await userModel.findOne({_id:senderId})
         let receiver = await userModel.findOne({_id:receiverId})
-        // let id = receiver._id
+      
 
-        // let title = sender.username
-        // let msg = message.text
-        // let data = {
-        //     userId : id
-        // }
-        // let pushNotification = await  sendPushNotification(receiver.deviceToken, msg,data,title)
+        let title = sender.username
+        let msg = message.text
+        let data = {
+            userId : receiverId.toString()
+        }
+        let pushNotification = await  sendPushNotification(receiver.deviceToken, msg,data,title)
 
         io.emit(`send_message`, {
             chatId: chatId,
@@ -375,6 +375,15 @@ exports.accept_or_reject_invitation = async (req, res) => {
                 status: invitationResponse
             }
         })
+        let receiver = await userModel.findOne({_id:isMessageExist.sender})
+        let receiverId = receiver._id
+
+        let title = isUserExist.username
+        let msg = `Invitation ${invitationResponse}`
+        let data = {
+            userId : receiverId.toString()
+        }
+        let pushNotification = await  sendPushNotification(receiver.deviceToken, msg,data,title)
 
         io.emit('invitation_updated', {
             chatId: updatedMessage.chat,

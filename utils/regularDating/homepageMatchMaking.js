@@ -45,7 +45,11 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
                 matchQuery.gender = { $in: [interestedIn] };
             }
 
-            if(show_verified_profiles===true || show_verified_profiles===false){
+            // if(show_verified_profiles===true || show_verified_profiles===false){
+            //     matchQuery.verified_profile =  show_verified_profiles
+            // }
+
+            if(show_verified_profiles===true ){
                 matchQuery.verified_profile =  show_verified_profiles
             }
 
