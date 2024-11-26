@@ -20,9 +20,7 @@ const io = socketIo(server, {
   },
 });
 
-module.exports = {
-  io: io
-};
+module.exports = { io: io };
 
 
 io.on('connection', (socket) => {
@@ -30,7 +28,7 @@ io.on('connection', (socket) => {
 
 
 
-  socket.on('disconnect', () => {
+socket.on('disconnect', () => {
     console.log("Client disconnected with socket ID ::", socket.id);
   });
 
@@ -38,43 +36,37 @@ io.on('connection', (socket) => {
   socket.on('user_login', async (data) => {
     console.log('user login is confirmed ...', data)
     await userModel.findByIdAndUpdate(data.userId, {
-      $set: {
-        online_status: true
-      }
+    $set: { online_status: true }
     })
     io.emit('login', data.userId)
   })
 
 
   socket.on('user_logout', async (data) => {
-
     console.log('user logout is confirmed ...', data)
     let user = await userModel.findByIdAndUpdate(data.userId, {
-      $set: {
-        online_status: false
-      }
+    $set: { online_status: false }
     }, { new: true })
 
 
     if (user.room_joined == true) {
-      let roomId = user.joined_room_id
-      let userId = data.userId
-      await joinedRoomsModel.findOneAndDelete({ userId: userId });
-      await roomsModel.findByIdAndUpdate(roomId, {
-        $inc: { joined_user_count: -1 },
-      });
 
-      await userModel.findByIdAndUpdate(userId, {
-        $set: {
-          room_joined: false,
-          joined_room_id: null
-        }
-      });
-      let joinedUserCount = await roomsModel.findById(roomId)
+    let roomId = user.joined_room_id
+    let userId = data.userId
+    await joinedRoomsModel.findOneAndDelete({ userId: userId });
+    await roomsModel.findByIdAndUpdate(roomId, {
+    $inc: { joined_user_count: -1 },
+    });
 
-      let count = joinedUserCount.joined_user_count
-      io.emit("room_left", { roomId, count });
+    await userModel.findByIdAndUpdate(userId, {
+    $set: { room_joined: false , joined_room_id: null }
+      });
+    let joinedUserCount = await roomsModel.findById(roomId)
+    let count = joinedUserCount.joined_user_count
+    io.emit("room_left", { roomId, count });
+
     }
+
     io.emit('logout', data.userId)
   })
 });
