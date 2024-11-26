@@ -383,7 +383,8 @@ exports.accept_or_reject_invitation = async (req, res) => {
         let data = {
             userId : receiverId.toString()
         }
-        let pushNotification = await  sendPushNotification(receiver.deviceToken, msg,data,title)
+
+        // let pushNotification = await  sendPushNotification(receiver.deviceToken, msg,data,title)
 
         io.emit('invitation_updated', {
             chatId: updatedMessage.chat,
