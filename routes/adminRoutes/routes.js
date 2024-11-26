@@ -51,6 +51,7 @@ router.get("/monthly_joined_users",verifyAdminToken,dashboardController.monthly_
 router.get("/secretDating_monthly_joined_users",verifyAdminToken,dashboardController.secretDating_monthly_joined_users)
 router.get("/explore_rooms_joinedUsers",verifyAdminToken,dashboardController.explore_rooms_joinedUsers)
 router.get("/active_inactive_users",verifyAdminToken,dashboardController.active_inactive_users)
+router.post('/test_pushNotification',dashboardController.test_pushNotification)
 
 
 module.exports = router

@@ -4,7 +4,7 @@ let messages = require('../../utils/common/messages')
 let questionsModel = require("../../models/questionsModel")
 let userCharactersticsOptionsModel = require("../../models/optionsModel")
 let notificationModel = require('../../models/notificationModel')
-// const { androidPushNotification } = require("../../utils/common/pushNotifications");
+let sendPushNotification = require("../../utils/common/pushNotifications")
 let { io } = require("../../index")
 
 
@@ -373,19 +373,13 @@ exports.approve_or_reject_verification = async (req, res) => {
             notification_text: notificationText
         });
 
-        //  androidPushNotification(
-        //     isUserExist.deviceToken,
-        //     `You verification request is ${verificationStatus==true?'accepted':'rejected'}`,
-        //     "Phloii",
-        //     { type: "verification_update", userId: isUserExist._id },
-        //     (err, response) => {
-        //         if (err) {
-        //             console.error("Notification Error:", err);
-        //         } else {
-        //             console.log("Notification Sent:", response);
-        //         }
-        //     }
-        // );
+
+        let message = `You verification request is ${verificationStatus == true ? 'accepted' : 'rejected'}`
+        let data = {
+            userId : userId
+        }
+        let pushNotification = await  sendPushNotification(isUserExist.deviceToken, message,data)
+        // console.log("notification response ------->",pushNotification)
 
         io.emit('verification_update', userId);
 

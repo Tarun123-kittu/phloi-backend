@@ -3,6 +3,7 @@ let messages = require("../../utils/common/messages")
 const userModel = require("../../models/userModel")
 let secretDatingModel = require("../../models/secretDatingUserModel")
 let exploreRoomsModel = require("../../models/exploreRoomsModel")
+let sendPushNotification = require("../../utils/common/pushNotifications")
 
 
 
@@ -167,8 +168,8 @@ exports.active_inactive_users = async (req, res) => {
         if (result.length > 0) {
             return res.status(200).json(successResponse("Active/Inactive users", {
                 data: [
-                    [result[0].activeUsers, result[0].inactiveUsers],  
-                    ["active", "inactive"] 
+                    [result[0].activeUsers, result[0].inactiveUsers],
+                    ["active", "inactive"]
                 ]
             }));
         } else {
@@ -181,3 +182,15 @@ exports.active_inactive_users = async (req, res) => {
     }
 }
 
+
+
+exports.test_pushNotification = async (req, res) => {
+    try {
+        let message = 'Hii welcome to Phloii....'
+        let result = sendPushNotification("deviceToken", message)
+        res.send(result)
+    } catch (error) {
+        console.log("ERROR::", error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    }
+}

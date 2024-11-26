@@ -25,6 +25,8 @@ exports.add_section = async (req, res) => {
 
 
 
+
+
 exports.get_sections = async (req, res) => {
   try {
     const sections = await SettingModel.find();
@@ -73,7 +75,7 @@ exports.update_section = async (req, res) => {
       return res.status(404).json(errorResponse('Section not found'));
     }
 
-    return res.status(200).json(successResponse('Section updated successfully', updatedSection));
+    return res.status(200).json(successResponse('Section updated successfully'));
   } catch (error) {
     console.error('ERROR::', error);
     return res.status(500).json(errorResponse('Something went wrong', error.message));

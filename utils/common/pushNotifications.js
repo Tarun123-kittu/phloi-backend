@@ -1,44 +1,48 @@
-const FCM = require("fcm-node");
-let config = require('../../config/config');
 
-module.exports.androidPushNotification = (deviceToken, messageBody, title = "Phloii", additionalData = {}, callback) => {
-    console.log('Sending FCM Notification:', { deviceToken, messageBody, additionalData });
-    const serverKey = config.development.fcm_server_key;
-    const fcm = new FCM(serverKey);
+const admin = require("firebase-admin")
+const serviceAccount = require("../../phloii-firebase-adminsdk-3lfji-f8289f98be.json")
 
-    const message = {
-        to: deviceToken,
-        collapse_key: title,
-        content_available: true,
-        priority: "high",
-        notification: {
-            title: title,
-            body: messageBody,
-            sound: "default",
-        },
-        data: {
-            message: messageBody,
-            ...additionalData,
-        },
-    };
 
-    fcm.send(message, (err, response) => {
-        if (err) {
-            console.error("FCM Error:", err);
-            if (callback) callback(err, null);
-        } else {
-            try {
-                const parsedResponse = JSON.parse(response); 
-                console.log("FCM Response:", parsedResponse);
-                if (callback) callback(null, parsedResponse);
-            } catch (parseError) {
-                console.error("Response Parsing Error:", parseError);
-                if (callback) callback(parseError, null);
+
+
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+})
+
+
+
+const sendPushNotification = async (registrationToken, message, data = {}, title = "Phloii") => {
+    try {
+        const messageSend = {
+            token: registrationToken,
+            notification: {
+                title: title,
+                body: message
+            },
+            data: {
+                ...data
+            },
+            android: {
+                priority: "high"
+            },
+            apns: {
+                payload: {
+                    aps: {
+                        // badge
+                    }
+                }
             }
-        }
-    });
+        };
+
+        const response = await admin.messaging().send(messageSend);
+        console.log("Successfully sent message:", response);
+        return response;
+    } catch (error) {
+        console.error("Error while sending notification:", error);
+        throw error;
+    }
 };
 
 
 
-
+module.exports = sendPushNotification

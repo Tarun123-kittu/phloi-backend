@@ -6,6 +6,7 @@ const { errorResponse, successResponse } = require('../../utils/common/responseH
 const messages = require("../../utils/common/messages")
 const { io } = require("../../index");
 const { uploadFile } = require('../../utils/common/awsUpload')
+const sendPushNotification = require("../../utils/common/pushNotifications")
 
 
 
@@ -206,7 +207,16 @@ exports.sendMessage = async (req, res) => {
         chat.unreadCount += 1;
         await chat.save();
 
+        let sender = await userModel.findOne({_id:senderId})
+        let receiver = await userModel.findOne({_id:receiverId})
+        // let id = receiver._id
 
+        // let title = sender.username
+        // let msg = message.text
+        // let data = {
+        //     userId : id
+        // }
+        // let pushNotification = await  sendPushNotification(receiver.deviceToken, msg,data,title)
 
         io.emit(`send_message`, {
             chatId: chatId,
