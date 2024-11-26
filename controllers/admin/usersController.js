@@ -12,12 +12,12 @@ let { io } = require("../../index")
 
 exports.get_all_users = async (req, res) => {
     try {
-        const page = req.query?.page || 1
-        const limit = req.query?.limit || 10
-        const search = req.query?.search || ""
+        const page = req.query?.page || 1;
+        const limit = req.query?.limit || 10;
+        const search = req.query?.search || "";
         const skip = (page - 1) * limit;
-        const minAge = parseInt(req.query?.minAge);
-        const maxAge = parseInt(req.query?.maxAge);
+        const gender = req.query?.gender;
+        const username = req.query?.username;
         const verified = req.query?.verified;
 
         const pipeline = [];
@@ -28,7 +28,7 @@ exports.get_all_users = async (req, res) => {
             },
         });
 
-
+     
         if (search && search.trim()) {
             const searchFilters = {
                 $or: [
@@ -40,29 +40,25 @@ exports.get_all_users = async (req, res) => {
             pipeline.push({ $match: searchFilters });
         }
 
-
-        if (minAge || maxAge) {
-            const currentDate = new Date();
-            const dobFilter = {};
-
-            if (minAge) {
-                const minDob = new Date(new Date().setFullYear(currentDate.getFullYear() - minAge));
-                dobFilter.$lte = minDob;
-            }
-
-            if (maxAge) {
-                const maxDob = new Date(new Date().setFullYear(currentDate.getFullYear() - maxAge));
-                dobFilter.$gte = maxDob;
-            }
-
+  
+        if (gender) {
             pipeline.push({
                 $match: {
-                    dob: dobFilter,
+                    gender: { $regex: `^${gender}$`, $options: "i" },
                 },
             });
         }
 
+       
+        if (username) {
+            pipeline.push({
+                $match: {
+                    username: { $regex: `^${username}$`, $options: "i" },
+                },
+            });
+        }
 
+       
         if (verified !== undefined) {
             const isVerified = verified === "true" || verified == true;
             pipeline.push({
@@ -72,7 +68,7 @@ exports.get_all_users = async (req, res) => {
             });
         }
 
-
+    
         pipeline.push({
             $project: {
                 username: 1,
@@ -85,28 +81,28 @@ exports.get_all_users = async (req, res) => {
             },
         });
 
+
         pipeline.push({
             $sort: { _id: -1 },
         });
 
-
         pipeline.push({ $skip: skip });
         pipeline.push({ $limit: parseInt(limit) });
 
-
+  
         const countPipeline = [...pipeline];
         countPipeline.pop();
-        countPipeline.pop();
+        countPipeline.pop(); 
         countPipeline.push({ $count: "total" });
 
-
+      
         const [users, totalResult] = await Promise.all([
             userModel.aggregate(pipeline),
             userModel.aggregate(countPipeline),
         ]);
 
         if (users.length < 1) {
-            return res.status(400).json(errorResponse('No user found'))
+            return res.status(400).json(errorResponse("No user found"));
         }
 
         const totalUsers = totalResult[0]?.total || 0;
@@ -117,10 +113,9 @@ exports.get_all_users = async (req, res) => {
                 totalUsers,
             },
             users,
-        }
+        };
 
-        return res.status(200).json(successResponse('Data retrieved successfully', resultObj))
-
+        return res.status(200).json(successResponse("Data retrieved successfully", resultObj));
     } catch (error) {
         console.error("ERROR::", error);
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
@@ -379,7 +374,7 @@ exports.approve_or_reject_verification = async (req, res) => {
             userId : userId
         }
         let pushNotification = await  sendPushNotification(isUserExist.deviceToken, message,data)
-        // console.log("notification response ------->",pushNotification)
+        console.log("notification response ------->",pushNotification)
 
         io.emit('verification_update', userId);
 
