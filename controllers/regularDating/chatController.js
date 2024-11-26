@@ -216,6 +216,8 @@ exports.sendMessage = async (req, res) => {
         let data = {
             userId : receiverId.toString()
         }
+        console.log("device token ---->",receiver.deviceToken)
+        if(!receiver.deviceToken){return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"please provide device token for the notification receiver."))}
         let pushNotification = await  sendPushNotification(receiver.deviceToken, msg,data,title)
 
         io.emit(`send_message`, {
@@ -377,14 +379,14 @@ exports.accept_or_reject_invitation = async (req, res) => {
         })
         let receiver = await userModel.findOne({_id:isMessageExist.sender})
         let receiverId = receiver._id
-
+        
         let title = isUserExist.username
         let msg = `Invitation ${invitationResponse}`
         let data = {
             userId : receiverId.toString()
         }
-
-        // let pushNotification = await  sendPushNotification(receiver.deviceToken, msg,data,title)
+    
+        let pushNotification = await  sendPushNotification(receiver.deviceToken, msg,data,title)
 
         io.emit('invitation_updated', {
             chatId: updatedMessage.chat,
