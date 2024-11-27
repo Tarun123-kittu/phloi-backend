@@ -9,6 +9,7 @@ let { errorResponse, successResponse } = require("../../utils/common/responseHan
 let messages = require("../../utils/common/messages")
 let { io } = require('../../index');
 const likeDislikeLimitModel = require("../../models/likeDislikeLimit");
+const sendPushNotification = require("../../utils/common/pushNotifications")
 
 
 
@@ -182,6 +183,19 @@ exports.like_profile = async (req, res) => {
             }
             await notificationModel.create({ userId: likedUserId, sender_id: currentUserId, notification_text: `You got a match with ${currentUser.username}` })
             await notificationModel.create({ userId:currentUserId, sender_id: likedUserId, notification_text: `You got a match with ${likedUser.username}`})
+       
+            // *************** push notification******
+            const sendMatchNotification = async (deviceToken, username, userId) => {
+                const title = 'Its a match!';
+                const msg = `You got a match with ${username}`;
+                const data = { userId };
+            
+                await sendPushNotification(deviceToken, msg, data, title);
+            };
+            
+                await sendMatchNotification(likedUser.deviceToken, currentUser.username, likedUserId);
+                await sendMatchNotification(currentUser.deviceToken, likedUser.username, currentUserId);
+            // ***************
 
             let participants = { currentUserId, likedUserId }
 
@@ -195,6 +209,8 @@ exports.like_profile = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
     }
 }
+
+
 
 
 exports.dislike_profile = async (req, res) => {
