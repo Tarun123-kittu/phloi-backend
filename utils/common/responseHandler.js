@@ -9,3 +9,6 @@ exports.errorResponse = (message, loggedError = null) => ({
     message,
     loggedError
 })
+
+
+

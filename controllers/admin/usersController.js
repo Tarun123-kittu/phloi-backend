@@ -371,7 +371,8 @@ exports.approve_or_reject_verification = async (req, res) => {
 
         let message = `You verification request is ${verificationStatus == true ? 'accepted' : 'rejected'}`
         let data = {
-            userId : userId
+            userId : userId,
+            type:'profile_verification_update'
         }
         let pushNotification = await  sendPushNotification(isUserExist.deviceToken, message,data)
         console.log("notification response ------->",pushNotification)

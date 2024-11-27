@@ -207,18 +207,19 @@ exports.sendMessage = async (req, res) => {
         chat.unreadCount += 1;
         await chat.save();
 
-        let sender = await userModel.findOne({_id:senderId})
-        let receiver = await userModel.findOne({_id:receiverId})
-      
+        let sender = await userModel.findOne({ _id: senderId })
+        let receiver = await userModel.findOne({ _id: receiverId })
+
 
         let title = sender.username
         let msg = message.text
         let data = {
-            userId : receiverId.toString()
+            userId: receiverId.toString(),
+            type: 'message'
         }
-        console.log("device token ---->",receiver.deviceToken)
-        if(!receiver.deviceToken){return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"please provide device token for the notification receiver."))}
-        let pushNotification = await  sendPushNotification(receiver.deviceToken, msg,data,title)
+        console.log("device token ---->", receiver.deviceToken)
+        if (!receiver.deviceToken) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "please provide device token for the notification receiver.")) }
+        let pushNotification = await sendPushNotification(receiver.deviceToken, msg, data, title)
 
         io.emit(`send_message`, {
             chatId: chatId,
@@ -377,16 +378,17 @@ exports.accept_or_reject_invitation = async (req, res) => {
                 status: invitationResponse
             }
         })
-        let receiver = await userModel.findOne({_id:isMessageExist.sender})
+        let receiver = await userModel.findOne({ _id: isMessageExist.sender })
         let receiverId = receiver._id
-        
+
         let title = isUserExist.username
         let msg = `Invitation ${invitationResponse}`
         let data = {
-            userId : receiverId.toString()
+            userId: receiverId.toString(),
+            type: "hotel_invitation"
         }
-    
-        let pushNotification = await  sendPushNotification(receiver.deviceToken, msg,data,title)
+
+        let pushNotification = await sendPushNotification(receiver.deviceToken, msg, data, title)
 
         io.emit('invitation_updated', {
             chatId: updatedMessage.chat,
@@ -411,30 +413,30 @@ exports.get_hotelInviations = async (req, res) => {
         let chatId = req.query?.chatId
 
         let isUserExist = await userModel.findById(userId)
-        if(!isUserExist){
-            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"User not exist with this userId"))
+        if (!isUserExist) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User not exist with this userId"))
         }
 
         let isChatExist = await chatModel.findById(chatId)
-        if(!isChatExist){
-            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'Chat not exist with this chat Id'))
+        if (!isChatExist) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Chat not exist with this chat Id'))
         }
 
-        let checkHotelInvitations = await hotelInvitationsModel.findOne({chatId:chatId,status:'pending'})
-        if(!checkHotelInvitations){
-            return res.status(200).json(successResponse('No hotel invitations shared yet!',checkHotelInvitations))
+        let checkHotelInvitations = await hotelInvitationsModel.findOne({ chatId: chatId, status: 'pending' })
+        if (!checkHotelInvitations) {
+            return res.status(200).json(successResponse('No hotel invitations shared yet!', checkHotelInvitations))
         }
-      
-        let getHotelDetailsMessage = await messageModel.findOne({_id:checkHotelInvitations.messageId})
-        
+
+        let getHotelDetailsMessage = await messageModel.findOne({ _id: checkHotelInvitations.messageId })
+
         let hotelDetailsObj = {
             message_id: getHotelDetailsMessage._id,
-            sender_id:getHotelDetailsMessage.sender,
+            sender_id: getHotelDetailsMessage.sender,
             hotelName: getHotelDetailsMessage.hotelData.hotelName,
-            hotelAddress:getHotelDetailsMessage.hotelData.address,
-            status:getHotelDetailsMessage.hotelData.status
+            hotelAddress: getHotelDetailsMessage.hotelData.address,
+            status: getHotelDetailsMessage.hotelData.status
         }
-        return res.status(200).json(successResponse('Invitations fetched successfully',hotelDetailsObj))
+        return res.status(200).json(successResponse('Invitations fetched successfully', hotelDetailsObj))
 
     } catch (error) {
         console.log("ERROR::", error)
