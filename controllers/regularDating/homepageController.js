@@ -188,7 +188,10 @@ exports.like_profile = async (req, res) => {
             const sendMatchNotification = async (deviceToken, username, userId) => {
                 const title = 'Its a match!';
                 const msg = `You got a match with ${username}`;
-                const data = { userId };
+                const data = { 
+                    userId,
+                    type:"match"
+                };
             
                 await sendPushNotification(deviceToken, msg, data, title);
             };
