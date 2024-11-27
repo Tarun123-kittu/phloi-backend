@@ -15,15 +15,20 @@ exports.get_all_notification = async (req, res) => {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please provide notificatio type in the query params"))
         }
 
-        if (notification_type !== 'secret dating' && notification_type !== 'regular dating') {
+        if (notification_type !== 'secret_dating' && notification_type !== 'regular_dating') {
             return res.status(400).json(
                 errorResponse(
                     messages.generalError.somethingWentWrong,
-                    "Notification type must be one of: 'secret dating' or 'regular dating'"
+                    "Notification type must be one of: 'secret_dating' or 'regular_dating'"
                 )
             );
         }
 
+        if (notification_type == 'secret_dating') {
+            notification_type = 'secret dating';
+        } else if (notification_type == 'regular_dating') {
+            notification_type = 'regular dating';
+        }
 
         let isUserExist = await userModel.findById(userId)
         if (!isUserExist) {
@@ -90,14 +95,22 @@ exports.mark_all_notification_read = async (req, res) => {
         let notification_type = req.query.notification_type
 
 
-        if (notification_type !== 'secret dating' && notification_type !== 'regular dating') {
+        if (notification_type !== 'secret_dating' && notification_type !== 'regular_dating') {
             return res.status(400).json(
                 errorResponse(
                     messages.generalError.somethingWentWrong,
-                    "Notification type must be one of: 'secret dating' or 'regular dating'"
+                    "Notification type must be one of: 'secret_dating' or 'regular_dating'"
                 )
             );
         }
+
+
+        if (notification_type == 'secret_dating') {
+            notification_type = 'secret dating';
+        } else if (notification_type == 'regular_dating') {
+            notification_type = 'regular dating';
+        }
+
 
         let isUserExist = await userModel.findById(userId)
         if (!isUserExist) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User not found with this user Id")) }
