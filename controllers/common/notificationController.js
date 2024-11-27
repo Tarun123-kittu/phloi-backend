@@ -10,13 +10,20 @@ exports.get_all_notification = async (req, res) => {
         let userId = req.result.userId
         let notification_type = req.query.notification_type
 
+
         if (!notification_type) {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please provide notificatio type in the query params"))
         }
 
-        if (notification_type !== 'secret dating' || notification_type !== 'regular dating') {
-            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "notification type must be one of : 'secret dating' or'regular dating' "))
+        if (notification_type !== 'secret dating' && notification_type !== 'regular dating') {
+            return res.status(400).json(
+                errorResponse(
+                    messages.generalError.somethingWentWrong,
+                    "Notification type must be one of: 'secret dating' or 'regular dating'"
+                )
+            );
         }
+
 
         let isUserExist = await userModel.findById(userId)
         if (!isUserExist) {
@@ -83,8 +90,13 @@ exports.mark_all_notification_read = async (req, res) => {
         let notification_type = req.query.notification_type
 
 
-        if (notification_type !== 'secret dating' || notification_type !== 'regular dating') {
-            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "notification type must be one of : 'secret dating' or'regular dating' "))
+        if (notification_type !== 'secret dating' && notification_type !== 'regular dating') {
+            return res.status(400).json(
+                errorResponse(
+                    messages.generalError.somethingWentWrong,
+                    "Notification type must be one of: 'secret dating' or 'regular dating'"
+                )
+            );
         }
 
         let isUserExist = await userModel.findById(userId)
