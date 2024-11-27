@@ -7,7 +7,7 @@ const { errorResponse, successResponse } = require('../../utils/common/responseH
 const messages = require("../../utils/common/messages")
 const { io } = require("../../index");
 const { uploadFile } = require('../../utils/common/awsUpload')
-const sendPushNotification = require('../../utils/common/pushNotifications')
+
 
 
 
@@ -215,21 +215,6 @@ exports.secretDating_sendMessage = async (req, res) => {
         chat.unreadCount += 1;
         await chat.save();
 
-        let sender = await userModel.findById(senderId)
-        let receiver = await userModel.findById(receiverId)
-
-        //push notification
-        let title = sender.username
-        let msg = message.text
-        let data = {
-            userId : receiverId.toString(),
-            type:"secretDating_message",
-            senderId:senderId,
-            chatId:chatId
-        }
-       
-        if(!receiver.deviceToken){return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"please provide device token for the notification receiver."))}
-        let pushNotification = await  sendPushNotification(receiver.deviceToken, msg,data,title)
 
 
         io.emit(`secretDating_send_message`, {

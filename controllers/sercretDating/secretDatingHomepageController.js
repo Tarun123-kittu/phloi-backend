@@ -7,7 +7,7 @@ let likeDislikeLimitModel = require("../../models/likeDislikeLimit")
 let {errorResponse,successResponse} = require("../../utils/common/responseHandler")
 let topPicksMatchScore = require("../../utils/secretDating/secretDatingTopPicks")
 let messages = require("../../utils/common/messages")
-let sendPushNotification = require("../../utils/common/pushNotifications")
+// let sendPushNotification = require("../../utils/common/pushNotifications")
 let notificationModel = require("../../models/notificationModel")
 let {io} = require("../../index")
 
