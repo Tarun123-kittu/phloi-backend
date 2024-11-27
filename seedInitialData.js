@@ -1,10 +1,11 @@
 const mongoose = require('mongoose');
 const config = require('./config/config');
 const exploreRoomModel = require('./models/exploreRoomsModel');
-const avatarModel = require('./models/avatarsModel'); 
+const avatarModel = require('./models/avatarsModel');
 const settingModel = require('./models/settingsModel');
-const reasonArchieveModel = require('./models/reasonsArchieve'); 
+const reasonArchieveModel = require('./models/reasonsArchieve');
 const adminModel = require("./models/adminModel")
+const generalSettingsModel = require("./models/generalSettingModel")
 const bcrypt = require('bcrypt')
 
 
@@ -133,7 +134,7 @@ const settings = [
                 title: "Privacy Preferences",
                 content: "Our website uses privacy preferences to enhance your experience...",
                 slug: "privacy-preferences"
-            }   
+            }
         ]
     },
     {
@@ -157,24 +158,28 @@ const settings = [
 
 
 const reasonsArchieve = [
-    { reason: "Fake profile, Scammer",type:'report' },
-    { reason: "Nudity or something sexually explicit",type:'report' },
-    { reason: "Harassment or bad behaviour",type:'report' },
-    { reason: "Physical safety concerns",type:'report' },
-    { reason: "I want a fresh start",icon_image:'https://phloii.s3.amazonaws.com/Reasons%20Icon/delete_reasons/1/fresh_start_icon.png',type:'delete_account' },
-    { reason: "I met someone",icon_image:'https://phloii.s3.eu-north-1.amazonaws.com/Reasons%20Icon/delete_reasons/1/meet_someone_icon.png',type:'delete_account' },
-    { reason: "Something is broken",icon_image:'https://phloii.s3.eu-north-1.amazonaws.com/Reasons%20Icon/delete_reasons/1/something_broken_icon.png',type:'delete_account' },
-    { reason: "I need a break from Phloii",icon_image:'https://phloii.s3.eu-north-1.amazonaws.com/Reasons%20Icon/delete_reasons/1/need_break_icon.png',type:'delete_account' },
-    { reason: "I don’t like Phloii",icon_image:'https://phloii.s3.amazonaws.com/Reasons%20Icon/delete_reasons/1/dont_like_phloi_icon.png',type:'delete_account' },
-    { reason: "Other",icon_image:'https://phloii.s3.eu-north-1.amazonaws.com/Reasons%20Icon/delete_reasons/1/other_icon.png',type:'delete_account' },
+    { reason: "Fake profile, Scammer", type: 'report' },
+    { reason: "Nudity or something sexually explicit", type: 'report' },
+    { reason: "Harassment or bad behaviour", type: 'report' },
+    { reason: "Physical safety concerns", type: 'report' },
+    { reason: "I want a fresh start", icon_image: 'https://phloii.s3.amazonaws.com/Reasons%20Icon/delete_reasons/1/fresh_start_icon.png', type: 'delete_account' },
+    { reason: "I met someone", icon_image: 'https://phloii.s3.eu-north-1.amazonaws.com/Reasons%20Icon/delete_reasons/1/meet_someone_icon.png', type: 'delete_account' },
+    { reason: "Something is broken", icon_image: 'https://phloii.s3.eu-north-1.amazonaws.com/Reasons%20Icon/delete_reasons/1/something_broken_icon.png', type: 'delete_account' },
+    { reason: "I need a break from Phloii", icon_image: 'https://phloii.s3.eu-north-1.amazonaws.com/Reasons%20Icon/delete_reasons/1/need_break_icon.png', type: 'delete_account' },
+    { reason: "I don’t like Phloii", icon_image: 'https://phloii.s3.amazonaws.com/Reasons%20Icon/delete_reasons/1/dont_like_phloi_icon.png', type: 'delete_account' },
+    { reason: "Other", icon_image: 'https://phloii.s3.eu-north-1.amazonaws.com/Reasons%20Icon/delete_reasons/1/other_icon.png', type: 'delete_account' },
 ];
 
 
 
 const admin = [
-    {username:'phloiiAdmin777',email:"phloiiadmin777@gmail.com",password:config.development.admin_initial_password}
+    { username: 'phloiiAdmin777', email: "phloiiadmin777@gmail.com", password: config.development.admin_initial_password }
 ]
 
+
+const generalSetting = [
+    { maximum_distance: 200 }
+]
 
 async function syncCollection(dataArray, Model, modelName, queryField) {
     for (let item of dataArray) {
@@ -185,7 +190,7 @@ async function syncCollection(dataArray, Model, modelName, queryField) {
         const result = await Model.findOneAndUpdate(
             query,
             { $set: item },
-            { new: true, upsert: true } 
+            { new: true, upsert: true }
         );
 
         if (result) {
@@ -198,10 +203,10 @@ async function syncCollection(dataArray, Model, modelName, queryField) {
 
 async function seedAllData() {
     try {
-        
+
         await syncCollection(exploreRooms, exploreRoomModel, 'Explore Rooms', 'room');
 
-       
+
         await syncCollection(avatars, avatarModel, 'Avatars', 'avatar_image');
 
         for (let setting of settings) {
@@ -221,9 +226,11 @@ async function seedAllData() {
         }
         await syncCollection(reasonsArchieve, reasonArchieveModel, 'Reason Archieve', 'reason');
 
+        await syncCollection(generalSetting, generalSettingsModel, 'General Setting', 'maximum_distance')
+
 
         for (let adminData of admin) {
-            const hashedPassword = await bcrypt.hash(adminData.password, 10); 
+            const hashedPassword = await bcrypt.hash(adminData.password, 10);
             adminData.password = hashedPassword;
 
             const result = await adminModel.findOneAndUpdate(

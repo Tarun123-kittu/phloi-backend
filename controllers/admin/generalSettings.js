@@ -6,6 +6,16 @@ let { uploadFile } = require("../../utils/common/awsUpload")
 
 
 
+exports.get_maximum_distance = async (req, res) => {
+    try {
+        let maximumDistance = await generalSettingsModel.findOne()
+        if(!maximumDistance){return res.status(400).json(errorResponse('No data found'))}
+        return res.status(200).json(successResponse('Data retreived successfully', maximumDistance))
+    } catch (error) {
+        console.error('ERROR::', error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    }
+}
 
 
 exports.update_maximum_distance_preference = async (req, res) => {

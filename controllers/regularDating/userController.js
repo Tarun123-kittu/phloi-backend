@@ -6,6 +6,7 @@ const { uploadFile, s3 } = require("../../utils/common/awsUpload")
 let userCharactersticsOptionsModel = require('../../models/optionsModel')
 const headingsModel = require("../../models/headingsModel")
 const questionsModel = require("../../models/questionsModel")
+const generalSettingsModel = require("../../models/generalSettingModel")
 let { io } = require('../../index');
 
 
@@ -1046,6 +1047,19 @@ exports.update_user_profile = async (req, res) => {
 };
 
 
+
+
+
+exports.get_maximum_distance_by_admin = async (req, res) => {
+    try {
+        let maximumDistance = await generalSettingsModel.findOne().select("maximum_distance")
+        if(!maximumDistance){return res.status(400).json(errorResponse('No data found'))}
+        return res.status(200).json(successResponse('Data retreived successfully', maximumDistance))
+    } catch (error) {
+        console.error('ERROR::', error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    }
+}
 
 
 
