@@ -61,7 +61,7 @@ exports.recommended_users = async (req, res) => {
 
         return res.status(200).json({
             type: 'success',
-            message: 'Users matched successfully',
+            message: 'Users retreived successfully',
             currentPage: page,
             totalDocuments: matchedUsers.allUsers,
             users: matchedUsers.paginatedUsers
@@ -201,7 +201,7 @@ exports.like_profile = async (req, res) => {
 
             return res.status(200).json(successResponse("Mutual like! A new match has been created.", participants));
         }
-
+      
         return res.status(200).json(successResponse("User liked successfully."));
 
     } catch (error) {

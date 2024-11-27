@@ -30,9 +30,14 @@ const exploreRoomMatchAlgorithm = async (currentUser, page = 1, limit = 10) => {
         //     };
         // }
 
-        if (!(intrested_to_see === 'everyone')) {
+        if (intrested_to_see !== 'everyone') {
             matchQuery.gender = { $in: [intrested_to_see] };
-            matchQuery.intrested_to_see = { $in: [gender] };
+
+            if (gender == 'other') {
+                matchQuery.intrested_to_see = 'everyone';
+            } else {
+                matchQuery.intrested_to_see = { $in: [gender] };
+            }
         }
 
         if (!verified_profile) {

@@ -14,7 +14,7 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
        
         let matchQuery = {
             _id: { $nin: [_id, ...likedUsers, ...dislikedUsers] }, 
-            mobile_number: {$nin: blocked_contacts.map(contact => contact.number)  },
+            mobile_number: {$nin: blocked_contacts.map(contact => contact.number)  },   
             'location.coordinates': {
                 $geoWithin: {
                     $centerSphere: [currentCoordinates, distanceInKm / 6378.1] 
@@ -43,6 +43,7 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
           
             if (interestedIn !== 'everyone') {
                 matchQuery.gender = { $in: [interestedIn] };
+                
             }
 
             // if(show_verified_profiles===true || show_verified_profiles===false){
@@ -66,8 +67,15 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
            
             if (intrested_to_see !== 'everyone') {
                 matchQuery.gender = { $in: [intrested_to_see] };
-                matchQuery.intrested_to_see = { $in: [gender] };
+            
+                if (gender == 'other') {
+                    matchQuery.intrested_to_see = 'everyone';
+                } else {
+                    matchQuery.intrested_to_see = { $in: [gender] };
+                }
             }
+            
+          
         }
 
        console.log("filter ----",filter)
