@@ -7,6 +7,8 @@ let likeDislikeLimitModel = require("../../models/likeDislikeLimit")
 let {errorResponse,successResponse} = require("../../utils/common/responseHandler")
 let topPicksMatchScore = require("../../utils/secretDating/secretDatingTopPicks")
 let messages = require("../../utils/common/messages")
+let sendPushNotification = require("../../utils/common/pushNotifications")
+let notificationModel = require("../../models/notificationModel")
 let {io} = require("../../index")
 
 
@@ -187,8 +189,21 @@ exports.secretDating_like_profile = async (req, res) => {
                 } );
       
             }
-            // await notificationModel.create({ userId: likedUserId,sender_id:currentUserId, notification_text: `You got a match with ${currentUser.username}` })
 
+            await notificationModel.create({ userId: likedUserId, sender_id: currentUserId, notification_text: `You got a match with ${currentUser.username}`,type:'secret dating' })
+            await notificationModel.create({ userId:currentUserId, sender_id: likedUserId, notification_text: `You got a match with ${likedUser.username}`,type:'secret dating'})
+       
+            //push notification
+            // const sendMatchNotification = async (deviceToken, username, userId) => {
+            //     const title = 'Its a match!';
+            //     const msg = `You got a match with ${username}`;
+            //     const data = { userId };
+            
+            //     await sendPushNotification(deviceToken, msg, data, title);
+            // };
+            
+            //     await sendMatchNotification(likedUser.deviceToken, currentUser.username, likedUserId);
+            //     await sendMatchNotification(currentUser.deviceToken, likedUser.username, currentUserId);
 
             let participants = { currentUserId, likedUserId }
 

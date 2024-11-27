@@ -43,7 +43,7 @@ exports.update_maximum_distance_preference = async (req, res) => {
         }
 
 
-        return res.status(200).json(successResponse('Maximum distance preference updated successfully', updatedSetting));
+        return res.status(200).json(successResponse('Maximum distance preference updated successfully'));
 
     } catch (error) {
 

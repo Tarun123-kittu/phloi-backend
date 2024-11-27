@@ -8,14 +8,23 @@ const userModel = require('../../models/userModel')
 exports.get_all_notification = async (req, res) => {
     try {
         let userId = req.result.userId
+        let notification_type = req.query.notification_type
+
+        if (!notification_type) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please provide notificatio type in the query params"))
+        }
+
+        if (notification_type !== 'secret dating' || notification_type !== 'regular dating') {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "notification type must be one of : 'secret dating' or'regular dating' "))
+        }
 
         let isUserExist = await userModel.findById(userId)
         if (!isUserExist) {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User not exist with this user Id"))
         }
 
-        let notifications = await notificationModel.find({ userId: userId }).select('_id userId sender_id notification_text read createdAt')
-        let unreadNotificationCount = await notificationModel.countDocuments({ userId: userId, read: false }).lean()
+        let notifications = await notificationModel.find({ userId: userId, type: notification_type }).select('_id userId sender_id notification_text read createdAt')
+        let unreadNotificationCount = await notificationModel.countDocuments({ userId: userId, read: false, type: notification_type }).lean()
 
         let data = {
             unread_notification_count: unreadNotificationCount,
@@ -70,19 +79,25 @@ exports.mark_notification_read = async (req, res) => {
 
 exports.mark_all_notification_read = async (req, res) => {
     try {
-    let userId = req.result.userId;
+        let userId = req.result.userId;
+        let notification_type = req.query.notification_type
 
-    let isUserExist = await userModel.findById(userId)
-    if(!isUserExist){ return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"User not found with this user Id"))}
-    
-    await notificationModel.updateMany(
-        { userId: userId },   
-        {
-            $set: { read: true } 
+
+        if (notification_type !== 'secret dating' || notification_type !== 'regular dating') {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "notification type must be one of : 'secret dating' or'regular dating' "))
         }
-    );
 
-    return res.status(200).json(successResponse("All notifications mark as read"))
+        let isUserExist = await userModel.findById(userId)
+        if (!isUserExist) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User not found with this user Id")) }
+
+        await notificationModel.updateMany(
+            { userId: userId, type: notification_type },
+            {
+                $set: { read: true }
+            }
+        );
+
+        return res.status(200).json(successResponse("All notifications mark as read"))
 
     } catch (error) {
         console.log("ERROR", error)

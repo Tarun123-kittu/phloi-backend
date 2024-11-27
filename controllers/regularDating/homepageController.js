@@ -181,10 +181,10 @@ exports.like_profile = async (req, res) => {
                 });
 
             }
-            await notificationModel.create({ userId: likedUserId, sender_id: currentUserId, notification_text: `You got a match with ${currentUser.username}` })
-            await notificationModel.create({ userId:currentUserId, sender_id: likedUserId, notification_text: `You got a match with ${likedUser.username}`})
+            await notificationModel.create({ userId: likedUserId, sender_id: currentUserId, notification_text: `You got a match with ${currentUser.username}`,type:'regular dating' })
+            await notificationModel.create({ userId:currentUserId, sender_id: likedUserId, notification_text: `You got a match with ${likedUser.username}`,type:'regular dating'})
        
-            // *************** push notification******
+            // push notification
             const sendMatchNotification = async (deviceToken, username, userId) => {
                 const title = 'Its a match!';
                 const msg = `You got a match with ${username}`;
@@ -195,7 +195,7 @@ exports.like_profile = async (req, res) => {
             
                 await sendMatchNotification(likedUser.deviceToken, currentUser.username, likedUserId);
                 await sendMatchNotification(currentUser.deviceToken, likedUser.username, currentUserId);
-            // ***************
+            
 
             let participants = { currentUserId, likedUserId }
 
