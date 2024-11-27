@@ -215,7 +215,9 @@ exports.sendMessage = async (req, res) => {
         let msg = message.text
         let data = {
             userId: receiverId.toString(),
-            type: 'message'
+            type: 'message',
+            senderId:senderId,
+            chatId:chatId
         }
         console.log("device token ---->", receiver.deviceToken)
         if (!receiver.deviceToken) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "please provide device token for the notification receiver.")) }

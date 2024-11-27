@@ -223,7 +223,9 @@ exports.secretDating_sendMessage = async (req, res) => {
         let msg = message.text
         let data = {
             userId : receiverId.toString(),
-            type:"secretDating_message"
+            type:"secretDating_message",
+            senderId:senderId,
+            chatId:chatId
         }
        
         if(!receiver.deviceToken){return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"please provide device token for the notification receiver."))}
