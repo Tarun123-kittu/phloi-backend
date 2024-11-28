@@ -198,7 +198,7 @@ exports.like_profile = async (req, res) => {
             };
             
                 await sendMatchNotification(likedUser.deviceToken, currentUser.username, likedUserId);
-                await sendMatchNotification(currentUser.deviceToken, likedUser.username, currentUserId);
+                // await sendMatchNotification(currentUser.deviceToken, likedUser.username, currentUserId);
             
 
             let participants = { currentUserId, likedUserId }
