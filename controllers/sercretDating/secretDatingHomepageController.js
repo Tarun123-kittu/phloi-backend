@@ -185,7 +185,8 @@ exports.secretDating_like_profile = async (req, res) => {
                     matchId: newMatch._id,
                     users: [currentUserId, likedUserId],
                     usernames: [currentUser.username, likedUser.username],
-                    message: `It's a match between ${currentUser.username} and ${likedUser.username}!`
+                    message: `It's a match between ${currentUser.username} and ${likedUser.username}!`,
+                    likedUser_image:likedUser.images[0]
                 } );
       
             }
