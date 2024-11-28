@@ -178,7 +178,7 @@ exports.like_profile = async (req, res) => {
                     users: [currentUserId, likedUserId],
                     usernames: [currentUser.username, likedUser.username],
                     message: `It's a match between ${currentUser.username} and ${likedUser.username}!`,
-                    likedUser_image:likedUser.images
+                    likedUser_image:likedUser.images[0]
                 });
 
             }
