@@ -34,47 +34,30 @@ exports.get_setting_page_details = async (req, res) => {
     try {
         let pageId = req.query.pageId;
 
-     
         if (!pageId) {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Please provide page Id'));
         }
 
-      
         const settingDocument = await settingModel.findOne({ 'pages._id': pageId }, { 'pages.$': 1 });
 
-       
         if (!settingDocument) {
             return res.status(404).json(errorResponse(messages.generalError.notFound, 'Page not found'));
         }
 
-        
         if (settingDocument.pages.length === 0) {
             return res.status(404).json(errorResponse(messages.generalError.notFound, 'Page not found in the setting document'));
         }
 
-       
         const page = settingDocument.pages[0];
-        
-
         
         if (!page.content) {
             return res.status(404).json(errorResponse(messages.generalError.notFound, 'Page content not found'));
         }
-         
-    
+
         return res.status(200).json({type:'success',message:'Data retrieved successfully',title:page.title,data:page.content})
-       
 
-    } catch (error) {
-       
+    } catch (error) {   
         console.log("ERROR::", error);
-
-       
-        if (error.name === 'ValidationError') {
-            return res.status(400).json(errorResponse(messages.generalError.validationError, error.message));
-        }
-
-       
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };

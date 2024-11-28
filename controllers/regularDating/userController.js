@@ -657,16 +657,31 @@ exports.get_user_details = async (req, res) => {
     try {
 
         const user_detail = await userModel.findById(id).lean();
-
-
+        
+    
         if (!user_detail) return res.status(400).json({ type: "error", message: "User does not exist" });
 
 
-        const { completed_steps = [], user_characterstics, sexual_orientation_preference_id, relationship_type_preference_id } = user_detail;
+        const {dob, completed_steps = [], user_characterstics, sexual_orientation_preference_id, relationship_type_preference_id } = user_detail;
         const validSteps = completed_steps.filter(step => step !== null);
 
         const completedStepCount = validSteps.length;
         const completionPercentage = (completedStepCount / TOTAL_STEPS) * 100;
+
+
+        let age = null;
+        if (dob) {
+            const birthDate = new Date(dob);
+            const today = new Date();
+            age = today.getFullYear() - birthDate.getFullYear();
+            const isBeforeBirthdayThisYear = (
+                today.getMonth() < birthDate.getMonth() ||
+                (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate())
+            );
+            if (isBeforeBirthdayThisYear) {
+                age--; 
+            }
+        }
 
 
         for (const step in user_characterstics) {
@@ -718,6 +733,7 @@ exports.get_user_details = async (req, res) => {
             user_detail: {
                 ...user_detail,
                 user_characterstics,
+                age
             },
             profile_completion_percentage: completionPercentage.toFixed(2)
         });
@@ -726,8 +742,6 @@ exports.get_user_details = async (req, res) => {
         return res.status(500).json({ type: "error", message: "Something went wrong", error: error.message });
     }
 };
-
-
 
 
 exports.update_demo_step = async(req,res)=>{

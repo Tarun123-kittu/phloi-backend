@@ -20,7 +20,7 @@ exports.monthly_joined_users = async (req, res) => {
             "July", "August", "September", "October", "November", "December"
         ];
 
-        const monthlyJoinedUsers = await userModel.aggregate([
+        let monthlyJoinedUsers = await userModel.aggregate([
             {
                 $match: {
                     createdAt: {
@@ -46,6 +46,9 @@ exports.monthly_joined_users = async (req, res) => {
                 $sort: { month: 1 }
             }
         ]);
+
+        monthlyJoinedUsers.reverse()
+
 
         return res
             .status(200)
@@ -77,7 +80,7 @@ exports.secretDating_monthly_joined_users = async (req, res) => {
             "July", "August", "September", "October", "November", "December"
         ];
 
-        const monthlyJoinedUsers = await secretDatingModel.aggregate([
+        let monthlyJoinedUsers = await secretDatingModel.aggregate([
             {
                 $match: {
                     createdAt: {
@@ -103,6 +106,8 @@ exports.secretDating_monthly_joined_users = async (req, res) => {
                 $sort: { month: 1 }
             }
         ]);
+
+        monthlyJoinedUsers.reverse()
 
         return res
             .status(200)

@@ -22,7 +22,7 @@ let authenticateToken = require('../../middlewares/authMiddleware')
 
 // user routes
 router.put("/user_registration_steps", authenticateToken, userController.user_registration_steps)
-router.get("/get_user_details/:id?", authenticateToken, userController.get_user_details)
+router.get("/get_user_details", authenticateToken, userController.get_user_details)
 router.post("/login", validateLogin, userController.login)
 router.put("/add_device_token",authenticateToken,userController.add_device_token)
 router.post("/social_login", validateSocialLogin, userController.social_login)
