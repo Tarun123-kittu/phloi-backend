@@ -143,7 +143,7 @@ exports.secretDating_like_profile = async (req, res) => {
 
         let todayLimit = await likeDislikeLimitModel.findOne({
             userId: currentUser._id,
-            createdAt: {
+            createdAt: {    
                 $gte: today,
                 $lt: tomorrow
             }
@@ -186,7 +186,7 @@ exports.secretDating_like_profile = async (req, res) => {
                     users: [currentUserId, likedUserId],
                     usernames: [currentUser.username, likedUser.username],
                     message: `It's a match between ${currentUser.username} and ${likedUser.username}!`,
-                    likedUser_image:likedUser.images[0]
+                    likedUser_image:likedUser.profile_image == null?likedUser.profile_image:likedUser.avatar
                 } );
       
             }

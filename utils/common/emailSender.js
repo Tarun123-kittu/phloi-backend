@@ -16,8 +16,8 @@ const sendEmail = async (email, code) => {
     let mailDetails = {
       from: config.development.gmail,
       to: email,
-      subject: 'Admin forget password verification code',
-      text: `Admin forget password verification code: ${code}`,
+      subject: 'Forget password verification code',
+      text: `Forget password verification code: ${code}`,
       html: `<div style="
       padding: 30px; 
       text-align: center; 

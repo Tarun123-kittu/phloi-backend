@@ -4,6 +4,10 @@ const hotelSchema = new mongoose.Schema({
     username:String,
     email:String,
     password:String,
+    forgetPsd_otp:Number,
+    forgetPsd_otpCreatedAt:Date,
+    forgetPsd_otpVerified:  { type: Boolean, default: false },
+
     establishmentName: String,
     typeOfEstablishment: String,
     streetAddress: String,
@@ -21,7 +25,7 @@ const hotelSchema = new mongoose.Schema({
     safeWord: String,
     inPersonVisit: String,
     paymentStatus: { type: Boolean, default: false },
-    verificationStatus: { type: String, default: 'pending' }, // 'pending', 'verified', or 'rejected'
+    adminVerificationStatus: { type: String, default: 'pending' }, // 'pending', 'verified', or 'rejected'
 }, { timestamps: true });
 
 module.exports = mongoose.model('Hotel', hotelSchema);

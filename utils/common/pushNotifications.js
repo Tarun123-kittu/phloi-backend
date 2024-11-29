@@ -1,4 +1,3 @@
-
 const admin = require("firebase-admin")
 const serviceAccount = require("../../phloii-firebase-adminsdk-3lfji-f8289f98be.json")
 
@@ -27,10 +26,19 @@ const sendPushNotification = async (registrationToken, message, data = {}, title
                 priority: "high"
             },
             apns: {
+                headers: {
+                    "apns-priority": "10", 
+                },
                 payload: {
                     aps: {
-                        // badge
+                        alert: {
+                            title: title,
+                            body: message,
+                        },
+                        // badge: 1,
+                        sound: "default"
                     }
+                    
                 }
             }
         };

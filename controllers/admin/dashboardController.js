@@ -192,8 +192,8 @@ exports.active_inactive_users = async (req, res) => {
 exports.test_pushNotification = async (req, res) => {
     try {
         let message = 'Hii welcome to Phloii....'
-        let result = sendPushNotification("deviceToken", message)
-        res.send(result)
+        let result = sendPushNotification("cuF7ulV5IUmMtAlLJ6Lmuh:APA91bET3Y_Q3I5aB6Rk0Rlw5EwufVR5scXrRbATQ2cLLFuwKDKN2olE7K1xFbmZvfgrcLAvEQfh65AVBTSWbKVVqWcR9mOJ6cU8hcdnvw3_kLJ3I3Wm4TY", message)
+        res.send("working.. ")
     } catch (error) {
         console.log("ERROR::", error);
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
