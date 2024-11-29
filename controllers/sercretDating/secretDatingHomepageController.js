@@ -4,12 +4,12 @@ let secretDatingUserModel = require('../../models/secretDatingUserModel')
 let matchModel = require("../../models/matchesModel")
 let optionsModel = require("../../models/optionsModel")
 let likeDislikeLimitModel = require("../../models/likeDislikeLimit")
-let {errorResponse,successResponse} = require("../../utils/common/responseHandler")
+let { errorResponse, successResponse } = require("../../utils/common/responseHandler")
 let topPicksMatchScore = require("../../utils/secretDating/secretDatingTopPicks")
 let messages = require("../../utils/common/messages")
 // let sendPushNotification = require("../../utils/common/pushNotifications")
 let notificationModel = require("../../models/notificationModel")
-let {io} = require("../../index")
+let { io } = require("../../index")
 
 
 
@@ -84,14 +84,14 @@ exports.secretDating_like_profile = async (req, res) => {
         const likedUserId = req.query.likedUserId;
 
         if (!likedUserId) { return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "Please provide liked user's id")) }
- 
-       
+
+
         const currentUser = await userModel.findById(currentUserId);
         if (!currentUser) {
             return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
         }
-        
-        const secretDatingUser = await secretDatingUserModel.findOne({user_id:currentUserId});
+
+        const secretDatingUser = await secretDatingUserModel.findOne({ user_id: currentUserId });
         if (!secretDatingUser) {
             return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
         }
@@ -143,7 +143,7 @@ exports.secretDating_like_profile = async (req, res) => {
 
         let todayLimit = await likeDislikeLimitModel.findOne({
             userId: currentUser._id,
-            createdAt: {    
+            createdAt: {
                 $gte: today,
                 $lt: tomorrow
             }
@@ -167,17 +167,17 @@ exports.secretDating_like_profile = async (req, res) => {
         })
 
         if (likedUser.likedUsers.includes(currentUserId)) {
-   
+
             const matchExists = await matchModel.findOne({
                 users: { $all: [currentUserId, likedUserId] },
-                type:'secret dating'
+                type: 'secret dating'
             });
 
             if (!matchExists) {
                 const newMatch = new matchModel({
                     users: [currentUserId, likedUserId],
                     createdAt: Date.now(),
-                    type:'secret dating'
+                    type: 'secret dating'
                 });
                 await newMatch.save();
 
@@ -186,23 +186,23 @@ exports.secretDating_like_profile = async (req, res) => {
                     users: [currentUserId, likedUserId],
                     usernames: [currentUser.username, likedUser.username],
                     message: `It's a match between ${currentUser.username} and ${likedUser.username}!`,
-                    likedUser_image:likedUser.profile_image == null?likedUser.profile_image:likedUser.avatar
-                } );
-      
+                    likedUser_image: likedUser.profile_image == null ? likedUser.avatar : likedUser.profile_image
+                });
+
             }
 
-            await notificationModel.create({ userId: likedUserId, sender_id: currentUserId, notification_text: `You got a match with ${currentUser.username}`,type:'secret dating' })
-            await notificationModel.create({ userId:currentUserId, sender_id: likedUserId, notification_text: `You got a match with ${likedUser.username}`,type:'secret dating'})
-       
+            await notificationModel.create({ userId: likedUserId, sender_id: currentUserId, notification_text: `You got a match with ${currentUser.username}`, type: 'secret dating' })
+            await notificationModel.create({ userId: currentUserId, sender_id: likedUserId, notification_text: `You got a match with ${likedUser.username}`, type: 'secret dating' })
+
             //push notification
             // const sendMatchNotification = async (deviceToken, username, userId) => {
             //     const title = 'Its a match!';
             //     const msg = `You got a match with ${username}`;
             //     const data = { userId };
-            
+
             //     await sendPushNotification(deviceToken, msg, data, title);
             // };
-            
+
             //     await sendMatchNotification(likedUser.deviceToken, currentUser.username, likedUserId);
             //     await sendMatchNotification(currentUser.deviceToken, likedUser.username, currentUserId);
 
@@ -224,7 +224,7 @@ exports.secretDating_like_profile = async (req, res) => {
 
 
 
-exports.secretDating_dislike_profile = async(req,res)=>{
+exports.secretDating_dislike_profile = async (req, res) => {
     const currentUserId = req.result.userId;
     const dislikedUserId = req.query.dislikedUserId;
 
@@ -236,8 +236,8 @@ exports.secretDating_dislike_profile = async(req,res)=>{
         if (!currentUser) {
             return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "Current user not found"));
         }
- 
-        const secretDatingUser = await secretDatingUserModel.findOne({user_id:currentUserId});
+
+        const secretDatingUser = await secretDatingUserModel.findOne({ user_id: currentUserId });
         if (!secretDatingUser) {
             return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "Current user not found in secret dating"));
         }
@@ -269,7 +269,7 @@ exports.secretDating_dislike_profile = async(req,res)=>{
             }
         }
 
-        const dislikedUser = await secretDatingUserModel.findOne({user_id:dislikedUserId});
+        const dislikedUser = await secretDatingUserModel.findOne({ user_id: dislikedUserId });
         if (!dislikedUser) {
             return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "User to be disliked not found in secret dating."));
         }
@@ -329,18 +329,18 @@ exports.get_secretDating_liked_you_profiles = async (req, res) => {
     limit = parseInt(limit, 10);
 
     try {
-        const loggedInUser = await secretDatingUserModel.findOne({user_id:loggedInUserId}).select('likedUsers').lean();
-       
+        const loggedInUser = await secretDatingUserModel.findOne({ user_id: loggedInUserId }).select('likedUsers').lean();
+
         const likedUsersByLoggedInUser = loggedInUser.likedUsers || [];
-    
+
         const totalProfilesCount = await secretDatingUserModel.countDocuments({
             likedUsers: loggedInUserId,
-            user_id: { $nin: likedUsersByLoggedInUser } 
+            user_id: { $nin: likedUsersByLoggedInUser }
         });
 
         const usersWhoLikedProfile = await secretDatingUserModel.find({
             likedUsers: loggedInUserId,
-            user_id: { $nin: likedUsersByLoggedInUser } 
+            user_id: { $nin: likedUsersByLoggedInUser }
         })
             .select('_id user_id name avatar profile_image interested_to_see')
             .sort({ createdAt: -1 })
@@ -367,7 +367,7 @@ exports.get_secretDating_liked_you_profiles = async (req, res) => {
 
 
 
-exports.get_secretDating_topPicks = async(req,res)=>{
+exports.get_secretDating_topPicks = async (req, res) => {
     try {
         const userId = req.result.userId;
         const page = parseInt(req.query.page) || 1;
@@ -382,28 +382,28 @@ exports.get_secretDating_topPicks = async(req,res)=>{
         if (!secretDatingUser) {
             return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "User not found with this user id in secret dating."));
         }
-        
+
         const preferredGender = secretDatingUser.interested_to_see;
         const maxDistance = user.distance_preference || 50;
         const blockedContacts = user.blocked_contacts || [];
-        
-        
+
+
         const nearbyUsers = await userModel.aggregate([
-           
+
             {
                 $geoNear: {
                     near: { type: "Point", coordinates: user.location.coordinates },
                     distanceField: "distance",
-                    maxDistance: maxDistance * 1000, 
+                    maxDistance: maxDistance * 1000,
                     query: {
                         _id: { $ne: userId },
-                        gender: preferredGender === 'everyone' ? { $exists: true } : preferredGender, 
-                        mobile_number: { $nin: blockedContacts.map(contact => contact.number) } 
+                        gender: preferredGender === 'everyone' ? { $exists: true } : preferredGender,
+                        mobile_number: { $nin: blockedContacts.map(contact => contact.number) }
                     },
                     spherical: true
                 }
             },
-           
+
             {
                 $lookup: {
                     from: 'secret_dating_users',
@@ -412,14 +412,14 @@ exports.get_secretDating_topPicks = async(req,res)=>{
                     as: 'secretDatingInfo'
                 }
             },
-          
+
             {
                 $unwind: {
                     path: "$secretDatingInfo",
                     preserveNullAndEmptyArrays: true
                 }
             },
-   
+
             {
                 $match: {
                     $and: [
@@ -438,24 +438,24 @@ exports.get_secretDating_topPicks = async(req,res)=>{
                     'secretDatingInfo.avatar': 1,
                     'secretDatingInfo.profile_image': 1,
                     'secretDatingInfo.sexual_orientation_preference_id': 1,
-                    'secretDatingInfo.relationship_preference':1
+                    'secretDatingInfo.relationship_preference': 1
                 }
             }
         ]);
 
-    
+
         const matchedUsers = nearbyUsers.map(nearbyUser => {
-            
+
             const score = topPicksMatchScore(secretDatingUser, nearbyUser);
             const userImage = nearbyUser.secretDatingInfo.profile_image
             const avatar = nearbyUser.secretDatingInfo.avatar
-          
+
             return {
                 _id: nearbyUser.secretDatingInfo._id,
-                userId :nearbyUser._id,
+                userId: nearbyUser._id,
                 username: nearbyUser.secretDatingInfo.name,
                 image: userImage || null,
-                avatar:avatar||null,
+                avatar: avatar || null,
                 matchScorePercentage: score.toFixed(2)
             };
         }).filter(user => user.matchScorePercentage >= 10);
@@ -482,34 +482,34 @@ exports.get_secretDating_topPicks = async(req,res)=>{
 
 
 
-exports.get_secretDating_profile_details = async(req,res)=>{
-    try{
-     let userId = req.query.userId;
-     
-     if(!userId){
-        return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'User id not present in query params'))
-     }
+exports.get_secretDating_profile_details = async (req, res) => {
+    try {
+        let userId = req.query.userId;
 
-     let isUserExist = await userModel.findById(userId)
-     if(!isUserExist){
-        return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'User not found with this user Id'))
-     }
+        if (!userId) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'User id not present in query params'))
+        }
 
-     let secretDatingUser = await secretDatingUserModel.findOne({user_id:userId})
-     if(!secretDatingUser){
-        return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'User not found with this user Id in secret dating'))
-     }
+        let isUserExist = await userModel.findById(userId)
+        if (!isUserExist) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'User not found with this user Id'))
+        }
 
-     const orientationTexts = await optionsModel.find({
-        _id: { $in: secretDatingUser.sexual_orientation_preference_id }
-    }).select('text _id');
+        let secretDatingUser = await secretDatingUserModel.findOne({ user_id: userId })
+        if (!secretDatingUser) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'User not found with this user Id in secret dating'))
+        }
 
-    const relationshipText = await optionsModel.findOne({
-        _id: secretDatingUser.relationship_preference
-    }).select('text _id');
+        const orientationTexts = await optionsModel.find({
+            _id: { $in: secretDatingUser.sexual_orientation_preference_id }
+        }).select('text _id');
+
+        const relationshipText = await optionsModel.findOne({
+            _id: secretDatingUser.relationship_preference
+        }).select('text _id');
 
 
-    let details = {
+        let details = {
             ...secretDatingUser.toObject(),
             sexual_orientation_texts: orientationTexts,
             relationship_preference_text: relationshipText ? relationshipText.text : null,
@@ -517,7 +517,7 @@ exports.get_secretDating_profile_details = async(req,res)=>{
 
         return res.status(200).json(successResponse('Data retrieved successfully', details));
 
-    }catch(error){
+    } catch (error) {
         console.error("ERROR::", error);
         res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
