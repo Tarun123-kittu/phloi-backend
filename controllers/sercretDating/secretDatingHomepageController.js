@@ -184,7 +184,7 @@ exports.secretDating_like_profile = async (req, res) => {
                 io.emit('its_a_match_in_secretDating', {
                     matchId: newMatch._id,
                     users: [currentUserId, likedUserId],
-                    usernames: [currentUser.username, likedUser.username],
+                    usernames: [secretDatingUser.name, likedUser.name],
                     message: `It's a match between ${currentUser.username} and ${likedUser.username}!`,
                     likedUser_image: likedUser.profile_image == null ? likedUser.avatar : likedUser.profile_image
                 });
