@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken')
-const config = require('../config/config')
-const {errorResponse,successResponse}= require("../utils/common/responseHandler")
+const config = require('../../config/config')
+const {errorResponse}= require("../../utils/common/responseHandler")
 
 
 let verifyToken = (req, res, next) => {

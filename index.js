@@ -90,6 +90,11 @@ app.use('/api/v1', appRoutes);
 let adminRoutes = require('./routes/adminRoutes/routes')
 app.use('/api/v1', adminRoutes)
 
+let hotelRoutes = require('./routes/hotelRoutes/routes')
+app.use('/api/v1/hotel', hotelRoutes)
+
+
+
 
 phloi_db_connection();
 

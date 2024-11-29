@@ -1,6 +1,6 @@
 let express = require('express')
 let router = express.Router()
-let verifyAdminToken = require("../../middlewares/adminAuthmiddleware")
+let verifyAdminToken = require("../../middlewares/authentication/adminAuthmiddleware")
 let adminAuthController = require('../../controllers/admin/authController')
 let adminUserController = require('../../controllers/admin/usersController')
 let safetyAndPrivacyController = require("../../controllers/admin/safteyAndPrivacyController")

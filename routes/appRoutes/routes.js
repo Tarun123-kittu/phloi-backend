@@ -15,8 +15,8 @@ const {
     validateSocialLogin,
     validateVerifyOtp,
     validateUpdateImagePositions
-} = require("../../middlewares/validationMiddleware")
-let authenticateToken = require('../../middlewares/authMiddleware')
+} = require("../../middlewares/validations/validationMiddleware")
+let authenticateToken = require('../../middlewares/authentication/authMiddleware')
 
 
 

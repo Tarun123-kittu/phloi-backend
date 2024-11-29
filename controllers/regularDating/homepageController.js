@@ -24,20 +24,23 @@ exports.recommended_users = async (req, res) => {
         const limit = parseInt(req.query.limit, 10) || 10;
 
         const ageMin = parseInt(req.query.age_min, 10)
-        const ageMax = parseInt(req.query.age_max, 10)
+        var ageMax = parseInt(req.query.age_max, 10)
         let maxDistance = parseInt(req.query.max_distance, 10)
         const interestedIn = req.query.interested_in
         let show_verified_profiles = req.query.show_verified_profiles
         const applyFilter = req.query.applyFilter || false
 
+    
 
         const currentUser = await userModel.findById(userId).lean();
         if (!currentUser) {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound));
         }
         if (applyFilter == 'true' || applyFilter == true) {
+
             if (!ageMin || !ageMax || !maxDistance || !interestedIn || !show_verified_profiles) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please provide all the filter values to find match")) }
             show_verified_profiles = (show_verified_profiles === 'true')
+            ageMax = ageMax +1
         }
 
         if (currentUser.setting.distance_in === 'mi') {
@@ -50,13 +53,13 @@ exports.recommended_users = async (req, res) => {
 
             filterApplied = {
                 ageMin: ageMin,
-                ageMax: ageMax,
+                ageMax: ageMax ,
                 maxDistance: maxDistance,
                 interestedIn: interestedIn,
                 show_verified_profiles: show_verified_profiles
             }
         }
-
+// console.log('age -----',ageMax)
         const matchedUsers = await homepageMatchAlgorithm(currentUser, page, limit, filterApplied);
 
         return res.status(200).json({

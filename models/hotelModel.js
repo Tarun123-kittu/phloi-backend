@@ -1,6 +1,9 @@
 const mongoose = require('mongoose');
 
 const hotelSchema = new mongoose.Schema({
+    username:String,
+    email:String,
+    password:String,
     establishmentName: String,
     typeOfEstablishment: String,
     streetAddress: String,

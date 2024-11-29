@@ -1,10 +1,10 @@
 let jwt = require('jsonwebtoken')
-const config = require('../config/config')
-let adminModel = require('../models/adminModel')
-let {errorResponse, successResponse} = require('../utils/common/responseHandler')
-let messages = require("../utils/common/messages")
+const config = require('../../config/config')
+let hotelModel = require('../../models/hotelModel')
+let {errorResponse} = require('../../utils/common/responseHandler')
+let messages = require("../../utils/common/messages")
 
-let verifyAdminToken = async(req, res, next) => {
+let verifyHotelToken = async(req, res, next) => {
     try {
 
         let token = req.headers.authorization;
@@ -15,10 +15,10 @@ let verifyAdminToken = async(req, res, next) => {
 
             let user = jwt.verify(token, config.development.jwt_secret_key)
             
-            let isAdminExist =  await adminModel.findById(user.userId)
+            let isHotelExist =  await hotelModel.findById(user.userId)
             
-            if(!isAdminExist){
-                return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"Unauthorized user! Admin account with this Id is not findable"))
+            if(!isHotelExist){
+                return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"Unauthorized user! Hotel account with this Id is not findable"))
             }
         
             req.result = user
@@ -37,4 +37,4 @@ let verifyAdminToken = async(req, res, next) => {
 }
 
 
-module.exports = verifyAdminToken
+module.exports = verifyHotelToken
