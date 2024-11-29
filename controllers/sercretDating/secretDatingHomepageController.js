@@ -188,6 +188,8 @@ exports.secretDating_like_profile = async (req, res) => {
                     message: `It's a match between ${currentUser.username} and ${likedUser.username}!`,
                     likedUser_image: likedUser.profile_image == null ? likedUser.avatar : likedUser.profile_image
                 });
+
+                console.log("--->",secretDatingUser.name, likedUser.name ,"------>" ,currentUserId, likedUserId)
                 console.log("--->",likedUser.profile_image == null ? likedUser.avatar : likedUser.profile_image)
              
 
