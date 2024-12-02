@@ -48,7 +48,7 @@ exports.getChats = async (req, res) => {
             return otherParticipant && otherParticipant.username.toLowerCase().includes(searchQuery.toLowerCase());
         });
 
-        const chatDetails = await Promise.all(filteredChats.map(async chat => {
+        let chatDetails = await Promise.all(filteredChats.map(async chat => {
             const otherParticipant = chat.participants.find(participant => participant._id.toString() !== userId);
 
             // Get the other participant's _id
@@ -86,6 +86,8 @@ exports.getChats = async (req, res) => {
             participants: userId,
             'participants.username': { $regex: searchQuery, $options: "i" }
         });
+        chatDetails = chatDetails.reverse()
+      
 
         res.status(200).json(successResponse("Chats retrieved successfully", {
             chats: chatDetails,
@@ -216,8 +218,8 @@ exports.sendMessage = async (req, res) => {
         let data = {
             userId: receiverId.toString(),
             type: 'message',
-            senderId:senderId,
-            chatId:chatId
+            senderId: senderId,
+            chatId: chatId
         }
         console.log("device token ---->", receiver.deviceToken)
         if (!receiver.deviceToken) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "please provide device token for the notification receiver.")) }

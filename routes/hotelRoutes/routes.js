@@ -22,6 +22,7 @@ router.put("/resetPassword", resetPasswordValidator, hotelController.resetPasswo
 // hotel onboarding
 router.post("/saveHotelDetails", verifyHotelToken, saveHotelDetailsValidator, hotelDetailsController.saveHotelDetails)
 router.get("/get_hotel_details",verifyHotelToken,hotelDetailsController.get_hotel_details)
+router.put("/update_hotel_details",verifyHotelToken,hotelDetailsController.update_hotel_details)
 
 
 module.exports = router

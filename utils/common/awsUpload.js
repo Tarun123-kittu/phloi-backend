@@ -10,7 +10,7 @@ const s3 = new AWS.S3({
 });
 
 const uploadFile = async (file, data = null) => {
-    
+
 
     if (!file || !file.data) {
         throw new Error('File data is missing.');
@@ -19,7 +19,7 @@ const uploadFile = async (file, data = null) => {
     const current_time = moment().tz('Asia/Kolkata').format('YYYYMMDD_HHmmss');
     const userId = file.userId;
     const filename = file.name
-    
+
     let key
 
 
@@ -50,7 +50,8 @@ const uploadFile = async (file, data = null) => {
     }
 
     if (data == 'Hotels') {
-        key = `${data}/${file.establishmentType}/${file.establishmentName}/${filename}`
+        let code = generateOtp()
+        key = `${data}/${file.establishmentType}/${file.establishmentName}/${filename + code}`
     }
 
 
@@ -70,4 +71,41 @@ const uploadFile = async (file, data = null) => {
     }
 };
 
-module.exports = { uploadFile, s3 };
+
+
+
+
+
+const deleteFileFromAWS = async (fileUrl) => {
+    try {
+        if (!fileUrl) {
+            throw new Error('File URL is missing.');
+        }
+
+
+        const bucketUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/`;
+        const fileKey = fileUrl.replace(bucketUrl, '');
+
+        if (!fileKey) {
+            throw new Error('Unable to extract file key from URL.');
+        }
+
+
+        const result = await s3
+            .deleteObject({
+                Bucket: 'phloii',
+                Key: fileKey,
+            })
+            .promise();
+
+        console.log('File deleted successfully:', fileKey);
+        return result;
+    } catch (error) {
+        console.error('Error deleting file:', error);
+        throw new Error(`Error deleting file from AWS: ${error.message}`);
+    }
+};
+
+
+
+module.exports = { uploadFile, s3, deleteFileFromAWS };

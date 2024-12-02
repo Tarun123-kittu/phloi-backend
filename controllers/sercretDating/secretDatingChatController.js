@@ -100,7 +100,7 @@ exports.secretDating_getChats = async (req, res) => {
             return res.status(200).json(successResponse("No chats found", []));
         }
 
-        const chatDetails = await Promise.all(chats.map(async chat => {
+        let chatDetails = await Promise.all(chats.map(async chat => {
             const otherParticipant = chat.participants[0];
 
 
@@ -137,6 +137,8 @@ exports.secretDating_getChats = async (req, res) => {
             type: 'secret dating',
             'participants.username': { $regex: searchQuery, $options: "i" }
         });
+
+        chatDetails = chatDetails.reverse()
 
         res.status(200).json(successResponse("Secret dating chats retrieved successfully", {
             chats: chatDetails,

@@ -38,6 +38,8 @@ exports.get_all_notification = async (req, res) => {
         let notifications = await notificationModel.find({ userId: userId, type: notification_type }).select('_id userId sender_id notification_text read createdAt')
         let unreadNotificationCount = await notificationModel.countDocuments({ userId: userId, read: false, type: notification_type }).lean()
 
+       
+        notifications = notifications.reverse()
         let data = {
             unread_notification_count: unreadNotificationCount,
             notifications: notifications

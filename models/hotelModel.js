@@ -6,8 +6,8 @@ const hotelSchema = new mongoose.Schema({
     password: { type: String },
     password_reset_token: { type: String },
     forgetPsd_tokenCreatedAt: { type: Date },
-    // forgetPsd_tokenVerified: { type: Boolean, default: false },
-   
+
+
 
     establishmentName: { type: String },
     establishmentType: { type: String },
@@ -29,6 +29,9 @@ const hotelSchema = new mongoose.Schema({
     safeWord: { type: String },
     inPersonVisitAvailability: { type: String },
     images: [{ type: String }],
+    onboardingCompleted: { type: Boolean, default: false },
+    adminVerified: { type: Boolean, default: false },
+    paymentStatus: { type: String, enum: ["pending", "completed", "failed"], default: "pending" }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Hotel', hotelSchema);
