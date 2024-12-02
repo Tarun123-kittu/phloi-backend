@@ -185,7 +185,7 @@ exports.secretDating_like_profile = async (req, res) => {
                     matchId: newMatch._id,
                     users: [currentUserId, likedUserId],
                     usernames: [secretDatingUser.name, likedUser.name],
-                    message: `It's a match between ${currentUser.username} and ${likedUser.username}!`,
+                    message: `It's a match between ${secretDatingUser.name} and ${likedUser.name}!`,
                     likedUser_image: likedUser.profile_image == null ? likedUser.avatar : likedUser.profile_image
                 });
 
@@ -194,7 +194,7 @@ exports.secretDating_like_profile = async (req, res) => {
 
             }
 
-            await notificationModel.create({ userId: likedUserId, sender_id: currentUserId, notification_text: `You got a match with ${currentUser.username}`, type: 'secret dating' })
+            await notificationModel.create({ userId: likedUserId, sender_id: currentUserId, notification_text: `You got a match with ${secretDatingUser.name}`, type: 'secret dating' })
             await notificationModel.create({ userId: currentUserId, sender_id: likedUserId, notification_text: `You got a match with ${likedUser.name}`, type: 'secret dating' })
 
             //push notification
