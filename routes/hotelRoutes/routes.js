@@ -8,7 +8,8 @@ let {
     signInValidator,
     forgetPasswordValidator,
     resetPasswordValidator,
-    saveHotelDetailsValidator
+    saveHotelDetailsValidator,
+    changePasswordValidator
 } = require("../../middlewares/validations/hotelValidationMiddleware")
 
 
@@ -18,11 +19,13 @@ router.post("/signUp", signUpValidator, hotelController.signUp)
 router.post("/signIn", signInValidator, hotelController.signIn)
 router.post("/forgetPassword", forgetPasswordValidator, hotelController.forgetPassword)
 router.put("/resetPassword", resetPasswordValidator, hotelController.resetPassword)
+router.put("/changePassword",verifyHotelToken,changePasswordValidator,hotelController.changePassword)
 
 // hotel onboarding
 router.post("/saveHotelDetails", verifyHotelToken, saveHotelDetailsValidator, hotelDetailsController.saveHotelDetails)
 router.get("/get_hotel_details",verifyHotelToken,hotelDetailsController.get_hotel_details)
 router.put("/update_hotel_details",verifyHotelToken,hotelDetailsController.update_hotel_details)
+
 
 
 module.exports = router

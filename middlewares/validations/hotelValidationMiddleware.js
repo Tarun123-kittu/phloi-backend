@@ -110,11 +110,40 @@ const saveHotelDetailsValidator = [
 
 
 
+const changePasswordValidator = [
+    check("password").notEmpty().withMessage("Please provide your recent password"),
+    check("newPassword").notEmpty().withMessage("Please provide new password"),
+    check("newPassword", "Password must be at least 6 characters long, include 1 uppercase letter, 1 number, and 1 symbol")
+    .isStrongPassword({
+        minLength: 6,
+        minLowercase: 1,
+        minUppercase: 1,
+        minNumbers: 1,
+        minSymbols: 1,
+    }),
+    check("confirmPassword").notEmpty().withMessage("Please provide confirm password"),
+    body('confirmPassword').custom((value, { req }) => {
+        if (value !== req.body.newPassword) {
+            throw new Error('Confirm password do not match with new password.');
+        }
+        return true;
+    }),
+    (req, res, next) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ message: errors.array()[0].msg, type: 'error' });
+        }
+        next();
+    }
+]
+
+
 module.exports = {
     signUpValidator,
     signInValidator,
     forgetPasswordValidator,
     verifyOtpValidator,
     resetPasswordValidator,
-    saveHotelDetailsValidator
+    saveHotelDetailsValidator,
+    changePasswordValidator
 }

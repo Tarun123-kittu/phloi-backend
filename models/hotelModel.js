@@ -13,10 +13,10 @@ const hotelSchema = new mongoose.Schema({
     establishmentType: { type: String },
     address: {
         streetAddress: { type: String },
-        suiteUnitNumber: { type: String },
+        suiteUnitNumber: { type: Number },
         country: { type: String },
         state: { type: String },
-        pinCode: { type: String },
+        pinCode: { type: Number },
     },
     ownerDetails: {
         ownerName: { type: String },

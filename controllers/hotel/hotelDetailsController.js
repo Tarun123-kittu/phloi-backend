@@ -96,7 +96,7 @@ exports.get_hotel_details = async (req, res) => {
     try {
         let hotels = req.result.userId
 
-        let hotelDetails = await hotelModel.findById(hotels).select("username establishmentName establishmentType images address ownerDetails uniqueFeatures why_want_phloi paymentStatus")
+        let hotelDetails = await hotelModel.findById(hotels).select("username establishmentName establishmentType images address ownerDetails uniqueFeatures why_want_phloi adminVerified paymentStatus")
         
         return res.status(200).json(successResponse("Data retreived", hotelDetails))
     } catch (error) {
@@ -104,6 +104,9 @@ exports.get_hotel_details = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 }
+
+
+
 
 
 

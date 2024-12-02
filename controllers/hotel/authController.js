@@ -112,12 +112,43 @@ exports.resetPassword = async (req, res) => {
             { password_reset_token: hashed_token },
             {
                 password: hashedPassword,
-                password_reset_token:null
+                password_reset_token: null
             }
         );
 
         return res.status(200).json(successResponse("Password changed successfully"));
 
+    } catch (error) {
+        console.log("ERROR::", error)
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.messages))
+    }
+}
+
+
+
+exports.changePassword = async (req, res) => {
+    try {
+        let id = req.result.userId;
+        let password = req.body.password;
+        let newPassword = req.body.newPassword
+      
+    
+        let hotelDetails = await hotelModel.findOne({ _id: id })
+        if (!hotelDetails) {
+          return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Logged In hotel not found'))
+        }
+        let isPassCorrect = await compareHashedPassword(password, hotelDetails.password)
+        if (!isPassCorrect) {
+          return res.status(400).json(errorResponse('Entered current password is not correct'))
+        }
+    
+        let passhash = await generateHashedPassword(newPassword)
+        await hotelModel.findOneAndUpdate({ _id: id }, {
+          $set: {
+            password: passhash,
+          }
+        })
+        return res.status(200).json(successResponse("Password changed successfully"))
     } catch (error) {
         console.log("ERROR::", error)
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.messages))
