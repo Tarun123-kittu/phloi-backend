@@ -8,4 +8,6 @@ let notificationSchema = new mongoose.Schema({
     type:{type:String,enum:['secret dating','regular dating']}
 },{timestamps:true})
 
+notificationSchema.index({ userId: 1, type: 1, read: 1 });
+
 module.exports = mongoose.model('notification',notificationSchema)

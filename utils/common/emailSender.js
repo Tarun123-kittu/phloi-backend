@@ -16,8 +16,8 @@ const sendEmail = async (email, code) => {
     let mailDetails = {
       from: config.development.gmail,
       to: email,
-      subject: 'Forget password verification code',
-      text: `Forget password verification code: ${code}`,
+      subject: 'Forget password verification ',
+      text: `We've received a request to reset your password.`,
       html: `<div style="
       padding: 30px; 
       text-align: center; 
@@ -33,10 +33,10 @@ const sendEmail = async (email, code) => {
       font-weight: bold;
       text-transform: uppercase;
     ">
-    Your Verification Code
+    Please complete verification 
   </h1>
-  <p style="
-      font-size: 24px; 
+  <a href="${code}" style="
+      font-size: 18px; 
       margin: 20px 0; 
       font-weight: 500;
       background: #ffffff;
@@ -45,17 +45,21 @@ const sendEmail = async (email, code) => {
       padding: 10px 20px;
       border-radius: 5px;
       border: 2px solid #007bff;
+      text-decoration: none;
+      text-transform: uppercase;
     ">
-    ${code}
-  </p>
+    Click Me
+  </a>
   <p style="
       font-size: 16px; 
       color: #ffffff;
       margin-top: 20px;
     ">
-    Please use the above code to complete your verification process. The code is valid for a 2 minutes.
+    Please click the button above to complete your verification process. The code is valid for 2 minutes.
   </p>
-</div>`,
+</div>
+
+`,
 
     };
 
@@ -63,11 +67,11 @@ const sendEmail = async (email, code) => {
     await transporter.sendMail(mailDetails);
 
 
-    return { success: true, message: "OTP has been sent to your email" };
+    return { success: true, message: "Link has been sent to your email" };
   } catch (error) {
  
     return { success: false, message: "Something went wrong", error: error.message };
   }
 };
 
-module.exports = sendEmail;
+module.exports = sendEmail

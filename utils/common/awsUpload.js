@@ -10,6 +10,7 @@ const s3 = new AWS.S3({
 });
 
 const uploadFile = async (file, data = null) => {
+    
 
     if (!file || !file.data) {
         throw new Error('File data is missing.');
@@ -18,6 +19,7 @@ const uploadFile = async (file, data = null) => {
     const current_time = moment().tz('Asia/Kolkata').format('YYYYMMDD_HHmmss');
     const userId = file.userId;
     const filename = file.name
+    
     let key
 
 
@@ -47,6 +49,9 @@ const uploadFile = async (file, data = null) => {
         key = `${data}/${current_time}`
     }
 
+    if (data == 'Hotels') {
+        key = `${data}/${file.establishmentType}/${file.establishmentName}/${filename}`
+    }
 
 
     try {

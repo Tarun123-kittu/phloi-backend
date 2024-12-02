@@ -1,7 +1,7 @@
 let hotelModel = require("../../models/hotelModel")
 let { errorResponse, successResponse } = require('../../utils/common/responseHandler')
 const messages = require('../../utils/common/messages')
-const { generateHashedPassword, compareHashedPassword, generateToken, generateOtp } = require('../../utils/common/commonFunctions')
+const { generateHashedPassword, compareHashedPassword, generateToken, generateOtp, passwordResetToken } = require('../../utils/common/commonFunctions')
 const sendEmail = require("../../utils/common/emailSender")
 
 
@@ -57,17 +57,18 @@ exports.forgetPassword = async (req, res) => {
         let emailExist = await hotelModel.findOne({ email: email })
         if (!emailExist) { return res.status(400).json(errorResponse('This email is not registered')) }
 
-        let code = generateOtp()
+        const resetToken = await passwordResetToken();
+
 
         let date = new Date()
         await hotelModel.findOneAndUpdate({ email: email }, {
             $set: {
-                forgetPsd_otp: code,
-                forgetPsd_otpCreatedAt: date,
+                password_reset_token: resetToken,
+                forgetPsd_tokenCreatedAt: date,
             }
         })
-
-        const emailResponse = await sendEmail(email, code);
+        const resetUrl = `http://localhost:3000/reset_password/${resetToken}`;
+        const emailResponse = await sendEmail(email, resetUrl);
         if (emailResponse.success) {
             return res.status(200).json(successResponse(emailResponse.message));
         } else {
@@ -81,116 +82,39 @@ exports.forgetPassword = async (req, res) => {
 
 
 
-
-
-exports.forgetPasswordVerifyOtp = async (req, res) => {
+exports.resetPassword = async (req, res) => {
     try {
-        let { email, otp } = req.body
+        const { hashed_token, password } = req.body;
 
-
-        const isEmailExist = await hotelModel.findOne({ email: email });
-        if (!isEmailExist) {
-            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, 'hotel not found with the provided email'));
-        }
-
-
-        if (!isEmailExist.forgetPsd_otp) {
-            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'OTP has already been used or does not exist'));
-        }
+        if (!hashed_token) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please provide token")) }
+        const user = await hotelModel.findOne({ password_reset_token: hashed_token });
+        if (!user) { return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, 'Data not found with this token ')); }
 
 
         const OTP_EXPIRATION_TIME = 120;
-        const createdAt = new Date(isEmailExist.forgetPsd_otpCreatedAt);
+        const createdAt = new Date(user.forgetPsd_tokenCreatedAt);
         const now = new Date();
         const otpTimeElapsed = Math.abs(now.getTime() - createdAt.getTime()) / 1000;
 
         if (otpTimeElapsed > OTP_EXPIRATION_TIME) {
-            return res.status(400).json(errorResponse('OTP time expired, please resend OTP'));
+            return res.status(400).json(errorResponse('Password reset time expired, please send send link again'));
         }
 
 
-        if (otp !== isEmailExist.forgetPsd_otp) {
-            return res.status(400).json(errorResponse('Incorrect OTP'));
+        if (hashed_token !== user.password_reset_token) {
+            return res.status(400).json(errorResponse('Something went wrong', 'token not matched'));
         }
 
-
-        await hotelModel.findOneAndUpdate(
-            { email, forgetPsd_otp: otp },
-            {
-                $set: {
-                    forgetPsd_otpVerified: true,
-                    forgetPsd_otp: null,
-                    forgetPsd_otpCreatedAt: null,
-                },
-            }
-        );
-
-        return res.status(200).json(successResponse('OTP verified successfully'));
-    } catch (error) {
-        console.log("ERROR::", error)
-        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.messages))
-    }
-}
-
-
-
-
-exports.resendOtp = async (req, res) => {
-    try {
-        const email = req.body.email;
-
-        const isEmailExist = await hotelModel.findOne({ email });
-        if (!isEmailExist) { return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, 'Data not found with this email')) }
-
-
-        const code = generateOtp();
-        const currentTime = new Date();
-        await hotelModel.findOneAndUpdate(
-            { email },
-            {
-                $set: {
-                    forgetPsd_otp: code,
-                    forgetPsd_otpCreatedAt: currentTime,
-                },
-            }
-        );
-
-
-        const emailResponse = await sendEmail(email, code);
-        if (emailResponse.success) {
-            return res.status(200).json(successResponse('OTP resent successfully'));
-        } else {
-            return res.status(500).json(errorResponse('Failed to send OTP', emailResponse.error));
-        }
-    } catch (error) {
-        console.log("ERROR::", error)
-        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.messages))
-    }
-}
-
-
-
-
-exports.resetPassword = async (req, res) => {
-    try {
-        const { email, password } = req.body;
-
-        if (!email) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please provide email")) }
-        const user = await hotelModel.findOne({ email });
-        if (!user) { return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong,'Data not found with this email')); }
-
-        if (!user.forgetPsd_otpVerified) { return res.status(400).json(errorResponse('OTP not verified. Cannot reset password.')); }
 
         const hashedPassword = await generateHashedPassword(password);
 
         await hotelModel.findOneAndUpdate(
-            { email },
+            { password_reset_token: hashed_token },
             {
                 password: hashedPassword,
-                forgetPsd_otpVerified: false,
+                password_reset_token:null
             }
         );
-
 
         return res.status(200).json(successResponse("Password changed successfully"));
 

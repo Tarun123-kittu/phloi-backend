@@ -189,14 +189,13 @@ exports.secretDating_like_profile = async (req, res) => {
                     likedUser_image: likedUser.profile_image == null ? likedUser.avatar : likedUser.profile_image
                 });
 
-                console.log("--->",secretDatingUser.name, likedUser.name ,"------>" ,currentUserId, likedUserId)
-                console.log("--->",likedUser.profile_image == null ? likedUser.avatar : likedUser.profile_image)
+            
              
 
             }
 
             await notificationModel.create({ userId: likedUserId, sender_id: currentUserId, notification_text: `You got a match with ${currentUser.username}`, type: 'secret dating' })
-            await notificationModel.create({ userId: currentUserId, sender_id: likedUserId, notification_text: `You got a match with ${likedUser.username}`, type: 'secret dating' })
+            await notificationModel.create({ userId: currentUserId, sender_id: likedUserId, notification_text: `You got a match with ${likedUser.name}`, type: 'secret dating' })
 
             //push notification
             // const sendMatchNotification = async (deviceToken, username, userId) => {

@@ -68,7 +68,7 @@ const verifyOtpValidator = [
 
 
 const resetPasswordValidator = [
-    check('password', 'Please enter new password.').not().isEmpty(),
+    check('hashed_token', 'Something went wrong. Please try again later (token not provided)').not().isEmpty(),
     check('confirmPassword', 'Please enter confirm password.').not().isEmpty(),
     body('confirmPassword').custom((value, { req }) => {
         if (value !== req.body.password) {
@@ -87,6 +87,27 @@ const resetPasswordValidator = [
 
 
 
+const saveHotelDetailsValidator = [
+    check("establishmentName").notEmpty().withMessage("Establishment Name is required"),
+    check("establishmentType").notEmpty().withMessage("Establishment Type is required"),
+    check("streetAddress").notEmpty().withMessage("Street Address is required"),
+    check("country").notEmpty().withMessage("Country is required"),
+    check("state").notEmpty().withMessage("State is required"),
+    check("pinCode").notEmpty().withMessage("Pin Code is required").isPostalCode('any').withMessage("Invalid Pin Code"),
+    check("ownerName").notEmpty().withMessage("Owner Name is required"),
+    check("ownerPhone").isMobilePhone('any').withMessage("Invalid phone number"),
+    check("ownerEmail").isEmail().withMessage("Invalid email address"),
+    check("why_want_phloi").notEmpty().withMessage("why you choose phloii please add reason"),
+    check("inPersonVisitAvailability").notEmpty().withMessage("Please indicate whether you are open to an in-person visit"),
+    (req, res, next) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ message: errors.array()[0].msg, type: 'error' });
+        }
+        next();
+    }
+]
+
 
 
 module.exports = {
@@ -94,5 +115,6 @@ module.exports = {
     signInValidator,
     forgetPasswordValidator,
     verifyOtpValidator,
-    resetPasswordValidator
+    resetPasswordValidator,
+    saveHotelDetailsValidator
 }

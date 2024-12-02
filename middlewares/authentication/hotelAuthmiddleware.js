@@ -14,9 +14,9 @@ let verifyHotelToken = async(req, res, next) => {
             token = token.split(' ')[1];
 
             let user = jwt.verify(token, config.development.jwt_secret_key)
-            
+         
             let isHotelExist =  await hotelModel.findById(user.userId)
-            
+           
             if(!isHotelExist){
                 return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"Unauthorized user! Hotel account with this Id is not findable"))
             }

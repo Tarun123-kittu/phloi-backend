@@ -4,6 +4,7 @@ let otpGenerator = require('otp-generator');
 let twilio = require('twilio')
 let client = new twilio(config.development.twilio_account_sid, config.development.twilio_auth_token)
 let bcrypt = require('bcrypt')
+let crypto = require('crypto')
 
 
 
@@ -92,6 +93,14 @@ const validateEmail = (email) => {
 };
 
 
+const passwordResetToken = async () => {
+    const resetToken = await crypto.randomBytes(32).toString('hex')
+
+    this.passwordResetToken = await crypto.createHash('sha256').update(resetToken).digest('hex')
+    this.passwordResetExpiresIn = Date.now() + 10 * 60 * 1000
+    return resetToken
+}
+
 
 module.exports = {
     generateToken,
@@ -99,5 +108,6 @@ module.exports = {
     sendTwilioSms,
     generateHashedPassword,
     compareHashedPassword,
-    validateEmail
+    validateEmail,
+    passwordResetToken
 }

@@ -1,31 +1,34 @@
 const mongoose = require('mongoose');
 
 const hotelSchema = new mongoose.Schema({
-    username:String,
-    email:String,
-    password:String,
-    forgetPsd_otp:Number,
-    forgetPsd_otpCreatedAt:Date,
-    forgetPsd_otpVerified:  { type: Boolean, default: false },
+    username: { type: String },
+    email: { type: String },
+    password: { type: String },
+    password_reset_token: { type: String },
+    forgetPsd_tokenCreatedAt: { type: Date },
+    // forgetPsd_tokenVerified: { type: Boolean, default: false },
+   
 
-    establishmentName: String,
-    typeOfEstablishment: String,
-    streetAddress: String,
-    suiteNumber: String,
-    country: String,
-    state: String,
-    pinCode: String,
-    ownerName: String,
-    websiteLink: String,
-    ownerPhone: String,
-    ownerEmail: String,
-    description: String,
-    images: [String],
-    uniqueAttributes: String,
-    safeWord: String,
-    inPersonVisit: String,
-    paymentStatus: { type: Boolean, default: false },
-    adminVerificationStatus: { type: String, default: 'pending' }, // 'pending', 'verified', or 'rejected'
+    establishmentName: { type: String },
+    establishmentType: { type: String },
+    address: {
+        streetAddress: { type: String },
+        suiteUnitNumber: { type: String },
+        country: { type: String },
+        state: { type: String },
+        pinCode: { type: String },
+    },
+    ownerDetails: {
+        ownerName: { type: String },
+        websiteLink: { type: String },
+        ownerPhone: { type: String },
+        ownerEmail: { type: String },
+    },
+    why_want_phloi: { type: String },
+    uniqueFeatures: { type: String },
+    safeWord: { type: String },
+    inPersonVisitAvailability: { type: String },
+    images: [{ type: String }],
 }, { timestamps: true });
 
 module.exports = mongoose.model('Hotel', hotelSchema);
