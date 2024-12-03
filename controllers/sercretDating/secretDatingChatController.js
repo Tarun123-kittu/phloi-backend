@@ -92,7 +92,7 @@ exports.secretDating_getChats = async (req, res) => {
                 select: 'username online_status',
                 match: { _id: { $ne: userId } }
             })
-            .sort({ 'lastMessage.createdAt': -1 })
+            .sort({ updatedAt: -1 }) 
             .skip(skip)
             .limit(limit);
 
@@ -138,7 +138,6 @@ exports.secretDating_getChats = async (req, res) => {
             'participants.username': { $regex: searchQuery, $options: "i" }
         });
 
-        chatDetails = chatDetails.reverse()
 
         res.status(200).json(successResponse("Secret dating chats retrieved successfully", {
             chats: chatDetails,

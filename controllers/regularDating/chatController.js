@@ -35,7 +35,7 @@ exports.getChats = async (req, res) => {
                 path: 'participants',
                 select: 'username images online_status',
             })
-            .sort({ 'lastMessage.createdAt': -1 })
+            .sort({ updatedAt: -1 }) 
             .skip(skip)
             .limit(limit);
 
@@ -86,7 +86,7 @@ exports.getChats = async (req, res) => {
             participants: userId,
             'participants.username': { $regex: searchQuery, $options: "i" }
         });
-        chatDetails = chatDetails.reverse()
+        // chatDetails = chatDetails.reverse()
       
 
         res.status(200).json(successResponse("Chats retrieved successfully", {
@@ -101,9 +101,6 @@ exports.getChats = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
-
-
-
 
 
 
