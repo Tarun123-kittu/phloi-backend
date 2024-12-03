@@ -159,7 +159,10 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
                 }
             },
             { $skip: (page - 1) * limit },
-            { $limit: limit }
+            { $limit: limit },
+            {
+                $sample: { size: limit } 
+            }
         ]).exec(); 
 
 

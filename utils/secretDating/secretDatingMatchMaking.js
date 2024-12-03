@@ -142,7 +142,10 @@ const secretDatingMatchAlgorithm = async (currentUser, secretDatingCurrentUser, 
                 }
             },
             { $skip: (page - 1) * limit },
-            { $limit: limit }
+            { $limit: limit },
+            {
+                $sample: { size: limit }
+            }
         ]);
 
 

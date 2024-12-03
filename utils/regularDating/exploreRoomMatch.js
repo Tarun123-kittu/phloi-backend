@@ -96,6 +96,9 @@ const exploreRoomMatchAlgorithm = async (currentUser, page = 1, limit = 10) => {
             },
             {
                 $limit: limit
+            },
+            {
+                $sample: { size: limit }
             }
         ]).exec();
 

@@ -66,7 +66,7 @@ exports.getChats = async (req, res) => {
             const lastMessageText = chat.lastMessage ? chat.lastMessage.text : null;
             const lastMessageSenderName = chat.lastMessage && chat.lastMessage.sender ? chat.lastMessage.sender.username : null;
             const messageSentAt = chat.lastMessage ? chat.lastMessage.createdAt : null;
-
+    
             return {
                 chatId: chat._id,
                 otherParticipantId: otherParticipantId,  // Add otherParticipantId here
@@ -101,9 +101,6 @@ exports.getChats = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
-
-
-
 
 
 
