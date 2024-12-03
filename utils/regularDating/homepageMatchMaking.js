@@ -145,6 +145,14 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
                 as: 'relationshipPreference'
             }
            },
+           {
+            $lookup: {
+                from: 'options', 
+                localField: 'sexual_orientation_preference_id', 
+                foreignField: '_id', 
+                as: 'sexual_orientation'
+            }
+           },
             {
                 $project: {
                     _id: 1,
@@ -161,7 +169,14 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
                     study:1,
                     'relationshipPreference.text':1,
                     show_sexual_orientation:1,
-                    show_gender:1
+                    show_gender:1,
+                    sexual_orientation: { 
+                        $map: { 
+                            input: '$sexual_orientation', 
+                            as: 'orientation', 
+                            in: '$$orientation.text' 
+                        } 
+                    }
                 }
             },
             {

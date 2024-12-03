@@ -35,11 +35,13 @@ exports.get_all_notification = async (req, res) => {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User not exist with this user Id"))
         }
 
-        let notifications = await notificationModel.find({ userId: userId, type: notification_type }).select('_id userId sender_id notification_text read createdAt')
+        let notifications = await notificationModel.find({ userId: userId, type: notification_type })
+        .select('_id userId sender_id notification_text read createdAt')
+        .sort({ createdAt: -1 });
         let unreadNotificationCount = await notificationModel.countDocuments({ userId: userId, read: false, type: notification_type }).lean()
 
        
-        notifications = notifications.reverse()
+       
         let data = {
             unread_notification_count: unreadNotificationCount,
             notifications: notifications
