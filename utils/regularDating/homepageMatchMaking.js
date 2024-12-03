@@ -159,7 +159,9 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
                     },
                     intrested_to_see:1,
                     study:1,
-                    'relationshipPreference.text':1
+                    'relationshipPreference.text':1,
+                    show_sexual_orientation:1,
+                    show_gender:1
                 }
             },
             {
