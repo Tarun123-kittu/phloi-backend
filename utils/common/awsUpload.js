@@ -83,7 +83,7 @@ const deleteFileFromAWS = async (fileUrl) => {
         }
 
 
-        const bucketUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/`;
+        const bucketUrl = `https://${config.development.aws_s3_bucket_name}.s3.${config.development.aws_s3_region}.amazonaws.com/`;
         const fileKey = fileUrl.replace(bucketUrl, '');
 
         if (!fileKey) {

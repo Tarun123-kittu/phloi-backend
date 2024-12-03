@@ -83,7 +83,9 @@ const exploreRoomMatchAlgorithm = async (currentUser, page = 1, limit = 10) => {
                     interests: { $map: { input: '$interests', as: 'interest', in: '$$interest.text' } },
                     age: {
                         $subtract: [new Date(), '$dob']
-                    }
+                    },
+                    intrested_to_see:1,
+                    study:1,
                 }
             },
             {

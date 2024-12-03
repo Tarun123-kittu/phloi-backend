@@ -137,8 +137,14 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
                    as: 'interests'
                }
            },
-
-
+           {
+            $lookup: {
+                from: 'options', 
+                localField: 'relationship_type_preference_id', 
+                foreignField: '_id', 
+                as: 'relationshipPreference'
+            }
+           },
             {
                 $project: {
                     _id: 1,
@@ -150,7 +156,10 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
                     interests: { $map: { input: '$interests', as: 'interest', in: '$$interest.text' } },
                     age: {
                         $subtract: [new Date(), '$dob']
-                    }
+                    },
+                    intrested_to_see:1,
+                    study:1,
+                    'relationshipPreference.text':1
                 }
             },
             {

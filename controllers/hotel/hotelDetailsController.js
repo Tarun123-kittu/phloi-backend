@@ -34,11 +34,6 @@ exports.saveHotelDetails = async (req, res) => {
             return res.status(400).json(errorResponse("You must upload exactly 5 images."));
         }
 
-        const existingHotel = await hotelModel.findById(userId)
-        if (!existingHotel) {
-            return res.status(400).json(errorResponse("Hotel with this email already exists"))
-        }
-
 
         const imageUrls = [];
         for (var file of files) {
@@ -49,34 +44,31 @@ exports.saveHotelDetails = async (req, res) => {
         }
 
 
-        const updatedHotel = await hotelModel.findOneAndUpdate(
-            { _id: userId },
-            {
-                $set: {
-                    establishmentName,
-                    establishmentType,
-                    address: {
-                        streetAddress,
-                        suiteUnitNumber,
-                        country,
-                        state,
-                        pinCode,
-                    },
-                    ownerDetails: {
-                        ownerName,
-                        websiteLink,
-                        ownerPhone,
-                        ownerEmail,
-                    },
-                    why_want_phloi,
-                    uniqueFeatures,
-                    safeWord,
-                    inPersonVisitAvailability,
-                    images: imageUrls,
-                    onboardingCompleted:true,
-                },
+        const newAddedHotel = await hotelModel.create({
+            hotelAccountId: userId,
+            establishmentName,
+            establishmentType,
+            address: {
+                streetAddress,
+                suiteUnitNumber,
+                country,
+                state,
+                pinCode,
             },
-            { new: true }
+            ownerDetails: {
+                ownerName,
+                websiteLink,
+                ownerPhone,
+                ownerEmail,
+            },
+            why_want_phloi,
+            uniqueFeatures,
+            safeWord,
+            inPersonVisitAvailability,
+            images: imageUrls,
+            onboardingCompleted: true,
+
+        }
         );
 
         return res.status(200).json(successResponse("Hotel details saved successfully"))
@@ -94,10 +86,10 @@ exports.saveHotelDetails = async (req, res) => {
 
 exports.get_hotel_details = async (req, res) => {
     try {
-        let hotels = req.result.userId
+        let id = req.result.userId
 
-        let hotelDetails = await hotelModel.findById(hotels).select("username establishmentName establishmentType images address ownerDetails uniqueFeatures why_want_phloi adminVerified paymentStatus")
-        
+        let hotelDetails = await hotelModel.find({ hotelAccountId: id }).select("username establishmentName establishmentType images address ownerDetails uniqueFeatures why_want_phloi adminVerified paymentStatus").lean()
+
         return res.status(200).json(successResponse("Data retreived", hotelDetails))
     } catch (error) {
         console.error("ERROR::", error);
@@ -111,11 +103,13 @@ exports.get_hotel_details = async (req, res) => {
 
 
 
-
-
 exports.update_hotel_details = async (req, res) => {
     try {
-        const userId = req.result.userId;
+        const hotelId = req.body.hotelId;
+
+        if (!hotelId) {
+            return res.status(400).json(errorResponse("Something went wrong", "Please provide hotel ID in the query params"));
+        }
 
         const {
             establishmentName,
@@ -133,55 +127,59 @@ exports.update_hotel_details = async (req, res) => {
             uniqueFeatures,
             safeWord,
             inPersonVisitAvailability,
-            existingImages = [],
         } = req.body;
 
-        const files = req.files?.images;
+        let images = req.files?.images || [];
+        if (!Array.isArray(images)) {
+ 
+            images = [images];
+        }
+
         
-       
-        const existingHotel = await hotelModel.findById(userId);
+        const existingHotel = await hotelModel.findById(hotelId).select("images");
         if (!existingHotel) {
             return res.status(404).json(errorResponse("Hotel not found."));
         }
 
         let imageUrls = existingHotel.images;
+        const currentImageCount = imageUrls.length;
 
+    
+        if (images.length > 0) {
+            const totalImageCount = currentImageCount + images.length;
 
-        const invalidImages = existingImages.filter((url) => !existingHotel.images.includes(url));
-        if (invalidImages.length > 0) {
-            return res.status(400).json(errorResponse("Invalid existing image URLs provided."));
-        }
-
-
-        if (files && files.length > 0) {
-            for (const file of files) {
-                const uploadedImage = await uploadFile(file, "Hotels");
-                imageUrls.push(uploadedImage.Location);
+            if (totalImageCount > 5) {
+                return res.status(400).json(errorResponse(`You can only upload ${5 - currentImageCount} more image(s) to maintain a total of 5 images.`));
             }
+
+            console.log("Uploading new images...");
+            const uploadPromises = images.map((file) => uploadFile(file, "Hotels"));
+            const uploadedImages = await Promise.all(uploadPromises);
+            const uploadedUrls = uploadedImages.map((img) => img.Location);
+            imageUrls = imageUrls.concat(uploadedUrls);
         }
 
-        console.log("image urls ----", imageUrls)
 
-        // if (imageUrls.length > 5 || imageUrls.length < 5) {
-        //     return res.status(400).json(errorResponse("You cannot have more than or less than 5 images."));
-        // }
+        if (imageUrls.length !== 5) {
+            return res.status(400).json(errorResponse("You must have exactly 5 images after the update."));
+        }
 
-
+      
         const updatedData = {
             establishmentName: establishmentName || existingHotel.establishmentName,
             establishmentType: establishmentType || existingHotel.establishmentType,
             address: {
-                streetAddress: streetAddress || existingHotel.address.streetAddress,
-                suiteUnitNumber: suiteUnitNumber || existingHotel.address.suiteUnitNumber,
-                country: country || existingHotel.address.country,
-                state: state || existingHotel.address.state,
-                pinCode: pinCode || existingHotel.address.pinCode,
+                streetAddress: streetAddress || existingHotel.address?.streetAddress,
+                suiteUnitNumber: suiteUnitNumber || existingHotel.address?.suiteUnitNumber,
+                country: country || existingHotel.address?.country,
+                state: state || existingHotel.address?.state,
+                pinCode: pinCode || existingHotel.address?.pinCode,
             },
             ownerDetails: {
-                ownerName: ownerName || existingHotel.ownerDetails.ownerName,
-                websiteLink: websiteLink || existingHotel.ownerDetails.websiteLink,
-                ownerPhone: ownerPhone || existingHotel.ownerDetails.ownerPhone,
-                ownerEmail: ownerEmail || existingHotel.ownerDetails.ownerEmail,
+                ownerName: ownerName || existingHotel.ownerDetails?.ownerName,
+                websiteLink: websiteLink || existingHotel.ownerDetails?.websiteLink,
+                ownerPhone: ownerPhone || existingHotel.ownerDetails?.ownerPhone,
+                ownerEmail: ownerEmail || existingHotel.ownerDetails?.ownerEmail,
             },
             why_want_phloi: why_want_phloi || existingHotel.why_want_phloi,
             uniqueFeatures: uniqueFeatures || existingHotel.uniqueFeatures,
@@ -190,18 +188,12 @@ exports.update_hotel_details = async (req, res) => {
             images: imageUrls,
         };
 
-
+      
         const updatedHotel = await hotelModel.findByIdAndUpdate(
-            userId,
+            hotelId,
             { $set: updatedData, adminVerified: false },
             { new: true }
         );
-
-
-        const imagesToDelete = existingHotel.images.filter((url) => !imageUrls.includes(url));
-        for (const image of imagesToDelete) {
-            await deleteFileFromAWS(image);
-        }
 
         return res.status(200).json(successResponse("Hotel details updated successfully", updatedHotel));
     } catch (error) {
@@ -209,10 +201,54 @@ exports.update_hotel_details = async (req, res) => {
         return res.status(500).json(errorResponse("Something went wrong.", error.message));
     }
 };
-//
 
 
 
+
+
+exports.delete_Hotel_image = async (req, res) => {
+    try {
+        let hotelAccountId = req.query.hotelId;
+        let deleteImageIndex = parseInt(req.query.deleteImageIndex);
+
+
+        let isHotelExist = await hotelModel.findById(hotelAccountId);
+        if (!isHotelExist) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Hotel details with this Id not found"));
+        }
+
+
+        let allImages = isHotelExist.images;
+        if (deleteImageIndex < 0 || deleteImageIndex >= allImages.length) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Invalid image index"));
+        }
+
+        const imageUrlToDelete = allImages[deleteImageIndex];
+
+        try {
+            await deleteFileFromAWS(imageUrlToDelete);
+        } catch (awsError) {
+            return res.status(500).json(errorResponse("Error deleting file from AWS", awsError.message));
+        }
+
+        const updatedHotel = await hotelModel.findByIdAndUpdate(
+            hotelAccountId,
+            { $pull: { images: allImages[deleteImageIndex] } },
+            { new: true }
+        );
+
+        if (!updatedHotel) {
+            return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, "Failed to update hotel images"));
+        }
+
+
+        return res.status(200).json(successResponse("Hotel image deleted successfully"));
+
+    } catch (error) {
+        console.error("Error updating hotel details:", error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    }
+}
 
 
 

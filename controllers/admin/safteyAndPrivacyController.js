@@ -130,7 +130,7 @@ exports.add_page_to_section = async (req, res) => {
     return res.status(201).json(successResponse('Page added to section', section));
   } catch (error) {
     console.error('ERROR::', error);
-    return res.status(500).json(errorResponse('Something went wrong', error.message));
+    return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
   }
 };
 

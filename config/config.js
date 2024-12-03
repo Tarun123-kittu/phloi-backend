@@ -12,11 +12,13 @@ const development = {
     twilio_phone_number:process.env.YOUR_TWILIO_PHONE_NUMBER,
     aws_s3_access_key: process.env.AWS_S3_ACCESS_KEY,
     aws_s3_secret_key: process.env.AWS_S3_SECRET_KEY,
+    aws_s3_bucket_name:process.env.AWS_S3_BUCKET_NAME,
+    aws_s3_region:process.env.AWS_S3_REGION,
     admin_initial_password:process.env.ADMIN_INITIAL_PASSWORD,
     gmail:process.env.GMAIL,
     gmail_password: process.env.TWO_STEP_VERIFIED_PASSWORD,
     fcm_server_key:process.env.FCM_SERVER_KEY
-
+    
 };
 
 if (!development.db_url) {

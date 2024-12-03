@@ -64,15 +64,97 @@ const sendEmail = async (email, code) => {
 
     };
 
-   
+
     await transporter.sendMail(mailDetails);
 
 
     return { success: true, message: "Link has been sent to your email" };
   } catch (error) {
- 
+
     return { success: false, message: "Something went wrong", error: error.message };
   }
 };
 
-module.exports = sendEmail
+
+const sendHotelVerificationEmail = async (email, status,hotelName,paymentStatus) => {
+  try {
+
+    let transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: config.development.gmail,
+        pass: config.development.gmail_password,
+      },
+    });
+
+
+    let mailDetails = {
+      from: `"Phloii" <${config.development.gmail}>`,
+      to: email,
+      subject: 'Regarding Hotel verification ',
+      text: `We've received a request to reset your password.`,
+      html: `<div style="
+      padding: 30px; 
+      text-align: center; 
+      color: #333333; 
+      background: linear-gradient(135deg, #f9fafb, #e5e7eb); 
+      border-radius: 10px; 
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); 
+      font-family: Arial, sans-serif;
+    ">
+  <h1 style="
+      margin: 0; 
+      font-size: 28px; 
+      font-weight: bold;
+      color: #333333;
+    ">
+    Hotel Verification Status
+  </h1>
+
+  <p style="
+      font-size: 16px; 
+      color: #666666;
+      line-height: 1.5;
+      margin: 20px 0;
+    ">
+    We are pleased to inform you that your hotel verification request for "<strong>${hotelName}</strong>".
+  </p>
+  <div style="
+      font-size: 20px; 
+      font-weight: bold;
+      color: ${status ? '#28a745' : '#dc3545'};
+      margin: 20px 0;
+    ">
+    Your request has been <strong>${status ? 'ACCEPTED' : 'REJECTED'}</strong>.
+  </div>
+  <p style="
+      font-size: 16px; 
+      color: #666666;
+      margin: 20px 0;
+    ">
+    ${status ? 
+      `Congratulations! Your hotel has been successfully verified and is now approved on our platform. ${paymentStatus == 'completed'? '':"Please proceed for the payment" }` : 
+      'We regret to inform you that your request has been rejected. For further details, please contact our support team.'}
+  </p>
+  <p style="
+      font-size: 16px; 
+      color: #666666;
+      margin-top: 20px;
+    ">
+    Thank you,<br> The Phloi Team
+  </p>
+</div>
+`,
+    };
+    await transporter.sendMail(mailDetails);
+
+
+    return { success: true, message: "Link has been sent to your email" };
+  } catch (error) {
+
+    return { success: false, message: "Something went wrong", error: error.message };
+  }
+};
+
+
+module.exports = { sendEmail, sendHotelVerificationEmail }

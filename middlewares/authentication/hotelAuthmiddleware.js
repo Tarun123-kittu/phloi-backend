@@ -1,6 +1,6 @@
 let jwt = require('jsonwebtoken')
 const config = require('../../config/config')
-let hotelModel = require('../../models/hotelModel')
+let hoteAccountModel = require('../../models/hotelAccounts')
 let {errorResponse} = require('../../utils/common/responseHandler')
 let messages = require("../../utils/common/messages")
 
@@ -15,7 +15,7 @@ let verifyHotelToken = async(req, res, next) => {
 
             let user = jwt.verify(token, config.development.jwt_secret_key)
          
-            let isHotelExist =  await hotelModel.findById(user.userId)
+            let isHotelExist =  await hoteAccountModel.findById(user.userId)
            
             if(!isHotelExist){
                 return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"Unauthorized user! Hotel account with this Id is not findable"))

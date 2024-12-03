@@ -3,19 +3,19 @@ let { errorResponse, successResponse } = require('../../utils/common/responseHan
 const messages = require('../../utils/common/messages')
 const { generateHashedPassword, compareHashedPassword, generateToken, generateOtp, passwordResetToken } = require('../../utils/common/commonFunctions')
 const sendEmail = require("../../utils/common/emailSender")
-
+const hotelAccountsModel = require("../../models/hotelAccounts")
 
 
 exports.signUp = async (req, res) => {
     try {
         let { username, email, password } = req.body
 
-        let isEmailExist = await hotelModel.findOne({ email: email })
+        let isEmailExist = await hotelAccountsModel.findOne({ email: email })
         if (isEmailExist) { return res.status(400).json(errorResponse("This email is already registered.")) }
 
         let hashedPassword = await generateHashedPassword(password)
 
-        await hotelModel.create({ username, email, password: hashedPassword })
+        await hotelAccountsModel.create({ username, email, password: hashedPassword })
 
         return res.status(200).json(successResponse("Registration completed!"))
 
@@ -32,7 +32,7 @@ exports.signIn = async (req, res) => {
     try {
         let { email, password } = req.body
 
-        let isEmailExist = await hotelModel.findOne({ email: email })
+        let isEmailExist = await hotelAccountsModel.findOne({ email: email })
         if (!isEmailExist) { return res.status(400).json(errorResponse('This email is not registered')) }
 
         let passwordCheck = await compareHashedPassword(password, isEmailExist.password)
@@ -54,14 +54,14 @@ exports.forgetPassword = async (req, res) => {
     try {
         let email = req.body.email;
 
-        let emailExist = await hotelModel.findOne({ email: email })
+        let emailExist = await hotelAccountsModel.findOne({ email: email })
         if (!emailExist) { return res.status(400).json(errorResponse('This email is not registered')) }
 
         const resetToken = await passwordResetToken();
 
 
         let date = new Date()
-        await hotelModel.findOneAndUpdate({ email: email }, {
+        await hotelAccountsModel.findOneAndUpdate({ email: email }, {
             $set: {
                 password_reset_token: resetToken,
                 forgetPsd_tokenCreatedAt: date,
@@ -87,7 +87,7 @@ exports.resetPassword = async (req, res) => {
         const { hashed_token, password } = req.body;
 
         if (!hashed_token) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please provide token")) }
-        const user = await hotelModel.findOne({ password_reset_token: hashed_token });
+        const user = await hotelAccountsModel.findOne({ password_reset_token: hashed_token });
         if (!user) { return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, 'Data not found with this token ')); }
 
 
@@ -108,7 +108,7 @@ exports.resetPassword = async (req, res) => {
 
         const hashedPassword = await generateHashedPassword(password);
 
-        await hotelModel.findOneAndUpdate(
+        await hotelAccountsModel.findOneAndUpdate(
             { password_reset_token: hashed_token },
             {
                 password: hashedPassword,
@@ -133,7 +133,7 @@ exports.changePassword = async (req, res) => {
         let newPassword = req.body.newPassword
       
     
-        let hotelDetails = await hotelModel.findOne({ _id: id })
+        let hotelDetails = await hotelAccountsModel.findOne({ _id: id })
         if (!hotelDetails) {
           return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Logged In hotel not found'))
         }
@@ -143,7 +143,7 @@ exports.changePassword = async (req, res) => {
         }
     
         let passhash = await generateHashedPassword(newPassword)
-        await hotelModel.findOneAndUpdate({ _id: id }, {
+        await hotelAccountsModel.findOneAndUpdate({ _id: id }, {
           $set: {
             password: passhash,
           }

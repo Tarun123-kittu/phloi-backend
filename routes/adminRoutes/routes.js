@@ -6,6 +6,7 @@ let adminUserController = require('../../controllers/admin/usersController')
 let safetyAndPrivacyController = require("../../controllers/admin/safteyAndPrivacyController")
 let generalSettingController = require("../../controllers/admin/generalSettings")
 let dashboardController = require("../../controllers/admin/dashboardController")
+let hotelController = require("../../controllers/admin/hotelsController")
 
 
 
@@ -53,6 +54,12 @@ router.get("/secretDating_monthly_joined_users",verifyAdminToken,dashboardContro
 router.get("/explore_rooms_joinedUsers",verifyAdminToken,dashboardController.explore_rooms_joinedUsers)
 router.get("/active_inactive_users",verifyAdminToken,dashboardController.active_inactive_users)
 router.post('/test_pushNotification',dashboardController.test_pushNotification)
+
+
+
+//hotel 
+router.get("/get_hotel_verification_requests",verifyAdminToken,hotelController.get_hotel_verification_requests)
+router.put("/accept_reject_hotel_verification",verifyAdminToken,hotelController.accept_reject_hotel_verification)
 
 
 module.exports = router

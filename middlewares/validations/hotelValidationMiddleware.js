@@ -138,6 +138,19 @@ const changePasswordValidator = [
 ]
 
 
+const deleteHotelImageValidator = [
+    check("hotelId").notEmpty().withMessage('Something went wrong. Please try again later(provide hotel Id)'),
+    check("deleteImageIndex").notEmpty().withMessage("Something went wrong. Please try again later(provide deleted image index)"),
+    (req, res, next) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ message: errors.array()[0].msg, type: 'error' });
+        }
+        next();
+    }
+]
+
+
 module.exports = {
     signUpValidator,
     signInValidator,
@@ -145,5 +158,6 @@ module.exports = {
     verifyOtpValidator,
     resetPasswordValidator,
     saveHotelDetailsValidator,
-    changePasswordValidator
+    changePasswordValidator,
+    deleteHotelImageValidator
 }
