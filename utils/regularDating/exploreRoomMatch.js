@@ -73,6 +73,22 @@ const exploreRoomMatchAlgorithm = async (currentUser, page = 1, limit = 10) => {
                 }
             },
             {
+                $lookup: {
+                    from: 'options',
+                    localField: 'relationship_type_preference_id',
+                    foreignField: '_id',
+                    as: 'relationshipPreference'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'options',
+                    localField: 'sexual_orientation_preference_id',
+                    foreignField: '_id',
+                    as: 'sexual_orientation'
+                }
+            },
+            {
                 $project: {
                     _id: 1,
                     username: 1,
@@ -84,8 +100,18 @@ const exploreRoomMatchAlgorithm = async (currentUser, page = 1, limit = 10) => {
                     age: {
                         $subtract: [new Date(), '$dob']
                     },
-                    intrested_to_see:1,
-                    study:1,
+                    intrested_to_see: 1,
+                    study: 1,
+                    'relationshipPreference.text': 1,
+                    show_sexual_orientation: 1,
+                    show_gender: 1,
+                    sexual_orientation: {
+                        $map: {
+                            input: '$sexual_orientation',
+                            as: 'orientation',
+                            in: '$$orientation.text'
+                        }
+                    }
                 }
             },
             {

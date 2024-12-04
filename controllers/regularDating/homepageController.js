@@ -508,6 +508,7 @@ exports.getTopPicks = async (req, res) => {
             const score = calculateMatchScore(user, nearbyUser);
             const userImage = nearbyUser.images.find(img => img.position === 1) || {};
 
+            console.log("nearby users ---->",nearbyUser)
             return {
                 _id: nearbyUser._id,
                 username: nearbyUser.username,
