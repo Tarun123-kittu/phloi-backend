@@ -314,6 +314,7 @@ exports.sendMessage = async (req, res) => {
         let address = req.body.address
         let meetUp = req.body.meetUp || false
 
+        console.log('media type -----',mediaType ,typeof(mediaType))
         var convertToBool = (meetUp == 'true' || meetUp == true);
 
         if (!chatId) { return res.status(400).json(errorResponse(messages.validation.invalidInput, "Chat ID  are required.")); }
