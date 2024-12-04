@@ -413,7 +413,7 @@ exports.get_users_who_liked_profile = async (req, res) => {
             type: 'success',
             message: 'Users who liked your profile fetched successfully.',
             total_profiles: totalProfilesCount,
-            users: usersWhoLikedProfile,
+            data: usersWhoLikedProfile,
             current_page: page,
             total_pages: Math.ceil(totalProfilesCount / limit)
         });
