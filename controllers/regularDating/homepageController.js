@@ -552,14 +552,14 @@ exports.getTopPicks = async (req, res) => {
         const matchedUsers = nearbyUsers.map(nearbyUser => {
 
             const score = calculateMatchScore(user, nearbyUser);
-            const userImage = nearbyUser.images.find(img => img.position === 1) || {};
+            // const userImage = nearbyUser.images.find(img => img.position === 1) || {};
 
             // console.log("nearby users ---->",nearbyUser)
             return {
                 _id: nearbyUser._id,
                 username: nearbyUser.username,
                 age: nearbyUser.dob ? new Date().getFullYear() - new Date(nearbyUser.dob).getFullYear() : null,
-                image: userImage.url || null,
+                image: nearbyUser.images || null,
                 study: nearbyUser.study,
                 intrested_to_see: nearbyUser.intrested_to_see,
                 gender: nearbyUser.gender,
