@@ -123,6 +123,8 @@ const secretDatingMatchAlgorithm = async (currentUser, secretDatingCurrentUser, 
                 $project: {
                     _id: 1,
                     gender: 1,
+                    show_gender:1,
+                    study:1,
                     distance: 1,
                     distanceInKm: { $divide: ['$distance', 1000] },
                     age: { $floor: { $divide: [{ $subtract: [new Date(), '$dob'] }, 1000 * 60 * 60 * 24 * 365] } },
@@ -131,6 +133,7 @@ const secretDatingMatchAlgorithm = async (currentUser, secretDatingCurrentUser, 
                     'secretDatingProfile.avatar': 1,
                     'secretDatingProfile.profile_image': 1,
                     'secretDatingProfile.show_sexual_orientation': 1,
+                    'secretDatingProfile.interested_to_see':1,
                     'secretDatingProfile.sexual_orientation_texts': {
                         $map: {
                             input: "$sexual_orientation_texts",

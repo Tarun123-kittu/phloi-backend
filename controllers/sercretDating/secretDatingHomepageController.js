@@ -56,6 +56,8 @@ exports.get_secret_dating_recommendations = async (req, res) => {
             }
         }
 
+
+        if(!secretDatingCurrentUser){ return res.status(200).json(successResponse( 'No match found'))}
         const matchedUsers = await secretDatingMatchAlgorithm(currentUser, secretDatingCurrentUser, page, limit, filterApplied);
 
         return res.status(200).json({
@@ -415,6 +417,22 @@ exports.get_secretDating_topPicks = async (req, res) => {
                     as: 'secretDatingInfo'
                 }
             },
+            {
+                $lookup: {
+                    from: 'options',
+                    localField: 'secretDatingInfo.sexual_orientation_preference_id',
+                    foreignField: '_id',
+                    as: 'sexual_orientation_texts'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'options',
+                    localField: 'secretDatingInfo.relationship_preference',
+                    foreignField: '_id',
+                    as: 'relationship_preference_text'
+                }
+            },
 
             {
                 $unwind: {
@@ -438,27 +456,42 @@ exports.get_secretDating_topPicks = async (req, res) => {
                     gender: 1,
                     'secretDatingInfo._id': 1,
                     'secretDatingInfo.name': 1,
+                    'secretDatingInfo.interested_to_see': 1,
                     'secretDatingInfo.avatar': 1,
                     'secretDatingInfo.profile_image': 1,
                     'secretDatingInfo.sexual_orientation_preference_id': 1,
-                    'secretDatingInfo.relationship_preference': 1
+                    'secretDatingInfo.relationship_preference': 1,
+                    'secretDatingInfo.sexual_orientation_texts': {
+                        $map: {
+                            input: "$sexual_orientation_texts",
+                            as: "orientation",
+                            in: "$$orientation.text"
+                        }
+                    },
+                    'secretDatingInfo.show_sexual_orientation':1,
+                    'secretDatingInfo.relationship_preference_text': "$relationship_preference_text.text"
                 }
             }
         ]);
 
+   
 
         const matchedUsers = nearbyUsers.map(nearbyUser => {
 
             const score = topPicksMatchScore(secretDatingUser, nearbyUser);
             const userImage = nearbyUser.secretDatingInfo.profile_image
             const avatar = nearbyUser.secretDatingInfo.avatar
-
+        
             return {
                 _id: nearbyUser.secretDatingInfo._id,
                 userId: nearbyUser._id,
                 username: nearbyUser.secretDatingInfo.name,
                 image: userImage || null,
                 avatar: avatar || null,
+                interested_to_see:nearbyUser.secretDatingInfo.interested_to_see,
+                relationship_type:nearbyUser.secretDatingInfo.relationship_preference_text,
+                sexual_orientations:nearbyUser.secretDatingInfo.sexual_orientation_texts,
+                show_sexual_orientation:nearbyUser.secretDatingInfo.show_sexual_orientation,
                 matchScorePercentage: score.toFixed(2)
             };
         }).filter(user => user.matchScorePercentage >= 10);
