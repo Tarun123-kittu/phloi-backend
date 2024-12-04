@@ -328,19 +328,86 @@ exports.get_users_who_liked_profile = async (req, res) => {
             _id: { $nin: likedUsersByLoggedInUser }
         });
 
-        const usersWhoLikedProfile = await userModel.find({
-            likedUsers: loggedInUserId,
-            _id: { $nin: likedUsersByLoggedInUser }
-        })
-            .select('_id username gender images')
-            .sort({ createdAt: -1 })
-            .skip((page - 1) * limit)
-            .limit(limit)
-            .lean();
 
-        // if (usersWhoLikedProfile.length === 0) {
-        //     return res.status(200).json(successResponse("No user have liked your profile"));
-        // }
+        let mongoose = require('mongoose')
+        const loggedInId = new mongoose.Types.ObjectId(loggedInUserId)
+        const usersWhoLikedProfile = await userModel.aggregate([
+          {
+        
+            $match: {
+              likedUsers: loggedInId,
+              _id: { $nin: likedUsersByLoggedInUser }
+            }
+          },
+          {
+            $unwind: {
+              path: "$user_characterstics.step_13",
+              preserveNullAndEmptyArrays: true
+            }
+          },
+          {
+            $lookup: {
+              from: 'options',
+              localField: 'user_characterstics.step_13.answerIds',
+              foreignField: '_id',
+              as: 'interests'
+            }
+          },
+          {
+        
+            $lookup: {
+              from: "options",
+              localField: "sexual_orientation_preference_id",
+              foreignField: "_id",
+              as: "sexual_orientation_details"
+            }
+          },
+          {
+        
+            $lookup: {
+              from: "options",
+              localField: "relationship_type_preference_id",
+              foreignField: "_id",
+              as: "relationship_preference"
+            }
+          },
+        
+        
+          {
+        
+            $project: {
+              _id: 1,
+              username: 1,
+              images: 1,
+              gender:1,
+              show_gender:1,
+              intrested_to_see: 1,
+              show_sexual_orientation: 1,
+              bio: 1,
+              sexual_orientation: {
+                $map: {
+                  input: '$sexual_orientation_details',
+                  as: 'orientation',
+                  in: '$$orientation.text'
+                }
+              },
+              'relationship_preference.text': 1,
+              interests: { $map: { input: '$interests', as: 'interest', in: '$$interest.text' } },
+            }
+          },
+          {
+        
+            $sort: { createdAt: -1 }
+          },
+          {
+            $skip: (page - 1) * limit
+          },
+          {
+            $limit: limit
+          }
+        ]).exec();
+
+
 
         return res.status(200).json({
             type: 'success',
@@ -503,8 +570,22 @@ exports.getTopPicks = async (req, res) => {
                 }
             },
             {
+                $unwind: {
+                    path: "$user_characterstics.step_13",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
                 $lookup: {
-                    from: 'options', 
+                    from: 'options',
+                    localField: 'user_characterstics.step_13.answerIds',
+                    foreignField: '_id',
+                    as: 'interests'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'options',
                     localField: 'sexual_orientation_preference_id',
                     foreignField: '_id',
                     as: 'sexual_orientation'
@@ -523,14 +604,14 @@ exports.getTopPicks = async (req, res) => {
                     _id: 1,
                     username: 1,
                     gender: 1,
-                    show_gender:1,
+                    show_gender: 1,
                     location: 1,
                     distance: 1,
                     images: 1,
-                    user_characterstics:1,
-                    study:1,
-                    dob:1,
-                    intrested_to_see:1,
+                    user_characterstics: 1,
+                    study: 1,
+                    dob: 1,
+                    intrested_to_see: 1,
                     sexual_orientation: {
                         $map: {
                             input: '$sexual_orientation',
@@ -538,15 +619,12 @@ exports.getTopPicks = async (req, res) => {
                             in: '$$orientation.text'
                         }
                     },
-                    show_sexual_orientation:1,
+                    show_sexual_orientation: 1,
                     'relationship_preference.text': 1,
-
+                    interests: { $map: { input: '$interests', as: 'interest', in: '$$interest.text' } },
                 }
             }
         ]);
-        
-        
-      
 
 
         const matchedUsers = nearbyUsers.map(nearbyUser => {
@@ -554,7 +632,6 @@ exports.getTopPicks = async (req, res) => {
             const score = calculateMatchScore(user, nearbyUser);
             // const userImage = nearbyUser.images.find(img => img.position === 1) || {};
 
-            // console.log("nearby users ---->",nearbyUser)
             return {
                 _id: nearbyUser._id,
                 username: nearbyUser.username,
@@ -563,10 +640,11 @@ exports.getTopPicks = async (req, res) => {
                 study: nearbyUser.study,
                 intrested_to_see: nearbyUser.intrested_to_see,
                 gender: nearbyUser.gender,
-                show_gender:nearbyUser.show_gender,
-                relationship_preference:nearbyUser.relationship_preference,
-                sexual_orientation:nearbyUser.sexual_orientation,
-                show_sexual_orientation:nearbyUser.show_sexual_orientation,
+                show_gender: nearbyUser.show_gender,
+                relationship_preference: nearbyUser.relationship_preference,
+                sexual_orientation: nearbyUser.sexual_orientation,
+                show_sexual_orientation: nearbyUser.show_sexual_orientation,
+                interests:nearbyUser.interests,
                 matchScorePercentage: score.toFixed(2)
             };
         }).filter(user => user.matchScorePercentage >= 30);

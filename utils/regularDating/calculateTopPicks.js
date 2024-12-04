@@ -69,20 +69,21 @@ const calculateMatchScore = (currentUser, potentialMatch) => {
 
  
     if (currentUser.user_characterstics.step_13 && potentialMatch.user_characterstics.step_13) {
-        currentUser.user_characterstics.step_13.forEach(currentStep => {
-            const potentialStep = potentialMatch.user_characterstics.step_13.find(potential => 
-                potential.questionId.toString() === currentStep.questionId.toString()
-            );
-
+        Object.keys(currentUser.user_characterstics.step_13).forEach(questionId => {
+            const currentStep = currentUser.user_characterstics.step_13[questionId]; // Get the current step object
+            const potentialStep = potentialMatch.user_characterstics.step_13[questionId]; // Get the potential step object
+    
             if (potentialStep) {
-               
-                const matchingAnswerIds = currentStep.answerIds.filter(answerId => 
+                // Find matching answerIds
+                const matchingAnswerIds = currentStep.answerIds.filter(answerId =>
                     potentialStep.answerIds.includes(answerId.toString())
                 );
-                score += matchingAnswerIds.length; 
+    
+                score += matchingAnswerIds.length; // Increment score based on matching answers
             }
         });
     }
+    
 
     
     const currentUserOrientation = currentUser.sexual_orientation_preference_id || [];

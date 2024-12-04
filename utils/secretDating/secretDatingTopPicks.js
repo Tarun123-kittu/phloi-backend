@@ -2,7 +2,7 @@
 
 
 const topPicksMatchScore = (currentUser, potentialMatch) => {
-     console.log("here ---")
+
     let score = 0;
     let totalComparisons = 0;
 

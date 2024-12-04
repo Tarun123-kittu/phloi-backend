@@ -383,6 +383,7 @@ exports.get_secretDating_liked_you_profiles = async (req, res) => {
                 profile_image: 1,
                 interested_to_see: 1,
                 show_sexual_orientation: 1,
+                bio:1,
                 sexual_orientations: { 
                     $map: { 
                         input: '$sexual_orientation_details', 
@@ -407,7 +408,7 @@ exports.get_secretDating_liked_you_profiles = async (req, res) => {
           
           
 
-            console.log(usersWhoLikedProfile)
+       
       
         return res.status(200).json({
             type: 'success',
@@ -525,6 +526,7 @@ exports.get_secretDating_topPicks = async (req, res) => {
                         }
                     },
                     'secretDatingInfo.show_sexual_orientation':1,
+                    'secretDatingInfo.bio':1,
                     'secretDatingInfo.relationship_preference_text': "$relationship_preference_text.text"
                 }
             }
@@ -544,6 +546,7 @@ exports.get_secretDating_topPicks = async (req, res) => {
                 username: nearbyUser.secretDatingInfo.name,
                 image: userImage || null,
                 avatar: avatar || null,
+                bio:nearbyUser.secretDatingInfo.bio,
                 interested_to_see:nearbyUser.secretDatingInfo.interested_to_see,
                 relationship_type:nearbyUser.secretDatingInfo.relationship_preference_text,
                 sexual_orientations:nearbyUser.secretDatingInfo.sexual_orientation_texts,
