@@ -332,79 +332,79 @@ exports.get_users_who_liked_profile = async (req, res) => {
         let mongoose = require('mongoose')
         const loggedInId = new mongoose.Types.ObjectId(loggedInUserId)
         const usersWhoLikedProfile = await userModel.aggregate([
-          {
-        
-            $match: {
-              likedUsers: loggedInId,
-              _id: { $nin: likedUsersByLoggedInUser }
-            }
-          },
-          {
-            $unwind: {
-              path: "$user_characterstics.step_13",
-              preserveNullAndEmptyArrays: true
-            }
-          },
-          {
-            $lookup: {
-              from: 'options',
-              localField: 'user_characterstics.step_13.answerIds',
-              foreignField: '_id',
-              as: 'interests'
-            }
-          },
-          {
-        
-            $lookup: {
-              from: "options",
-              localField: "sexual_orientation_preference_id",
-              foreignField: "_id",
-              as: "sexual_orientation_details"
-            }
-          },
-          {
-        
-            $lookup: {
-              from: "options",
-              localField: "relationship_type_preference_id",
-              foreignField: "_id",
-              as: "relationship_preference"
-            }
-          },
-        
-        
-          {
-        
-            $project: {
-              _id: 1,
-              username: 1,
-              images: 1,
-              gender:1,
-              show_gender:1,
-              intrested_to_see: 1,
-              show_sexual_orientation: 1,
-              bio: 1,
-              sexual_orientation: {
-                $map: {
-                  input: '$sexual_orientation_details',
-                  as: 'orientation',
-                  in: '$$orientation.text'
+            {
+
+                $match: {
+                    likedUsers: loggedInId,
+                    _id: { $nin: likedUsersByLoggedInUser }
                 }
-              },
-              'relationship_preference.text': 1,
-              interests: { $map: { input: '$interests', as: 'interest', in: '$$interest.text' } },
+            },
+            {
+                $unwind: {
+                    path: "$user_characterstics.step_13",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup: {
+                    from: 'options',
+                    localField: 'user_characterstics.step_13.answerIds',
+                    foreignField: '_id',
+                    as: 'interests'
+                }
+            },
+            {
+
+                $lookup: {
+                    from: "options",
+                    localField: "sexual_orientation_preference_id",
+                    foreignField: "_id",
+                    as: "sexual_orientation_details"
+                }
+            },
+            {
+
+                $lookup: {
+                    from: "options",
+                    localField: "relationship_type_preference_id",
+                    foreignField: "_id",
+                    as: "relationship_preference"
+                }
+            },
+
+
+            {
+
+                $project: {
+                    _id: 1,
+                    username: 1,
+                    images: 1,
+                    gender: 1,
+                    show_gender: 1,
+                    intrested_to_see: 1,
+                    show_sexual_orientation: 1,
+                    bio: 1,
+                    sexual_orientation: {
+                        $map: {
+                            input: '$sexual_orientation_details',
+                            as: 'orientation',
+                            in: '$$orientation.text'
+                        }
+                    },
+                    'relationship_preference.text': 1,
+                    interests: { $map: { input: '$interests', as: 'interest', in: '$$interest.text' } },
+                }
+            },
+            {
+
+                $sort: { createdAt: -1 }
+            },
+            {
+                $skip: (page - 1) * limit
+            },
+            {
+                $limit: limit
             }
-          },
-          {
-        
-            $sort: { createdAt: -1 }
-          },
-          {
-            $skip: (page - 1) * limit
-          },
-          {
-            $limit: limit
-          }
         ]).exec();
 
 
@@ -554,7 +554,8 @@ exports.getTopPicks = async (req, res) => {
         let blocked_contacts = user.blocked_contacts
 
 
-
+        let mongoose = require('mongoose')
+        const user_id = new mongoose.Types.ObjectId(userId)
         const nearbyUsers = await userModel.aggregate([
             {
                 $geoNear: {
@@ -563,8 +564,8 @@ exports.getTopPicks = async (req, res) => {
                     maxDistance: maxDistance * 1000,
                     spherical: true,
                     query: {
-                        _id: { $ne: userId, $nin: [...likedUsers, ...dislikedUsers] },
-                        gender: preferredGender === 'everyone' ? { $exists: true } : preferredGender,
+                        _id: { $ne: user_id, $nin: [...likedUsers, ...dislikedUsers] },
+                        gender: preferredGender == 'everyone' ? { $exists: true } : preferredGender,
                         mobile_number: { $nin: blocked_contacts.map(contact => contact.number) }
                     }
                 }
@@ -644,7 +645,7 @@ exports.getTopPicks = async (req, res) => {
                 relationship_preference: nearbyUser.relationship_preference,
                 sexual_orientation: nearbyUser.sexual_orientation,
                 show_sexual_orientation: nearbyUser.show_sexual_orientation,
-                interests:nearbyUser.interests,
+                interests: nearbyUser.interests,
                 matchScorePercentage: score.toFixed(2)
             };
         }).filter(user => user.matchScorePercentage >= 30);

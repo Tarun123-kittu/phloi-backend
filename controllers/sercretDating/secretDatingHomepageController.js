@@ -543,7 +543,7 @@ exports.get_secretDating_topPicks = async (req, res) => {
             return {
                 _id: nearbyUser.secretDatingInfo._id,
                 userId: nearbyUser._id,
-                username: nearbyUser.secretDatingInfo.name,
+                name: nearbyUser.secretDatingInfo.name,
                 profile_image: userImage || null,
                 avatar: avatar || null,
                 bio:nearbyUser.secretDatingInfo.bio,
