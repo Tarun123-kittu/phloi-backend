@@ -337,7 +337,7 @@ exports.sendMessage = async (req, res) => {
             text = imageData.Location
         }
 
-        let message
+        let message = ''
         if (convertToBool) {
             if (!hotelName || !address) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Please provide all the fields of meetUp')) }
             message = new messageModel({
