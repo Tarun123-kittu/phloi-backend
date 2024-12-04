@@ -342,7 +342,7 @@ exports.sendMessage = async (req, res) => {
         if (convertToBool) {
             if (!hotelName || !address) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Please provide all the fields of meetUp')) }
             message = new messageModel({
-                chat: chatId, sender: senderId, receiver: receiverId, text: 'meeting',
+                chat: chatId, sender: senderId, receiver: receiverId, text: 'Want to meet',
                 'hotelData.hotelName': hotelName,
                 'hotelData.address': address,
                 'hotelData.status': 'pending'
