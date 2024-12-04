@@ -132,6 +132,7 @@ const secretDatingMatchAlgorithm = async (currentUser, secretDatingCurrentUser, 
                     'secretDatingProfile.name': 1,
                     'secretDatingProfile.avatar': 1,
                     'secretDatingProfile.profile_image': 1,
+                    'secretDatingProfile.bio': 1,
                     'secretDatingProfile.show_sexual_orientation': 1,
                     'secretDatingProfile.interested_to_see':1,
                     'secretDatingProfile.sexual_orientation_texts': {

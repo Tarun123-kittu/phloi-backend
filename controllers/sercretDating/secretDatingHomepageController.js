@@ -343,16 +343,72 @@ exports.get_secretDating_liked_you_profiles = async (req, res) => {
             user_id: { $nin: likedUsersByLoggedInUser }
         });
 
-        const usersWhoLikedProfile = await secretDatingUserModel.find({
-            likedUsers: loggedInUserId,
-            user_id: { $nin: likedUsersByLoggedInUser }
-        })
-            .select('_id user_id name avatar profile_image interested_to_see')
-            .sort({ createdAt: -1 })
-            .skip((page - 1) * limit)
-            .limit(limit)
-            .lean();
+        let mongoose = require('mongoose')
+        const loggedInId = new mongoose.Types.ObjectId(loggedInUserId)
+        const usersWhoLikedProfile = await secretDatingUserModel.aggregate([
+            {
+           
+              $match: {
+                likedUsers: loggedInId,
+                user_id: { $nin: likedUsersByLoggedInUser }
+              }
+            },
+            {
+             
+              $lookup: {
+                from: "options",  
+                localField: "sexual_orientation_preference_id",
+                foreignField: "_id",
+                as: "sexual_orientation_details"
+              }
+            },
+            {
+      
+              $lookup: {
+                from: "options",  
+                localField: "relationship_preference",
+                foreignField: "_id",
+                as: "relationship_type"
+              }
+            },
+    
+    
+            {
+             
+              $project: {
+                _id: 1,
+                user_id: 1,
+                name: 1,
+                avatar: 1,
+                profile_image: 1,
+                interested_to_see: 1,
+                show_sexual_orientation: 1,
+                sexual_orientations: { 
+                    $map: { 
+                        input: '$sexual_orientation_details', 
+                        as: 'orientation', 
+                        in: '$$orientation.text' 
+                    } 
+                },
+                relationship_type: "$relationship_type.text"
+              }
+            },
+            {
+         
+              $sort: { createdAt: -1 }
+            },
+            {
+              $skip: (page - 1) * limit
+            },
+            {
+              $limit: limit
+            }
+          ]).exec();
+          
+          
 
+            console.log(usersWhoLikedProfile)
+      
         return res.status(200).json({
             type: 'success',
             message: 'Users who liked your profile fetched successfully.',
