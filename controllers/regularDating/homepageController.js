@@ -30,7 +30,7 @@ exports.recommended_users = async (req, res) => {
         let show_verified_profiles = req.query.show_verified_profiles
         const applyFilter = req.query.applyFilter || false
 
-    
+
 
         const currentUser = await userModel.findById(userId).lean();
         if (!currentUser) {
@@ -40,7 +40,7 @@ exports.recommended_users = async (req, res) => {
 
             if (!ageMin || !ageMax || !maxDistance || !interestedIn || !show_verified_profiles) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please provide all the filter values to find match")) }
             show_verified_profiles = (show_verified_profiles === 'true')
-            ageMax = ageMax +1
+            ageMax = ageMax + 1
         }
 
         if (currentUser.setting.distance_in === 'mi') {
@@ -53,13 +53,13 @@ exports.recommended_users = async (req, res) => {
 
             filterApplied = {
                 ageMin: ageMin,
-                ageMax: ageMax ,
+                ageMax: ageMax,
                 maxDistance: maxDistance,
                 interestedIn: interestedIn,
                 show_verified_profiles: show_verified_profiles
             }
         }
-// console.log('age -----',ageMax)
+        // console.log('age -----',ageMax)
         const matchedUsers = await homepageMatchAlgorithm(currentUser, page, limit, filterApplied);
 
         return res.status(200).json({
@@ -181,34 +181,34 @@ exports.like_profile = async (req, res) => {
                     users: [currentUserId, likedUserId],
                     usernames: [currentUser.username, likedUser.username],
                     message: `It's a match between ${currentUser.username} and ${likedUser.username}!`,
-                    likedUser_image:likedUser.images[0]
+                    likedUser_image: likedUser.images[0]
                 });
 
             }
-            await notificationModel.create({ userId: likedUserId, sender_id: currentUserId, notification_text: `You got a match with ${currentUser.username}`,type:'regular dating' })
-            await notificationModel.create({ userId:currentUserId, sender_id: likedUserId, notification_text: `You got a match with ${likedUser.username}`,type:'regular dating'})
-       
+            await notificationModel.create({ userId: likedUserId, sender_id: currentUserId, notification_text: `You got a match with ${currentUser.username}`, type: 'regular dating' })
+            await notificationModel.create({ userId: currentUserId, sender_id: likedUserId, notification_text: `You got a match with ${likedUser.username}`, type: 'regular dating' })
+
             // push notification
             const sendMatchNotification = async (deviceToken, username, userId) => {
                 const title = 'Its a match!';
                 const msg = `You got a match with ${username}`;
-                const data = { 
+                const data = {
                     userId,
-                    type:"match"
+                    type: "match"
                 };
-            
+
                 await sendPushNotification(deviceToken, msg, data, title);
             };
-            
-                await sendMatchNotification(likedUser.deviceToken, currentUser.username, likedUserId);
-                // await sendMatchNotification(currentUser.deviceToken, likedUser.username, currentUserId);
-            
+
+            await sendMatchNotification(likedUser.deviceToken, currentUser.username, likedUserId);
+            // await sendMatchNotification(currentUser.deviceToken, likedUser.username, currentUserId);
+
 
             let participants = { currentUserId, likedUserId }
 
             return res.status(200).json(successResponse("Mutual like! A new match has been created.", participants));
         }
-      
+
         return res.status(200).json(successResponse("User liked successfully."));
 
     } catch (error) {
@@ -325,12 +325,12 @@ exports.get_users_who_liked_profile = async (req, res) => {
 
         const totalProfilesCount = await userModel.countDocuments({
             likedUsers: loggedInUserId,
-            _id: { $nin: likedUsersByLoggedInUser } 
+            _id: { $nin: likedUsersByLoggedInUser }
         });
 
         const usersWhoLikedProfile = await userModel.find({
             likedUsers: loggedInUserId,
-            _id: { $nin: likedUsersByLoggedInUser } 
+            _id: { $nin: likedUsersByLoggedInUser }
         })
             .select('_id username gender images')
             .sort({ createdAt: -1 })
@@ -466,6 +466,8 @@ exports.get_profile_details = async (req, res) => {
 
 
 
+
+
 exports.getTopPicks = async (req, res) => {
     try {
         const userId = req.result.userId;
@@ -486,21 +488,65 @@ exports.getTopPicks = async (req, res) => {
 
 
 
-        const nearbyUsers = await userModel.find({
-            _id: {
-                $ne: userId,
-                $nin: [...likedUsers, ...dislikedUsers],
+        const nearbyUsers = await userModel.aggregate([
+            {
+                $geoNear: {
+                    near: { type: "Point", coordinates: user.location.coordinates },
+                    distanceField: "distance",
+                    maxDistance: maxDistance * 1000,
+                    spherical: true,
+                    query: {
+                        _id: { $ne: userId, $nin: [...likedUsers, ...dislikedUsers] },
+                        gender: preferredGender === 'everyone' ? { $exists: true } : preferredGender,
+                        mobile_number: { $nin: blocked_contacts.map(contact => contact.number) }
+                    }
+                }
             },
-            gender: preferredGender === 'everyone' ? { $exists: true } : preferredGender,
-            mobile_number: { $nin: blocked_contacts.map(contact => contact.number) },
-            location: {
-                $near: {
-                    $geometry: { type: 'Point', coordinates: user.location.coordinates },
-                    $maxDistance: maxDistance * 1000,
+            {
+                $lookup: {
+                    from: 'options', 
+                    localField: 'sexual_orientation_preference_id',
+                    foreignField: '_id',
+                    as: 'sexual_orientation'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'options',
+                    localField: 'relationship_type_preference_id',
+                    foreignField: '_id',
+                    as: 'relationship_preference'
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    username: 1,
+                    gender: 1,
+                    show_gender:1,
+                    location: 1,
+                    distance: 1,
+                    images: 1,
+                    user_characterstics:1,
+                    study:1,
+                    dob:1,
+                    intrested_to_see:1,
+                    sexual_orientation: {
+                        $map: {
+                            input: '$sexual_orientation',
+                            as: 'orientation',
+                            in: '$$orientation.text'
+                        }
+                    },
+                    show_sexual_orientation:1,
+                    'relationship_preference.text': 1,
+
                 }
             }
-        });
-
+        ]);
+        
+        
+      
 
 
         const matchedUsers = nearbyUsers.map(nearbyUser => {
@@ -508,15 +554,22 @@ exports.getTopPicks = async (req, res) => {
             const score = calculateMatchScore(user, nearbyUser);
             const userImage = nearbyUser.images.find(img => img.position === 1) || {};
 
-            console.log("nearby users ---->",nearbyUser)
+            // console.log("nearby users ---->",nearbyUser)
             return {
                 _id: nearbyUser._id,
                 username: nearbyUser.username,
                 age: nearbyUser.dob ? new Date().getFullYear() - new Date(nearbyUser.dob).getFullYear() : null,
                 image: userImage.url || null,
+                study: nearbyUser.study,
+                intrested_to_see: nearbyUser.intrested_to_see,
+                gender: nearbyUser.gender,
+                show_gender:nearbyUser.show_gender,
+                relationship_preference:nearbyUser.relationship_preference,
+                sexual_orientation:nearbyUser.sexual_orientation,
+                show_sexual_orientation:nearbyUser.show_sexual_orientation,
                 matchScorePercentage: score.toFixed(2)
             };
-        }).filter(user => user.matchScorePercentage >= 60);
+        }).filter(user => user.matchScorePercentage >= 30);
 
 
         matchedUsers.sort((a, b) => b.matchScorePercentage - a.matchScorePercentage);
