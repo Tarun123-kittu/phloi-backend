@@ -544,7 +544,7 @@ exports.get_secretDating_topPicks = async (req, res) => {
                 _id: nearbyUser.secretDatingInfo._id,
                 userId: nearbyUser._id,
                 username: nearbyUser.secretDatingInfo.name,
-                image: userImage || null,
+                profile_image: userImage || null,
                 avatar: avatar || null,
                 bio:nearbyUser.secretDatingInfo.bio,
                 interested_to_see:nearbyUser.secretDatingInfo.interested_to_see,

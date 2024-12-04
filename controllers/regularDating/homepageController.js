@@ -636,7 +636,7 @@ exports.getTopPicks = async (req, res) => {
                 _id: nearbyUser._id,
                 username: nearbyUser.username,
                 age: nearbyUser.dob ? new Date().getFullYear() - new Date(nearbyUser.dob).getFullYear() : null,
-                image: nearbyUser.images || null,
+                images: nearbyUser.images || null,
                 study: nearbyUser.study,
                 intrested_to_see: nearbyUser.intrested_to_see,
                 gender: nearbyUser.gender,
