@@ -35,7 +35,7 @@ exports.getChats = async (req, res) => {
                 path: 'participants',
                 select: 'username images online_status',
             })
-            .sort({ updatedAt: -1 }) 
+            .sort({ updatedAt: -1 })
             .skip(skip)
             .limit(limit);
 
@@ -69,7 +69,7 @@ exports.getChats = async (req, res) => {
 
             return {
                 chatId: chat._id,
-                otherParticipantId: otherParticipantId,  
+                otherParticipantId: otherParticipantId,
                 otherParticipantName: otherParticipant ? otherParticipant.username : null,
                 otherParticipantImage: otherParticipantImage,
                 lastMessage: lastMessageText,
@@ -308,6 +308,7 @@ exports.sendMessage = async (req, res) => {
 
         let { chatId, text } = req.body;
         let senderId = req.result.userId;
+        let mediaType = req.body.mediaType
         let image = req.files?.image;
         let hotelName = req.body.hotelName;
         let address = req.body.address
@@ -367,7 +368,12 @@ exports.sendMessage = async (req, res) => {
 
 
         let title = sender.username
-        let msg = message.text
+        let msg
+        if (mediaType == 'message') {
+            msg = message.text
+        }else{
+            msg = mediaType
+        }
         let data = {
             userId: receiverId.toString(),
             type: 'message',

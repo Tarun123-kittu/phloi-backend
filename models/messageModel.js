@@ -7,6 +7,7 @@ const messageSchema = new mongoose.Schema({
     text: { type: String, required: true },
     read: { type: Boolean, default: false },
     read_chat:{type:Boolean,default:false},
+    mediaType:{type:String},
     hotelData:{
         hotelName:{type:String},
         address:{type:String},
