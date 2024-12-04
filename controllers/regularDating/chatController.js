@@ -51,7 +51,7 @@ exports.getChats = async (req, res) => {
         let chatDetails = await Promise.all(filteredChats.map(async chat => {
             const otherParticipant = chat.participants.find(participant => participant._id.toString() !== userId);
 
-            // Get the other participant's _id
+
             const otherParticipantId = otherParticipant ? otherParticipant._id : null;
 
             const imageObj = otherParticipant?.images?.find(img => img.position === 1);
@@ -66,10 +66,10 @@ exports.getChats = async (req, res) => {
             const lastMessageText = chat.lastMessage ? chat.lastMessage.text : null;
             const lastMessageSenderName = chat.lastMessage && chat.lastMessage.sender ? chat.lastMessage.sender.username : null;
             const messageSentAt = chat.lastMessage ? chat.lastMessage.createdAt : null;
-    
+
             return {
                 chatId: chat._id,
-                otherParticipantId: otherParticipantId,  // Add otherParticipantId here
+                otherParticipantId: otherParticipantId,  
                 otherParticipantName: otherParticipant ? otherParticipant.username : null,
                 otherParticipantImage: otherParticipantImage,
                 lastMessage: lastMessageText,
@@ -86,8 +86,8 @@ exports.getChats = async (req, res) => {
             participants: userId,
             'participants.username': { $regex: searchQuery, $options: "i" }
         });
-        // chatDetails = chatDetails.reverse()
-      
+
+
 
         res.status(200).json(successResponse("Chats retrieved successfully", {
             chats: chatDetails,
@@ -101,6 +101,165 @@ exports.getChats = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
+
+
+
+
+
+
+
+// const mongoose = require('mongoose');
+
+// exports.getChats = async (req, res) => {
+//     try {
+//         const userId = req.result.userId;
+//         const page = parseInt(req.query.page) || 1;
+//         const limit = parseInt(req.query.limit) || 10;
+//         const skip = (page - 1) * limit;
+//         const searchQuery = req.query.search || "";
+
+//         if (!userId) {
+//             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User ID is required"));
+//         }
+
+//         // Ensure userId is an ObjectId
+//         const userObjectId = new mongoose.Types.ObjectId(userId);
+
+//         // Debugging: Log input parameters
+//         console.log("Inputs:", { userId, page, limit, searchQuery });
+
+//         const chatsPipeline = [
+//             {
+//                 $match: {
+//                     participants: userObjectId,
+//                     type: 'regular dating'
+//                 }
+//             },
+//             {
+//                 $lookup: {
+//                     from: 'messages', // Collection name for messages
+//                     localField: 'lastMessage',
+//                     foreignField: '_id',
+//                     as: 'lastMessage'
+//                 }
+//             },
+//             { $unwind: { path: "$lastMessage", preserveNullAndEmptyArrays: true } },
+//             {
+//                 $lookup: {
+//                     from: 'users', // Collection name for users
+//                     localField: 'participants',
+//                     foreignField: '_id',
+//                     as: 'participants'
+//                 }
+//             },
+//             {
+//                 $addFields: {
+//                     otherParticipant: {
+//                         $arrayElemAt: [
+//                             {
+//                                 $filter: {
+//                                     input: "$participants",
+//                                     as: "participant",
+//                                     cond: { $ne: ["$$participant._id", userObjectId] }
+//                                 }
+//                             },
+//                             0
+//                         ]
+//                     }
+//                 }
+//             },
+//             {
+//                 $lookup: {
+//                     from: 'users', // Collection name for users
+//                     localField: 'lastMessage.sender',
+//                     foreignField: '_id',
+//                     as: 'lastMessageSender'
+//                 }
+//             },
+//             { $unwind: { path: "$lastMessageSender", preserveNullAndEmptyArrays: true } },
+//             {
+//                 $addFields: {
+//                     "lastMessage.sender.username": "$lastMessageSender.username"
+//                 }
+//             },
+//             {
+//                 $match: {
+//                     "otherParticipant.username": { $regex: searchQuery, $options: "i" }
+//                 }
+//             },
+//             {
+//                 $project: {
+//                     _id: 1,
+//                     "otherParticipant._id": 1,
+//                     "otherParticipant.username": 1,
+//                     "otherParticipant.images": 1,
+//                     "otherParticipant.online_status": 1,
+//                     "lastMessage.text": 1,
+//                     "lastMessage.createdAt": 1,
+//                     "lastMessage.sender.username": 1
+//                 }
+//             },
+//             { $sort: { updatedAt: -1 } },
+//             { $skip: skip },
+//             { $limit: limit }
+//         ];
+
+
+//         console.log("Aggregation Pipeline:", JSON.stringify(chatsPipeline, null, 2));
+
+//         const [chats, unreadCounts] = await Promise.all([
+//             chatModel.aggregate(chatsPipeline),
+//             messageModel.aggregate([
+//                 { $match: { receiver: userObjectId, read_chat: false } },
+//                 { $group: { _id: "$chat", count: { $sum: 1 } } }
+//             ])
+//         ]);
+
+//         // Debugging: Log results from the database
+//         // console.log("Chats from DB:", chats);
+//         // console.log("Unread Counts from DB:", unreadCounts);
+
+//         const unreadCountMap = unreadCounts.reduce((acc, curr) => {
+//             acc[curr._id] = curr.count;
+//             return acc;
+//         }, {});
+
+//         const chatDetails = chats.map(chat => {
+//             const otherParticipant = chat.otherParticipant || {};
+//             const imageObj = otherParticipant.images?.find(img => img.position === 1);
+//             return {
+//                 chatId: chat._id,
+//                 otherParticipantId: otherParticipant._id,
+//                 otherParticipantName: otherParticipant.username,
+//                 otherParticipantImage: imageObj ? imageObj.url : null,
+//                 lastMessage: chat.lastMessage?.text || null,
+//                 lastMessageSender: chat.lastMessage?.sender?.username || null,
+//                 unreadCount: unreadCountMap[chat._id] || 0,
+//                 messageSentAt: chat.lastMessage?.createdAt || null,
+//                 onlineStatus: otherParticipant.online_status || null
+//             };
+//         });
+
+//         const totalChatsCount = await chatModel.countDocuments({
+//             participants: userObjectId,
+//             type: 'regular dating',
+//             'participants.username': { $regex: searchQuery, $options: "i" }
+//         });
+
+//         // console.log("Total Chats Count:", totalChatsCount);
+
+//         res.status(200).json(successResponse("Chats retrieved successfully", {
+//             chats: chatDetails,
+//             currentPage: page,
+//             totalChats: totalChatsCount,
+//             totalPages: Math.ceil(totalChatsCount / limit)
+//         }));
+//     } catch (error) {
+//         console.error("ERROR::", error);
+//         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+//     }
+// };
+
 
 
 
@@ -365,6 +524,9 @@ exports.accept_or_reject_invitation = async (req, res) => {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Invitation Response must be one of : accept or reject'))
         }
 
+        let chatType = await chatModel.findById(isMessageExist.chat)
+
+
         const updatedMessage = await messageModel.findOneAndUpdate(
             { _id: messageId },
             { $set: { 'hotelData.status': invitationResponse } },
@@ -376,18 +538,19 @@ exports.accept_or_reject_invitation = async (req, res) => {
                 status: invitationResponse
             }
         })
-        let receiver = await userModel.findOne({ _id: isMessageExist.sender })
-        let receiverId = receiver._id
+        if (chatType.type == 'regular dating') {
+            let receiver = await userModel.findOne({ _id: isMessageExist.sender })
+            let receiverId = receiver._id
 
-        let title = isUserExist.username
-        let msg = `Invitation ${invitationResponse}`
-        let data = {
-            userId: receiverId.toString(),
-            type: "hotel_invitation"
+            let title = isUserExist.username
+            let msg = `Invitation ${invitationResponse}`
+            let data = {
+                userId: receiverId.toString(),
+                type: "hotel_invitation"
+            }
+
+            let pushNotification = await sendPushNotification(receiver.deviceToken, msg, data, title)
         }
-
-        let pushNotification = await sendPushNotification(receiver.deviceToken, msg, data, title)
-
         io.emit('invitation_updated', {
             chatId: updatedMessage.chat,
             messagId: updatedMessage._id,

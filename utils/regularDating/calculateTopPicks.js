@@ -4,35 +4,38 @@ const calculateMatchScore = (currentUser, potentialMatch) => {
     let score = 0;
     let totalComparisons = 0;
 
-  
     const countTotalComparisons = () => {
         let count = 0;
 
-        
+
         if (currentUser.user_characterstics.step_11) {
             count += currentUser.user_characterstics.step_11.length;
         }
 
-    
+
         if (currentUser.user_characterstics.step_12) {
             count += currentUser.user_characterstics.step_12.length;
         }
 
-      
+
         if (currentUser.user_characterstics.step_13) {
-            currentUser.user_characterstics.step_13.forEach(step => {
-                count += step.answerIds.length; 
-            });
+          
+            for (const key in currentUser.user_characterstics.step_13) {
+                if (currentUser.user_characterstics.step_13[key].answerIds) {
+                    count += currentUser.user_characterstics.step_13[key].answerIds.length;
+                }
+            }
+        
         }
 
-        
+
         if (currentUser.sexual_orientation_preference_id) {
             count += currentUser.sexual_orientation_preference_id.length;
         }
 
-       
+
         if (currentUser.love_receive_id) {
-            count += 1; 
+            count += 1;
         }
 
         return count;
@@ -40,16 +43,17 @@ const calculateMatchScore = (currentUser, potentialMatch) => {
 
     totalComparisons = countTotalComparisons();
 
-   
+
     const compareStepAnswers = (currentStep, potentialStep) => {
+     
         currentStep.forEach(currentAnswer => {
-            const potentialAnswer = potentialStep.find(potential => 
+            const potentialAnswer = potentialStep.find(potential =>
                 potential.questionId.toString() === currentAnswer.questionId.toString()
             );
 
-       
+
             if (potentialAnswer) {
-              
+
                 if (currentAnswer.answerId.toString() === potentialAnswer.answerId.toString()) {
                     score++;
                 }
@@ -57,7 +61,7 @@ const calculateMatchScore = (currentUser, potentialMatch) => {
         });
     };
 
-   
+
     if (currentUser.user_characterstics.step_11 && potentialMatch.user_characterstics.step_11) {
         compareStepAnswers(currentUser.user_characterstics.step_11, potentialMatch.user_characterstics.step_11);
     }
@@ -67,25 +71,32 @@ const calculateMatchScore = (currentUser, potentialMatch) => {
         compareStepAnswers(currentUser.user_characterstics.step_12, potentialMatch.user_characterstics.step_12);
     }
 
- 
+
+
     if (currentUser.user_characterstics.step_13 && potentialMatch.user_characterstics.step_13) {
-        Object.keys(currentUser.user_characterstics.step_13).forEach(questionId => {
-            const currentStep = currentUser.user_characterstics.step_13[questionId]; // Get the current step object
-            const potentialStep = potentialMatch.user_characterstics.step_13[questionId]; // Get the potential step object
+
+  
+        currentUser.user_characterstics.step_13.forEach(currentStep => {
+            const questionId = currentStep.questionId; 
+            const potentialStep = potentialMatch.user_characterstics.step_13[questionId];
     
             if (potentialStep) {
-                // Find matching answerIds
+             
                 const matchingAnswerIds = currentStep.answerIds.filter(answerId =>
-                    potentialStep.answerIds.includes(answerId.toString())
+                    potentialStep.answerIds.includes(answerId.toString()) 
                 );
     
-                score += matchingAnswerIds.length; // Increment score based on matching answers
+            
+                score += matchingAnswerIds.length;
             }
         });
     }
     
 
     
+
+
+
     const currentUserOrientation = currentUser.sexual_orientation_preference_id || [];
     const potentialMatchOrientation = potentialMatch.sexual_orientation_preference_id || [];
 
@@ -94,10 +105,10 @@ const calculateMatchScore = (currentUser, potentialMatch) => {
             potentialMatchOrientation.includes(orientationId.toString())
         );
 
-        score += matchingOrientations.length; 
+        score += matchingOrientations.length;
     }
 
-  
+
     const currentUserLoveReceive = currentUser.love_receive_id;
     const potentialMatchLoveReceive = potentialMatch.love_receive_id;
 
@@ -106,9 +117,8 @@ const calculateMatchScore = (currentUser, potentialMatch) => {
             score++;
         }
     }
-
     
-    if (totalComparisons === 0) return 0; 
+    if (totalComparisons === 0) return 0;
     const matchPercentage = (score / totalComparisons) * 100;
 
     return matchPercentage;
