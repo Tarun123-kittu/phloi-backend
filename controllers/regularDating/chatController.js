@@ -366,19 +366,21 @@ exports.accept_or_reject_invitation = async (req, res) => {
         let messageId = req.body.messageId
         let invitationResponse = req.body.invitationResponse
 
+
         let isUserExist = await userModel.findById(userId)
         if (!isUserExist) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'User not found with this User id')) }
 
         let isMessageExist = await messageModel.findById(messageId)
         if (!isMessageExist) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Message not found with this message Id')) }
 
+     
         if (!(invitationResponse == 'accept' || invitationResponse == 'reject')) {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Invitation Response must be one of : accept or reject'))
         }
 
         let chatType = await chatModel.findById(isMessageExist.chat)
 
-
+       
         const updatedMessage = await messageModel.findOneAndUpdate(
             { _id: messageId },
             { $set: { 'hotelData.status': invitationResponse } },
@@ -393,12 +395,16 @@ exports.accept_or_reject_invitation = async (req, res) => {
         if (chatType.type == 'regular dating') {
             let receiver = await userModel.findOne({ _id: isMessageExist.sender })
             let receiverId = receiver._id
+            let chatId = chatType._id
 
             let title = isUserExist.username
             let msg = `Invitation ${invitationResponse}`
             let data = {
                 userId: receiverId.toString(),
-                type: "hotel_invitation"
+                type: "hotel_invitation",
+                username:isUserExist.username,
+                image:isUserExist.images[0],
+                chatId:chatId.toString()
             }
 
             let pushNotification = await sendPushNotification(receiver.deviceToken, msg, data, title)
@@ -468,7 +474,7 @@ exports.get_all_verified_hotels = async (req, res) => {
         let isUserExist = await userModel.findById(userId)
         if (!isUserExist) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User not exist with this userId")) }
 
-        let allVerifiedHotels = await hotelModel.find({ adminVerified: true, paymentStatus: "completed" }).select('establishmentName establishmentType address images').lean()
+        let allVerifiedHotels = await hotelModel.find({ adminVerified: true, paymentStatus: "completed" }).select("establishmentName establishmentType address images").lean()
 
         return res.status(200).json(successResponse("Data reterived", allVerifiedHotels))
 
@@ -477,6 +483,8 @@ exports.get_all_verified_hotels = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
     }
 }
+
+
 
 
 
