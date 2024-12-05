@@ -234,7 +234,7 @@ exports.sendMessage = async (req, res) => {
             type: 'message',
             senderId: senderId.toString(),
             chatId: chatId.toString(),
-            image: senderDetails.images[0],
+            image: senderDetails.images[0].url,
             sender_name: senderDetails.username
         }
         
