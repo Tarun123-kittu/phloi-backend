@@ -187,14 +187,14 @@ exports.sendMessage = async (req, res) => {
 
         let message = ''
         if (convertToBool) {
-            if (!hotelName || !address || !hotelId || !hotelImage ) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Please provide all the fields of meetUp')) }
-            
+            if (!hotelName || !address || !hotelId || !hotelImage) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Please provide all the fields of meetUp')) }
+
             message = new messageModel({
                 chat: chatId, sender: senderId, receiver: receiverId, text: 'Want to meet',
                 'hotelData.hotelName': hotelName,
                 'hotelData.address': address,
-                'hotelData.hotelId':hotelId,
-                'hotelData.hotelImage':hotelImage,
+                'hotelData.hotelId': hotelId,
+                'hotelData.hotelImage': hotelImage,
                 'hotelData.status': 'pending'
 
             });
@@ -227,16 +227,25 @@ exports.sendMessage = async (req, res) => {
         }
 
         let senderDetails = await userModel.findById(senderId)
-        
+
 
         let data = {
             userId: receiverId.toString(),
             type: 'message',
-            senderId: senderId,
-            chatId: chatId,
-            image:senderDetails.images[0],
-            sender_name:senderDetails.username
+            senderId: senderId.toString(),
+            chatId: chatId.toString(),
+            image: senderDetails.images[0],
+            sender_name: senderDetails.username
         }
+        
+        console.log("notifiction details --->",
+            receiverId.toString(),
+            senderId.toString(),
+            chatId.toString(),
+            senderDetails.images[0],
+            senderDetails.username)
+
+
         console.log("device token ---->", receiver.deviceToken)
         if (!receiver.deviceToken) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "please provide device token for the notification receiver.")) }
         let pushNotification = await sendPushNotification(receiver.deviceToken, msg, data, title)
@@ -384,14 +393,14 @@ exports.accept_or_reject_invitation = async (req, res) => {
         let isMessageExist = await messageModel.findById(messageId)
         if (!isMessageExist) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Message not found with this message Id')) }
 
-     
+
         if (!(invitationResponse == 'accept' || invitationResponse == 'reject')) {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Invitation Response must be one of : accept or reject'))
         }
 
         let chatType = await chatModel.findById(isMessageExist.chat)
 
-       
+
         const updatedMessage = await messageModel.findOneAndUpdate(
             { _id: messageId },
             { $set: { 'hotelData.status': invitationResponse } },
@@ -413,9 +422,9 @@ exports.accept_or_reject_invitation = async (req, res) => {
             let data = {
                 userId: receiverId.toString(),
                 type: "hotel_invitation",
-                username:isUserExist.username,
-                image:isUserExist.images[0],
-                chatId:chatId.toString()
+                username: isUserExist.username,
+                image: isUserExist.images[0],
+                chatId: chatId.toString()
             }
 
             let pushNotification = await sendPushNotification(receiver.deviceToken, msg, data, title)
@@ -503,11 +512,11 @@ exports.get_all_verified_hotels = async (req, res) => {
 exports.get_hotel_info = async (req, res) => {
     try {
         let hotelId = req.query.hotelId
-        
-        let isHotelExist = await hotelModel.findById(hotelId).select("establishmentName establishmentType address images ").lean()
-        if(!isHotelExist){return res.status(400).json(errorResponse("Something went wrong.","hotel not found with this hotelId"))}
 
-        return res.status(200).json(successResponse("Data retreived",isHotelExist))
+        let isHotelExist = await hotelModel.findById(hotelId).select("establishmentName establishmentType address images ").lean()
+        if (!isHotelExist) { return res.status(400).json(errorResponse("Something went wrong.", "hotel not found with this hotelId")) }
+
+        return res.status(200).json(successResponse("Data retreived", isHotelExist))
     } catch (error) {
         console.log('ERROR::', error)
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))

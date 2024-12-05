@@ -72,6 +72,7 @@ router.put("/like_profile",authenticateToken,matchMakingController.like_profile)
 router.put("/dislike_profile",authenticateToken,matchMakingController.dislike_profile)
 router.get("/get_users_who_liked_profile",authenticateToken,matchMakingController.get_users_who_liked_profile)
 router.get("/get_profile_details",authenticateToken,matchMakingController.get_profile_details)
+router.put("/undo_disliked_profile",authenticateToken,matchMakingController.undo_disliked_profile)
 
 
 

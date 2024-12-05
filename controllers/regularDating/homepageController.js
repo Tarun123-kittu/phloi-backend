@@ -9,7 +9,8 @@ let { errorResponse, successResponse } = require("../../utils/common/responseHan
 let messages = require("../../utils/common/messages")
 let { io } = require('../../index');
 const likeDislikeLimitModel = require("../../models/likeDislikeLimit");
-const sendPushNotification = require("../../utils/common/pushNotifications")
+const sendPushNotification = require("../../utils/common/pushNotifications");
+const { errorMonitor } = require("nodemailer/lib/xoauth2");
 
 
 
@@ -169,7 +170,7 @@ exports.like_profile = async (req, res) => {
             });
             let newMatch
             if (!matchExists) {
-                 newMatch = new matchModel({
+                newMatch = new matchModel({
                     users: [currentUserId, likedUserId],
                     createdAt: Date.now(),
                     type: 'regular dating'
@@ -204,16 +205,16 @@ exports.like_profile = async (req, res) => {
             // await sendMatchNotification(currentUser.deviceToken, likedUser.username, currentUserId);
 
 
-            let participants = { 
-                currentUserId, 
+            let participants = {
+                currentUserId,
                 likedUserId,
                 matchId: newMatch._id,
                 users: [currentUserId, likedUserId],
                 usernames: [currentUser.username, likedUser.username],
                 message: `It's a match between ${currentUser.username} and ${likedUser.username}!`,
                 likedUser_image: likedUser.images[0],
-                currentUser_image:currentUser.images[0]
-             }
+                currentUser_image: currentUser.images[0]
+            }
 
             return res.status(200).json(successResponse("Mutual like! A new match has been created.", participants));
         }
@@ -531,7 +532,7 @@ exports.get_profile_details = async (req, res) => {
             step_13: step13Answers
         };
 
-        // Return the response
+
         return res.status(200).json(successResponse("Details fetched successfully", userDetails));
 
     } catch (error) {
@@ -539,6 +540,33 @@ exports.get_profile_details = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
+
+
+
+
+exports.undo_disliked_profile = async (req, res) => {
+    try {
+        let userId = req.result.userId
+        let dislikedUserId = req.query.dislikeUserId
+console
+        if (!dislikedUserId) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Disliked user Id not found")) }
+
+        let isUserExist = await userModel.findByIdAndUpdate(
+            userId,
+            { $pull: { dislikedUsers: dislikedUserId } },
+            { new: true }
+        );
+
+        if (!isUserExist) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User doesn't exist with this userId")) }
+console.log("test----",isUserExist)
+        return res.status(200).json(successResponse("Dislike undo",isUserExist.dislikedUser))
+
+    } catch (error) {
+        console.error('ERROR::', error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    }
+}
+
 
 
 
