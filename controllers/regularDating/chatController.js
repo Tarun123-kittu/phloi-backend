@@ -2,6 +2,7 @@ const chatModel = require('../../models/chatModel');
 const messageModel = require('../../models/messageModel');
 const userModel = require("../../models/userModel")
 const hotelInvitationsModel = require('../../models/hotelInvitationsModel')
+const hotelModel = require("../../models/hotelModel")
 const { errorResponse, successResponse } = require('../../utils/common/responseHandler');
 const messages = require("../../utils/common/messages")
 const { io } = require("../../index");
@@ -462,10 +463,18 @@ exports.get_hotelInviations = async (req, res) => {
 
 
 exports.get_all_verified_hotels = async (req, res) => {
-try{
+    try {
+        let userId = req.result.userId
 
-}catch(error){
-    console.log("ERROR::",error)
-    return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong))
-}
+        let isUserExist = await userModel.findById(userId)
+        if (!isUserExist) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"User not exist with this userId")) }
+
+        let allVerifiedHotels = await hotelModel.find({adminVerified:true,paymentStatus:"completed"}).select('establishmentName establishmentType address images')
+
+        return res.status(200).json(successResponse("Data reterived",allVerifiedHotels))
+
+    } catch (error) {
+        console.log("ERROR::", error)
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
+    }
 }

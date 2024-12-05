@@ -41,7 +41,7 @@ exports.get_hotel_verification_requests = async (req, res) => {
 
 exports.accept_reject_hotel_verification = async (req, res) => {
     try {
-        let hotelId = req.query.hotelId
+        let hotelId = req.body.hotelId
         let requestResponse = req.body.requestResponse
         
 
