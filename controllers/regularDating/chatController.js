@@ -237,8 +237,8 @@ exports.sendMessage = async (req, res) => {
             image: senderDetails.images[0].url,
             sender_name: senderDetails.username
         }
-        
-  
+
+
 
         console.log("device token ---->", receiver.deviceToken)
         if (!receiver.deviceToken) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "please provide device token for the notification receiver.")) }
@@ -420,7 +420,7 @@ exports.accept_or_reject_invitation = async (req, res) => {
                 image: isUserExist.images[0].url,
                 chatId: chatId.toString()
             }
-
+            console.log(" accept reject invitation --------", data)
             let pushNotification = await sendPushNotification(receiver.deviceToken, msg, data, title)
         }
         io.emit('invitation_updated', {
