@@ -11,6 +11,7 @@ let { io } = require('../../index');
 const likeDislikeLimitModel = require("../../models/likeDislikeLimit");
 const sendPushNotification = require("../../utils/common/pushNotifications");
 const { errorMonitor } = require("nodemailer/lib/xoauth2");
+let mongoose = require('mongoose')
 
 
 
@@ -339,7 +340,7 @@ exports.get_users_who_liked_profile = async (req, res) => {
         });
 
 
-        let mongoose = require('mongoose')
+
         const loggedInId = new mongoose.Types.ObjectId(loggedInUserId)
         const usersWhoLikedProfile = await userModel.aggregate([
             {
@@ -548,18 +549,21 @@ exports.undo_disliked_profile = async (req, res) => {
     try {
         let userId = req.result.userId
         let dislikedUserId = req.query.dislikeUserId
-console
+
+
         if (!dislikedUserId) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Disliked user Id not found")) }
+        const user_id = new mongoose.Types.ObjectId(dislikedUserId)
 
         let isUserExist = await userModel.findByIdAndUpdate(
             userId,
-            { $pull: { dislikedUsers: dislikedUserId } },
+            { $pull: { dislikedUsers: user_id } },
             { new: true }
         );
 
         if (!isUserExist) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User doesn't exist with this userId")) }
-console.log("test----",isUserExist)
-        return res.status(200).json(successResponse("Dislike undo",isUserExist.dislikedUser))
+
+
+        return res.status(200).json(successResponse("Dislike undo"))
 
     } catch (error) {
         console.error('ERROR::', error);
@@ -591,7 +595,7 @@ exports.getTopPicks = async (req, res) => {
         let blocked_contacts = user.blocked_contacts
 
 
-        let mongoose = require('mongoose')
+
         const user_id = new mongoose.Types.ObjectId(userId)
         const nearbyUsers = await userModel.aggregate([
             {
