@@ -160,7 +160,7 @@ exports.like_profile = async (req, res) => {
                 like_count: todayLimit.like_count + 1
             }
         })
-
+        let newMatch
         if (likedUser.likedUsers.includes(currentUserId)) {
 
             const matchExists = await matchModel.findOne({
@@ -169,7 +169,7 @@ exports.like_profile = async (req, res) => {
             });
 
             if (!matchExists) {
-                const newMatch = new matchModel({
+                 newMatch = new matchModel({
                     users: [currentUserId, likedUserId],
                     createdAt: Date.now(),
                     type: 'regular dating'
