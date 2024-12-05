@@ -461,17 +461,16 @@ exports.get_hotelInviations = async (req, res) => {
 
 
 
-
 exports.get_all_verified_hotels = async (req, res) => {
     try {
         let userId = req.result.userId
 
         let isUserExist = await userModel.findById(userId)
-        if (!isUserExist) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"User not exist with this userId")) }
+        if (!isUserExist) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User not exist with this userId")) }
 
-        let allVerifiedHotels = await hotelModel.find({adminVerified:true,paymentStatus:"completed"}).select('establishmentName establishmentType address images').lean()
+        let allVerifiedHotels = await hotelModel.find({ adminVerified: true, paymentStatus: "completed" }).select('establishmentName establishmentType address images').lean()
 
-        return res.status(200).json(successResponse("Data reterived",allVerifiedHotels))
+        return res.status(200).json(successResponse("Data reterived", allVerifiedHotels))
 
     } catch (error) {
         console.log("ERROR::", error)
@@ -479,4 +478,20 @@ exports.get_all_verified_hotels = async (req, res) => {
     }
 }
 
+
+
+
+exports.get_hotel_info = async (req, res) => {
+    try {
+        let hotelId = req.query.hotelId
+        
+        let isHotelExist = await hotelModel.findById(hotelId).select("establishmentName establishmentType address images ").lean()
+        if(!isHotelExist){return res.status(400).json(errorResponse("Something went wrong.","hotel not found with this hotelId"))}
+
+        return res.status(200).json(successResponse(isHotelExist))
+    } catch (error) {
+        console.log('ERROR::', error)
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
+    }
+}
 
