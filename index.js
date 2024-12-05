@@ -48,6 +48,7 @@ socket.on('disconnect', () => {
     $set: { online_status: false }
     }, { new: true })
 
+    if(user){
 
     if (user.room_joined == true) {
 
@@ -64,10 +65,10 @@ socket.on('disconnect', () => {
     let joinedUserCount = await roomsModel.findById(roomId)
     let count = joinedUserCount.joined_user_count
     io.emit("room_left", { roomId, count });
-
     }
-
+  
     io.emit('logout', data.userId)
+  }
   })
 });
 

@@ -14,7 +14,7 @@ const calculateMatchScore = (currentUser, potentialMatch) => {
 
 
         if (currentUser.user_characterstics.step_12) {
-            count += currentUser.user_characterstics.step_12.length;
+            count += currentUser.user_characterstics.step_12.length;    
         }
 
 

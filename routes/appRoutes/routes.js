@@ -87,6 +87,7 @@ router.get('/getMessages',authenticateToken,chatController.getMessages);
 router.put("/markMessagesAsRead",authenticateToken,chatController.markMessagesAsRead)
 router.put('/accept_or_reject_invitation',authenticateToken,chatController.accept_or_reject_invitation)
 router.get('/get_hotelInviations',authenticateToken,chatController.get_hotelInviations)
+router.get("/get_all_verified_hotels",authenticateToken,chatController.get_all_verified_hotels)
 
 
 //explore rooms routes 
