@@ -160,7 +160,7 @@ exports.like_profile = async (req, res) => {
                 like_count: todayLimit.like_count + 1
             }
         })
-        let newMatch
+
         if (likedUser.likedUsers.includes(currentUserId)) {
 
             const matchExists = await matchModel.findOne({
@@ -169,7 +169,7 @@ exports.like_profile = async (req, res) => {
             });
 
             if (!matchExists) {
-                 newMatch = new matchModel({
+                const newMatch = new matchModel({
                     users: [currentUserId, likedUserId],
                     createdAt: Date.now(),
                     type: 'regular dating'
@@ -181,8 +181,7 @@ exports.like_profile = async (req, res) => {
                     users: [currentUserId, likedUserId],
                     usernames: [currentUser.username, likedUser.username],
                     message: `It's a match between ${currentUser.username} and ${likedUser.username}!`,
-                    likedUser_image: likedUser.images[0],
-                    currentUser_image:currentUser.images[0]
+                    likedUser_image: likedUser.images[0]
                 });
 
             }
@@ -205,16 +204,7 @@ exports.like_profile = async (req, res) => {
             // await sendMatchNotification(currentUser.deviceToken, likedUser.username, currentUserId);
 
 
-            let participants = { 
-                currentUserId, 
-                likedUserId,
-                matchId: newMatch._id,
-                users: [currentUserId, likedUserId],
-                usernames: [currentUser.username, likedUser.username],
-                message: `It's a match between ${currentUser.username} and ${likedUser.username}!`,
-                likedUser_image: likedUser.images[0],
-                currentUser_image:currentUser.images[0]
-            }
+            let participants = { currentUserId, likedUserId }
 
             return res.status(200).json(successResponse("Mutual like! A new match has been created.", participants));
         }
