@@ -167,9 +167,9 @@ exports.like_profile = async (req, res) => {
                 users: { $all: [currentUserId, likedUserId] },
                 type: 'regular dating'
             });
-
+            let newMatch
             if (!matchExists) {
-                const newMatch = new matchModel({
+                 newMatch = new matchModel({
                     users: [currentUserId, likedUserId],
                     createdAt: Date.now(),
                     type: 'regular dating'
@@ -204,7 +204,16 @@ exports.like_profile = async (req, res) => {
             // await sendMatchNotification(currentUser.deviceToken, likedUser.username, currentUserId);
 
 
-            let participants = { currentUserId, likedUserId }
+            let participants = { 
+                currentUserId, 
+                likedUserId,
+                matchId: newMatch._id,
+                users: [currentUserId, likedUserId],
+                usernames: [currentUser.username, likedUser.username],
+                message: `It's a match between ${currentUser.username} and ${likedUser.username}!`,
+                likedUser_image: likedUser.images[0],
+                currentUser_image:currentUser.images[0]
+             }
 
             return res.status(200).json(successResponse("Mutual like! A new match has been created.", participants));
         }
