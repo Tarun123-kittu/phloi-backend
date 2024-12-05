@@ -158,6 +158,7 @@ exports.sendMessage = async (req, res) => {
         let hotelName = req.body.hotelName;
         let address = req.body.address
         let hotelId = req.body.hotelId
+        let hotelImage = req.body.hotelImage
         let meetUp = req.body.meetUp || false
 
         console.log('media type -----', mediaType, typeof (mediaType))
@@ -186,11 +187,14 @@ exports.sendMessage = async (req, res) => {
 
         let message = ''
         if (convertToBool) {
-            if (!hotelName || !address) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Please provide all the fields of meetUp')) }
+            if (!hotelName || !address || !hotelId || !hotelImage ) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Please provide all the fields of meetUp')) }
+            
             message = new messageModel({
                 chat: chatId, sender: senderId, receiver: receiverId, text: 'Want to meet',
                 'hotelData.hotelName': hotelName,
                 'hotelData.address': address,
+                'hotelData.hotelId':hotelId,
+                'hotelData.hotelImage':hotelImage,
                 'hotelData.status': 'pending'
 
             });
