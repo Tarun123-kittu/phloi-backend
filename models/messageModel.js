@@ -6,12 +6,13 @@ const messageSchema = new mongoose.Schema({
     receiver: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     text: { type: String, required: true },
     read: { type: Boolean, default: false },
-    read_chat:{type:Boolean,default:false},
-    mediaType:{type:String},
-    hotelData:{
-        hotelName:{type:String},
-        address:{type:String},
-        status:{type:String,enum:['accept','reject','pending']}
+    read_chat: { type: Boolean, default: false },
+    mediaType: { type: String },
+    hotelData: {
+        hotelId: { type: mongoose.Schema.Types.ObjectId },
+        hotelName: { type: String },
+        address: { type: String },
+        status: { type: String, enum: ['accept', 'reject', 'pending'] }
     }
 }, { timestamps: true });
 

@@ -157,6 +157,7 @@ exports.sendMessage = async (req, res) => {
         let image = req.files?.image;
         let hotelName = req.body.hotelName;
         let address = req.body.address
+        let hotelId = req.body.hotelId
         let meetUp = req.body.meetUp || false
 
         console.log('media type -----', mediaType, typeof (mediaType))
@@ -496,7 +497,7 @@ exports.get_hotel_info = async (req, res) => {
         let isHotelExist = await hotelModel.findById(hotelId).select("establishmentName establishmentType address images ").lean()
         if(!isHotelExist){return res.status(400).json(errorResponse("Something went wrong.","hotel not found with this hotelId"))}
 
-        return res.status(200).json(successResponse(isHotelExist))
+        return res.status(200).json(successResponse("Data retreived",isHotelExist))
     } catch (error) {
         console.log('ERROR::', error)
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
