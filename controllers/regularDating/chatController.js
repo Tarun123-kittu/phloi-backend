@@ -469,7 +469,7 @@ exports.get_all_verified_hotels = async (req, res) => {
         let isUserExist = await userModel.findById(userId)
         if (!isUserExist) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"User not exist with this userId")) }
 
-        let allVerifiedHotels = await hotelModel.find({adminVerified:true,paymentStatus:"completed"}).select('establishmentName establishmentType address images')
+        let allVerifiedHotels = await hotelModel.find({adminVerified:true,paymentStatus:"completed"}).select('establishmentName establishmentType address images').lean()
 
         return res.status(200).json(successResponse("Data reterived",allVerifiedHotels))
 
@@ -478,3 +478,5 @@ exports.get_all_verified_hotels = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
     }
 }
+
+
