@@ -166,6 +166,8 @@ exports.secretDating_sendMessage = async (req, res) => {
         let image = req.files?.image;
         let hotelName = req.body.hotelName;
         let address = req.body.address
+        let hotelId = req.body.hotelId
+        let hotelImage = req.body.hotelImage
         let meetUp = req.body.meetUp || false
 
         var convertToBool = (meetUp == 'true' || meetUp == true);
@@ -198,6 +200,8 @@ exports.secretDating_sendMessage = async (req, res) => {
                 chat: chatId, sender: senderId, receiver: receiverId, text: 'meeting',
                 'hotelData.hotelName': hotelName,
                 'hotelData.address': address,
+                'hotelData.hotelId':hotelId,
+                'hotelData.hotelImage':hotelImage,
                 'hotelData.status': 'pending'
             });
 

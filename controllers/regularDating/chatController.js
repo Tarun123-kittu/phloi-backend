@@ -238,13 +238,7 @@ exports.sendMessage = async (req, res) => {
             sender_name: senderDetails.username
         }
         
-        console.log("notifiction details --->",
-            receiverId.toString(),
-            senderId.toString(),
-            chatId.toString(),
-            senderDetails.images[0],
-            senderDetails.username)
-
+  
 
         console.log("device token ---->", receiver.deviceToken)
         if (!receiver.deviceToken) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "please provide device token for the notification receiver.")) }
@@ -423,7 +417,7 @@ exports.accept_or_reject_invitation = async (req, res) => {
                 userId: receiverId.toString(),
                 type: "hotel_invitation",
                 username: isUserExist.username,
-                image: isUserExist.images[0],
+                image: isUserExist.images[0].url,
                 chatId: chatId.toString()
             }
 
