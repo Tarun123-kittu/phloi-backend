@@ -225,11 +225,17 @@ exports.sendMessage = async (req, res) => {
         } else {
             msg = mediaType
         }
+
+        let senderDetails = await userModel.findById(senderId)
+        
+
         let data = {
             userId: receiverId.toString(),
             type: 'message',
             senderId: senderId,
-            chatId: chatId
+            chatId: chatId,
+            image:senderDetails.images[0],
+            sender_name:senderDetails.username
         }
         console.log("device token ---->", receiver.deviceToken)
         if (!receiver.deviceToken) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "please provide device token for the notification receiver.")) }
