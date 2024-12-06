@@ -6,6 +6,7 @@ const sendEmail = require("../../utils/common/emailSender")
 const hotelAccountsModel = require("../../models/hotelAccounts")
 
 
+
 exports.signUp = async (req, res) => {
     try {
         let { username, email, password } = req.body

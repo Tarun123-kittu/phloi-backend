@@ -97,6 +97,7 @@ router.get("/get_all_rooms",authenticateToken,exploreRoomsController.get_all_roo
 router.post("/join_room",authenticateToken,exploreRoomsController.join_room)
 router.put("/left_room",authenticateToken,exploreRoomsController.left_room)
 router.get("/get_matches_in_explore_rooms",authenticateToken,exploreRoomsController.get_matches_in_explore_rooms)
+router.get("/get_room_joined_users_count",authenticateToken,exploreRoomsController.get_room_joined_users_count)
 
 
 //notification routes 

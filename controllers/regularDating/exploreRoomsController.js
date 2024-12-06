@@ -4,6 +4,7 @@ let joinedRoomsModel = require("../../models/joinedRoomsModel")
 let messages = require("../../utils/common/messages")
 let { errorResponse, successResponse } = require("../../utils/common/responseHandler")
 let exploreRoomMatchAlgorithm = require("../../utils/regularDating/exploreRoomMatch")
+let exploreRoomCount = require("../../utils/regularDating/exploreRoomCount")
 let { io } = require("../../index")
 
 
@@ -14,7 +15,7 @@ exports.get_all_rooms = async (req, res) => {
     try {
         let allRooms = await roomsModel.find().select('_id room image joined_user_count')
 
-        if (allRooms.length < 1) {  return res.status(200).json(successResponse("Not a single room is created yet !"))}
+        if (allRooms.length < 1) { return res.status(200).json(successResponse("Not a single room is created yet !")) }
 
         return res.status(200).json(successResponse("Data retrived successfully", allRooms))
 
@@ -33,7 +34,7 @@ exports.join_room = async (req, res) => {
         let userId = req.result.userId;
         let roomId = req.body.roomId;
 
-        if (!roomId) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please send room id in the request body"));}
+        if (!roomId) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please send room id in the request body")); }
 
         const [isUserExist, isRoomExist] = await Promise.all([
             userModel.findById(userId),
@@ -66,8 +67,8 @@ exports.join_room = async (req, res) => {
 
         let joinedUserCount = await roomsModel.findById(roomId)
         let count = joinedUserCount.joined_user_count
-        io.emit("user_joined_room",{roomId,count})
-        
+        io.emit("user_joined_room", { roomId, count })
+
         return res.status(200).json(successResponse(`You joined the room ${isRoomExist.room}`));
 
     } catch (error) {
@@ -88,7 +89,7 @@ exports.left_room = async (req, res) => {
         let userId = req.result.userId;
         let roomId = req.body.roomId;
 
-        if (!roomId) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please send room id in the request body"));}
+        if (!roomId) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please send room id in the request body")); }
 
         let [isUserExist, isRoomExist] = await Promise.all([
             userModel.findById(userId),
@@ -100,11 +101,11 @@ exports.left_room = async (req, res) => {
 
 
         let userRoom = await joinedRoomsModel.findOne({ userId: userId });
-        if (!userRoom) {return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User with this user id has not joined a room"));}
+        if (!userRoom) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User with this user id has not joined a room")); }
 
 
         if (!(userRoom.room_id.equals(isRoomExist._id))) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User is not currently in this room. You're entering the wrong room id")); }
-        if (isUserExist.room_joined === false) {  return res.status(400).json(errorResponse("Currently no room is joined by this user")); }
+        if (isUserExist.room_joined === false) { return res.status(400).json(errorResponse("Currently no room is joined by this user")); }
 
         await joinedRoomsModel.findByIdAndDelete(userRoom._id);
 
@@ -122,7 +123,7 @@ exports.left_room = async (req, res) => {
 
         let joinedUserCount = await roomsModel.findById(roomId)
         let count = joinedUserCount.joined_user_count
-        io.emit("room_left",{roomId,count});
+        io.emit("room_left", { roomId, count });
 
         return res.status(200).json(successResponse("Room left!"));
 
@@ -141,12 +142,12 @@ exports.get_matches_in_explore_rooms = async (req, res) => {
         const userId = req.result.userId
         const page = parseInt(req.query.page, 10) || 1;
         const limit = parseInt(req.query.limit, 10) || 10;
-       
+
         let isUserExist = await userModel.findById(userId).lean()
-        if(!isUserExist){ return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,messages.notFound.userNotFound))}
- 
-        let matchedUsers = await exploreRoomMatchAlgorithm(isUserExist,page,limit)
-        
+        if (!isUserExist) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, messages.notFound.userNotFound)) }
+
+        let matchedUsers = await exploreRoomMatchAlgorithm(isUserExist, page, limit)
+
         // if(matchedUsers.length<1){return res.status(400).json(errorResponse("Currently no user found"))}
 
         return res.status(200).json({
@@ -161,6 +162,41 @@ exports.get_matches_in_explore_rooms = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
     }
 }
- 
 
+
+
+
+
+
+
+exports.get_room_joined_users_count = async (req, res) => {
+    try {
+        let userId = req.result.userId;
+
+      
+        let isUserExist = await userModel.findById(userId).lean();
+        if (!isUserExist) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User not found with this user Id"));
+        }
+
+     
+        let exploreRooms = await roomsModel.find().select('_id').lean();
+        let roomIds = exploreRooms.map(room => room._id);
+
+       
+        const roomCounts = await Promise.all(roomIds.map(roomId => exploreRoomCount(isUserExist, roomId)));
+
+ 
+        const result = roomIds.map((roomId, index) => ({
+            roomId,
+            userCount: roomCounts[index]
+        }));
+
+        return res.status(200).json(successResponse("Explore rooms and user counts fetched successfully", result));
+
+    } catch (error) {
+        console.log("ERROR::", error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    }
+}
 

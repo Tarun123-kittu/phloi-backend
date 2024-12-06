@@ -2,6 +2,9 @@ let hotelModel = require("../../models/hotelModel")
 let { errorResponse, successResponse } = require("../../utils/common/responseHandler")
 let messages = require("../../utils/common/messages")
 let { sendHotelVerificationEmail } = require("../../utils/common/emailSender")
+let notificationModel = require("../../models/notificationModel")
+const hotelAccountsModel = require("../../models/hotelAccounts")
+
 
 
 exports.get_hotel_verification_requests = async (req, res) => {
@@ -53,8 +56,12 @@ exports.get_hotel_details = async (req, res) => {
 }
 
 
+
+
+
 exports.accept_reject_hotel_verification = async (req, res) => {
     try {
+        let adminId = req.result.userId
         let hotelId = req.body.hotelId
         let requestResponse = req.body.requestResponse
 
@@ -63,6 +70,8 @@ exports.accept_reject_hotel_verification = async (req, res) => {
 
         let isHotelExist = await hotelModel.findById(hotelId)
         if (!isHotelExist) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Hotel details with this id do not exist")) }
+        
+        let hotelAccount = await hotelAccountsModel.findById(isHotelExist.hotelAccountId)
 
         if (requestResponse !== true && requestResponse !== false) {
             return res.status(400).json(
@@ -78,6 +87,13 @@ exports.accept_reject_hotel_verification = async (req, res) => {
                 adminVerified: requestResponse
             }
         })
+
+        await notificationModel.create({
+            userId:hotelAccount._id,
+            sender_id: adminId,
+            notification_text: `Your hotel verification request is ${requestResponse==true?"accepted":'rejected'} for ${isHotelExist.establishmentName}`,
+            type:'hotel'
+        }); 
 
         const emailResponse = await sendHotelVerificationEmail(isHotelExist.ownerDetails.ownerEmail, requestResponse, isHotelExist.establishmentName, isHotelExist.paymentStatus);
         if (emailResponse.success) {

@@ -11,7 +11,8 @@ let { io } = require('../../index');
 const likeDislikeLimitModel = require("../../models/likeDislikeLimit");
 const sendPushNotification = require("../../utils/common/pushNotifications");
 const { errorMonitor } = require("nodemailer/lib/xoauth2");
-let mongoose = require('mongoose')
+let mongoose = require('mongoose');
+const secretDatingUserModel = require("../../models/secretDatingUserModel");
 
 
 
@@ -547,29 +548,52 @@ exports.get_profile_details = async (req, res) => {
 
 exports.undo_disliked_profile = async (req, res) => {
     try {
-        let userId = req.result.userId
-        let dislikedUserId = req.query.dislikeUserId
+        const userId = req.result.userId;
+        const dislikedUserId = req.query.dislikeUserId;
+        const mode = req.query.mode;
 
+        if (!dislikedUserId) {
+            return res.status(400).json(
+                errorResponse(messages.generalError.somethingWentWrong, "Disliked user Id not found")
+            );
+        }
 
-        if (!dislikedUserId) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Disliked user Id not found")) }
-        const user_id = new mongoose.Types.ObjectId(dislikedUserId)
+        const user_id = new mongoose.Types.ObjectId(dislikedUserId);
 
-        let isUserExist = await userModel.findByIdAndUpdate(
-            userId,
+       
+        const model = mode === 'secret' ? secretDatingUserModel : userModel;
+        const queryCondition = mode === 'secret' ? { user_id: userId } : { _id: userId }; 
+
+  
+        const isUserExist = await model.findOneAndUpdate(
+            queryCondition,
             { $pull: { dislikedUsers: user_id } },
             { new: true }
         );
 
-        if (!isUserExist) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User doesn't exist with this userId")) }
+        if (!isUserExist) {
+            return res.status(400).json(
+                errorResponse(
+                    messages.generalError.somethingWentWrong,
+                    mode === 'secret'
+                        ? "User doesn't exist with this userId in secret dating"
+                        : "User doesn't exist with this userId"
+                )
+            );
+        }
 
-
-        return res.status(200).json(successResponse("Dislike undo"))
+        return res.status(200).json(successResponse("Dislike undo",isUserExist));
 
     } catch (error) {
         console.error('ERROR::', error);
-        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+        return res.status(500).json(
+            errorResponse(messages.generalError.somethingWentWrong, error.message)
+        );
     }
 }
+
+
+
 
 
 
