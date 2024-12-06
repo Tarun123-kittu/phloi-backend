@@ -12,6 +12,7 @@ const messageSchema = new mongoose.Schema({
         hotelId: { type: mongoose.Schema.Types.ObjectId },
         hotelName: { type: String },
         address: { type: String },
+        hotelImage: { type: String },
         status: { type: String, enum: ['accept', 'reject', 'pending'] }
     }
 }, { timestamps: true });

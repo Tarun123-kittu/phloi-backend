@@ -161,7 +161,8 @@ exports.sendMessage = async (req, res) => {
         let hotelImage = req.body.hotelImage
         let meetUp = req.body.meetUp || false
 
-        console.log('media type -----', mediaType, typeof (mediaType))
+
+        console.log('hotel image   -----',hotelImage)
         var convertToBool = (meetUp == 'true' || meetUp == true);
 
         if (!chatId) { return res.status(400).json(errorResponse(messages.validation.invalidInput, "Chat ID  are required.")); }
@@ -190,13 +191,17 @@ exports.sendMessage = async (req, res) => {
             if (!hotelName || !address || !hotelId || !hotelImage) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Please provide all the fields of meetUp')) }
 
             message = new messageModel({
-                chat: chatId, sender: senderId, receiver: receiverId, text: 'Want to meet',
-                'hotelData.hotelName': hotelName,
-                'hotelData.address': address,
-                'hotelData.hotelId': hotelId,
-                'hotelData.hotelImage': hotelImage,
-                'hotelData.status': 'pending'
-
+                chat: chatId, 
+                sender: senderId, 
+                receiver: receiverId, 
+                text: 'Want to meet',
+                hotelData: {
+                    hotelName: hotelName,
+                    address: address,
+                    hotelId: hotelId,
+                    hotelImage: hotelImage,
+                    status: 'pending'
+                }
             });
             await hotelInvitationsModel.create({
                 chatId: chatId,
