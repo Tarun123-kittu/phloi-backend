@@ -198,11 +198,13 @@ exports.secretDating_sendMessage = async (req, res) => {
             if (!hotelName || !address) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Please provide all the fields of meetUp')) }
             message = new messageModel({
                 chat: chatId, sender: senderId, receiver: receiverId, text: 'meeting',
-                'hotelData.hotelName': hotelName,
-                'hotelData.address': address,
-                'hotelData.hotelId':hotelId,
-                'hotelData.hotelImage':hotelImage,
-                'hotelData.status': 'pending'
+                hotelData: {
+                    hotelName: hotelName,
+                    address: address,
+                    hotelId: hotelId,
+                    hotelImage: hotelImage,
+                    status: 'pending'
+                }
             });
 
             await hotelInvitationsModel.create({
