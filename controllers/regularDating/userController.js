@@ -454,7 +454,6 @@ exports.user_registration_steps = async (req, res) => {
                 return res.status(400).json(errorResponse('Invalid questionId or answerId', 'One or more questionId-answerId pairs are invalid.'));
             }
 
-            
 
             find_user_id.user_characterstics.step_11 = step_11_answer.map(answer => ({
                 questionId: answer.questionId,
@@ -464,7 +463,9 @@ exports.user_registration_steps = async (req, res) => {
             find_user_id.current_step = current_step;
             completed_steps[10] = 11;
             find_user_id.completed_steps = completed_steps;
- 
+
+
+            await find_user_id.save();
 
             return res.status(200).json({
                 type: "success",
@@ -497,7 +498,6 @@ exports.user_registration_steps = async (req, res) => {
                 return res.status(400).json(errorResponse('Invalid questionId or answerId', 'One or more questionId-answerId pairs are invalid.'));
             }
 
-            
 
             find_user_id.user_characterstics.step_12 = step_12_answer.map(answer => ({
                 questionId: answer.questionId,
