@@ -454,6 +454,7 @@ exports.user_registration_steps = async (req, res) => {
                 return res.status(400).json(errorResponse('Invalid questionId or answerId', 'One or more questionId-answerId pairs are invalid.'));
             }
 
+            
 
             find_user_id.user_characterstics.step_11 = step_11_answer.map(answer => ({
                 questionId: answer.questionId,
@@ -463,9 +464,7 @@ exports.user_registration_steps = async (req, res) => {
             find_user_id.current_step = current_step;
             completed_steps[10] = 11;
             find_user_id.completed_steps = completed_steps;
-
-
-            await find_user_id.save();
+ 
 
             return res.status(200).json({
                 type: "success",
@@ -498,14 +497,13 @@ exports.user_registration_steps = async (req, res) => {
                 return res.status(400).json(errorResponse('Invalid questionId or answerId', 'One or more questionId-answerId pairs are invalid.'));
             }
 
+            
 
-            find_user_id.user_characterstics.step_12 = [
-                ...find_user_id.user_characterstics.step_12,
-                ...step_12_answer.map(answer => ({
-                    questionId: answer.questionId,
-                    answerId: answer.answerId
-                }))
-            ];
+            find_user_id.user_characterstics.step_12 = step_12_answer.map(answer => ({
+                questionId: answer.questionId,
+                answerId: answer.answerId
+            }));
+            
 
             find_user_id.current_step = current_step;
             completed_steps[11] = 12;
@@ -1343,55 +1341,6 @@ exports.replace_image = async (req, res) => {
 
 
 
-
-// exports.get_options = async (req, res) => {
-//     try {
-//         const step = req.query.step;
-
-//         if (!step) {
-//             return res.status(404).json(errorResponse(messages.generalError.notFound, 'Step is required'));
-//         }
-
-//         const heading = await headingsModel.findOne({ step: step });
-//         if (!heading) {
-//             return res.status(404).json(errorResponse(messages.generalError.notFound, 'Heading not found'));
-//         }
-
-
-//         const questions = await questionsModel.find({ step: step });
-//         if (questions.length === 0) {
-//             return res.status(404).json(errorResponse(messages.generalError.notFound, 'Questions not found'));
-//         }
-
-
-//         const optionsPromises = questions.map(async (question) => {
-//             const options = await userCharactersticsOptionsModel.find({ question_id: question._id }).select('_id question_id emoji text images');
-//             return {
-//                 questionId: question._id,
-//                 questionText: question.text,
-//                 iconImage: question.icon_image,
-//                 options: options
-//             };
-//         });
-
-
-//         const questionsWithOptions = await Promise.all(optionsPromises);
-
-//         return res.status(200).json({
-//             heading: heading.text,
-//             sub_headings: heading.sub_headings,
-//             questions: questionsWithOptions
-//         });
-
-//     } catch (error) {
-//         console.log("ERROR::", error);
-//         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
-//     }
-// };
-
-
-
-
 exports.get_options = async (req, res) => {
     try {
 
@@ -1443,7 +1392,6 @@ exports.get_options = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
-
 
 
 

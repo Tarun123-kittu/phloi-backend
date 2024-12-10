@@ -74,7 +74,8 @@ socket.on('disconnect', () => {
 
 
 
-
+app.set('view engine', 'ejs')
+app.set("views", __dirname + "/views")
 
 app.use(cors())
 app.use(cors({
