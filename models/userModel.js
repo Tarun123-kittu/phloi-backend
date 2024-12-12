@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema({
   gender: { type: String, enum: ["women", "men", "other"] },
   show_gender: { type: Boolean, default: true },
   study: { type: String, default: null },
-  intrested_to_see: { type: String, enum: ['men', "women", "everyone"], default: 'everyone' },
+  intrested_to_see: { type: String, enum: ['men', "women", "everyone","other"], default: 'everyone' },
   completed_steps: { type: Array, default: [] },
   current_step: { type: Number, default: 0 },
   room_joined: { type: Boolean, default: false },

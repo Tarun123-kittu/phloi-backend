@@ -33,7 +33,6 @@ router.delete("/delete_Hotel_image",verifyHotelToken,deleteHotelImageValidator,h
 
 
 //payments
-router.get("/subscribe",paymentController.subscribe)
 router.post("/checkout",paymentController.checkout)
 
 

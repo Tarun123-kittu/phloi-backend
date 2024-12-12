@@ -4,21 +4,14 @@ let config = require("../../config/config")
 const stripe = require('stripe')(config.development.stripe_secret_key)
 
 
-exports.subscribe = async (req, res) => {
-    try {
-        return res.render("subscribe.ejs")
-    } catch (error) {
-        console.error("Error saving hotel details:", error);
-        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
-    }
-}
+
 
 
 
 
 exports.checkout = async (req, res) => {
     try {
-        let userId = req.result.userId
+        const userId = req.result.userId
         const priceId = config.development.stripe_product_price_id
         const session = await stripe.checkout.sessions.create({
             mode: "subscription",

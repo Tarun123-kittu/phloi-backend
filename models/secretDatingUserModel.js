@@ -6,7 +6,7 @@ let secretDatingUserSchema = new mongoose.Schema({
     avatar: { type: String, default: null },
     profile_image: { type: String, default: null },
     bio: { type: String, default: null },
-    interested_to_see: { type: String, enum: ['men', 'women', 'everyone'], default: 'everyone' },
+    interested_to_see: { type: String, enum: ['men', 'women', 'everyone','other'], default: 'everyone' },
     sexual_orientation_preference_id: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Options' }],
     show_sexual_orientation: { type: Boolean, default: true },
     relationship_preference: { type: mongoose.Schema.Types.ObjectId, ref: 'Options' },
