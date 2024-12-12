@@ -74,8 +74,7 @@ socket.on('disconnect', () => {
 
 
 
-app.set('view engine', 'ejs')
-app.set("views", __dirname + "/views")
+
 
 app.use(cors())
 app.use(cors({
@@ -85,6 +84,12 @@ app.use(express.text());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
 app.use(fileUpload())
+app.use(express.static(__dirname + '/views'));
+
+
+app.set('view engine', 'ejs')
+app.set("views", __dirname + "/views")
+
 
 let appRoutes = require('./routes/appRoutes/routes');
 app.use('/api/v1', appRoutes);

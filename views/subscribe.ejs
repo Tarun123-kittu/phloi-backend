@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hotel Payments</title>
+  <style>
+    /* Basic Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Arial', sans-serif;
+    }
+
+    body {
+      background-color: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      padding: 20px;
+    }
+
+    .payment-container {
+      background-color: #fff;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+    }
+
+    .payment-container h3 {
+      font-size: 1.8rem;
+      color: #333;
+      margin-bottom: 1rem;
+    }
+
+    .payment-container p {
+      font-size: 1rem;
+      color: #555;
+      margin-bottom: 0.5rem;
+    }
+
+    .payment-container .price {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #007bff;
+      margin: 1rem 0;
+    }
+
+    .payment-container form {
+      margin-top: 1.5rem;
+    }
+
+    .payment-container input[type="submit"] {
+      background-color: #28a745;
+      color: #fff;
+      padding: 0.8rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+    }
+
+    .payment-container input[type="submit"]:hover {
+      background-color: #218838;
+    }
+
+    .welcome-message {
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      color: #444;
+    }
+
+    /* Optional: Animation */
+    .payment-container {
+      animation: fadeIn 1s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="payment-container">
+    <h3>Please Pay to Proceed</h3>
+    <p class="welcome-message">Welcome to <b>PHLOII</b> – Your gateway to premium services.</p>
+    <p class="price">Price: $20/month</p>
+    <form action="/checkout" method="post">
+      <!-- Optional hidden input to send the price to the server -->
+      <input type="hidden" name="amount" value="2000">
+      <input type="submit" value="Proceed to Checkout">
+    </form>
+  </div>
+</body>
+</html>

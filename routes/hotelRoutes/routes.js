@@ -3,6 +3,7 @@ let router = express.Router()
 let verifyHotelToken = require("../../middlewares/authentication/hotelAuthmiddleware")
 let hotelAuthController = require("../../controllers/hotel/authController")
 let hotelDetailsController = require("../../controllers/hotel/hotelDetailsController")
+let paymentController = require("../../controllers/hotel/paymentsController")
 let {
     signUpValidator,
     signInValidator,
@@ -29,6 +30,11 @@ router.get("/get_hotel_details",verifyHotelToken,hotelDetailsController.get_hote
 router.put("/update_hotel_details",verifyHotelToken,hotelDetailsController.update_hotel_details)
 router.delete("/delete_Hotel_image",verifyHotelToken,deleteHotelImageValidator,hotelDetailsController.delete_Hotel_image)
 
+
+
+//payments
+router.get("/subscribe",paymentController.subscribe)
+router.post("/checkout",paymentController.checkout)
 
 
 module.exports = router
