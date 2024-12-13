@@ -1,6 +1,7 @@
 const nodemailer = require('nodemailer');
 const config = require('../../config/config');
 
+
 const sendEmail = async (email, code) => {
   try {
 
@@ -133,7 +134,7 @@ const sendHotelVerificationEmail = async (email, status,hotelName,paymentStatus)
       margin: 20px 0;
     ">
     ${status ? 
-      `Congratulations! Your hotel has been successfully verified and is now approved on our platform. ${paymentStatus == 'completed'? '':"Please proceed for the payment" }` : 
+      `Congratulations! Your hotel has been successfully verified and is now approved on our platform. ${paymentStatus == 'completed'? '':`Please proceed with the payment by clicking <a href="${config.development.stripe_return_url}api/v1/hotel/subscribe">here</a> to show on Phloii.` }` : 
       'We regret to inform you that your request has been rejected. For further details, please contact our support team.'}
   </p>
   <p style="
