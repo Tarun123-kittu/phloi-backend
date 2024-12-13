@@ -19,7 +19,8 @@ const development = {
     gmail_password: process.env.TWO_STEP_VERIFIED_PASSWORD,
     fcm_server_key:process.env.FCM_SERVER_KEY,
     stripe_secret_key:process.env.STRIPE_SECRET_KEY,
-    stripe_product_price_id:process.env.PRICE_ID
+    stripe_product_price_id:process.env.PRICE_ID,
+    stripe_return_url:process.env.STRIPE_RETURN_URL
     
 };
 

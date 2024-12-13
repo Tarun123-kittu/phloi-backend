@@ -71,8 +71,8 @@ exports.checkout = async (req, res) => {
             ],
             mode: 'subscription',
     
-            success_url: `http://localhost:8000/api/v1/hotel/success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: 'http://localhost:8000/api/v1/hotel/cancel',
+            success_url: `${config.development.stripe_return_url}api/v1/hotel/success?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${config.development.stripe_return_url}api/v1/hotel/cancel`,
         });
 
         
