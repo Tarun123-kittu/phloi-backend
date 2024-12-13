@@ -133,7 +133,7 @@ exports.webhook = async (req, res) => {
     try {
 
       event = stripe.webhooks.constructEvent(req.body, sig, config.development.webhook_singing_key);
-      console.log("event ------", event);
+      console.log("event ------", event.type);
     } catch (err) {
       console.error(`Webhook signature verification failed: ${err.message}`);
       return res.status(400).send(`Webhook Error: ${err.message}`);
