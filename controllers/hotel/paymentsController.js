@@ -105,8 +105,8 @@ exports.success = async (req, res) => {
         //     paymentStatus:"completed",
         //     paymentDate:new Date()
         // })
-        res.send(session)
-        // res.render("success.ejs")
+        // res.send(session)
+        res.render("success.ejs")
     } catch (error) {
         console.error("Error saving hotel details:", error);
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
