@@ -82,7 +82,7 @@ app.use(cors({
   origin: '*',
 }));
 app.use(express.text());
-// app.use(express.json());
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
 app.use(fileUpload())
 app.use(express.static(__dirname + '/views'));

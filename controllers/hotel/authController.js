@@ -32,6 +32,7 @@ exports.signUp = async (req, res) => {
 exports.signIn = async (req, res) => {
     try {
         let { email, password } = req.body
+        console.log(email,password)
 
         let isEmailExist = await hotelAccountsModel.findOne({ email: email })
         if (!isEmailExist) { return res.status(400).json(errorResponse('This email is not registered')) }
