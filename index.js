@@ -81,6 +81,11 @@ app.use(cors())
 app.use(cors({
   origin: '*',
 }));
+
+let hotelRoutes = require('./routes/hotelRoutes/routes')
+app.use('/api/v1/hotel', hotelRoutes)
+
+
 app.use(express.text());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
@@ -100,8 +105,7 @@ app.use('/api/v1', appRoutes);
 let adminRoutes = require('./routes/adminRoutes/routes')
 app.use('/api/v1', adminRoutes)
 
-let hotelRoutes = require('./routes/hotelRoutes/routes')
-app.use('/api/v1/hotel', hotelRoutes)
+
 
 
 

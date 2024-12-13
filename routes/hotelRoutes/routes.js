@@ -37,7 +37,7 @@ router.get("/subscribe",paymentController.subscribe)
 router.post("/checkout",paymentController.checkout)
 router.get("/success",paymentController.success)
 router.get("/cancel",paymentController.cancel)
-router.post("/webhook", express.raw({ type: 'application/json' }),paymentController.webhook)
+router.post('/webhook', express.raw({ type: 'application/json' }), paymentController.webhook);
 
 
 module.exports = router
