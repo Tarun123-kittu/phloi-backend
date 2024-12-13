@@ -44,11 +44,11 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
             if (interestedIn !== 'everyone') {
                 matchQuery.gender = { $in: [interestedIn] };
             
-                if (gender == 'other') {
-                    matchQuery.intrested_to_see = 'everyone';
-                } else {
+                // if (gender == 'other') {
+                //     matchQuery.intrested_to_see = 'everyone';
+                // } else {
                     matchQuery.intrested_to_see = { $in: [gender] };
-                }
+                // }
 
 
                 
@@ -76,11 +76,11 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
             if (intrested_to_see !== 'everyone') {
                 matchQuery.gender = { $in: [intrested_to_see] };
             
-                if (gender == 'other') {
-                    matchQuery.intrested_to_see = 'everyone';
-                } else {
+                // if (gender == 'other') {
+                //     matchQuery.intrested_to_see = 'everyone';
+                // } else {
                     matchQuery.intrested_to_see = { $in: [gender] };
-                }
+                // }
             }
             
           

@@ -4,6 +4,7 @@ let cors = require('cors');
 const fileUpload = require('express-fileupload')
 let { phloi_db_connection } = require("./config/config");
 let config = require('./config/config')
+let path = require('path')
 const http = require('http');
 const socketIo = require('socket.io');
 const server = http.createServer(app);
@@ -89,6 +90,8 @@ app.use(express.static(__dirname + '/views'));
 
 app.set('view engine', 'ejs')
 app.set("views", __dirname + "/views")
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 
 let appRoutes = require('./routes/appRoutes/routes');

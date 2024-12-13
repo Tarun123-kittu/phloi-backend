@@ -30,11 +30,11 @@ const secretDatingMatchAlgorithm = async (currentUser, secretDatingCurrentUser, 
 
             if (interestedIn !== 'everyone') {
                 matchQuery.gender = { $in: [interestedIn] };
-                if (gender == 'other') {
-                    matchQuery.intrested_to_see = 'everyone';
-                } else {
+                // if (gender == 'other') {
+                //     matchQuery.intrested_to_see = 'everyone';
+                // } else {
                     matchQuery.intrested_to_see = { $in: [gender] };
-                }
+                // }
             }
 
             if (show_verified_profiles === true || show_verified_profiles === false) {
@@ -53,11 +53,11 @@ const secretDatingMatchAlgorithm = async (currentUser, secretDatingCurrentUser, 
             if (interested_to_see !== 'everyone') {
                 matchQuery.gender = { $in: [interested_to_see] };
 
-                if (gender == 'other') {
-                    matchQuery.intrested_to_see = 'everyone';
-                } else {
+                // if (gender == 'other') {
+                //     matchQuery.intrested_to_see = 'everyone';
+                // } else {
                     matchQuery.intrested_to_see = { $in: [gender] };
-                }
+                // }
             }
         }
 

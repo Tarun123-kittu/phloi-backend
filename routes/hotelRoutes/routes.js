@@ -33,7 +33,11 @@ router.delete("/delete_Hotel_image",verifyHotelToken,deleteHotelImageValidator,h
 
 
 //payments
+router.get("/subscribe",paymentController.subscribe)
 router.post("/checkout",paymentController.checkout)
+router.get("/success",paymentController.success)
+router.get("/cancel",paymentController.cancel)
+router.get("/webhook", express.raw({ type: 'application/json' }),paymentController.webhook)
 
 
 module.exports = router
