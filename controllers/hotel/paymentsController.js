@@ -127,10 +127,12 @@ exports.cancel = async (req, res) => {
 exports.webhook = async (req, res) => {
     console.log("here in the webhook------")
     const sig = req.headers['stripe-signature'];
+    console.log("signature ----",sig)
     let event;
 
     try {
         event = stripe.webhooks.constructEvent(req.body, sig, config.development.webhook_singing_key);
+        console.log("event ------",event)
     } catch (err) {
         console.error(`Webhook signature verification failed: ${err.message}`);
         return res.status(400).send(`Webhook Error: ${err.message}`);

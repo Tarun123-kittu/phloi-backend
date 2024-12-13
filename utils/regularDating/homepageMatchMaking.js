@@ -160,6 +160,7 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
                     images: 1,
                     gender: 1,
                     distance: 1,
+                    verified_profile:1,
                     distanceInKm: { $divide: ['$distance', 1000] },
                     interests: { $map: { input: '$interests', as: 'interest', in: '$$interest.text' } },
                     age: {
