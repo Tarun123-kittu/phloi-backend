@@ -13,7 +13,12 @@
         <div class="price-info">
             <p>Price: <span class="price">$20/month</span></p>
         </div>
-        <form action="/api/v1/hotel/checkout" method="post" class="checkout-form">
+
+      
+        <form action="/api/v1/hotel/checkout" method="POST" class="checkout-form">
+         
+            <input type="hidden" name="hotelId" value="<%= hotelId %>">
+            
             <button type="submit" class="checkout-button">Proceed to Checkout</button>
         </form>
     </div>

@@ -32,7 +32,7 @@ exports.signUp = async (req, res) => {
 exports.signIn = async (req, res) => {
     try {
         let { email, password } = req.body
-        console.log(email,password)
+        console.log(email, password)
 
         let isEmailExist = await hotelAccountsModel.findOne({ email: email })
         if (!isEmailExist) { return res.status(400).json(errorResponse('This email is not registered')) }
@@ -42,7 +42,11 @@ exports.signIn = async (req, res) => {
 
         let token = await generateToken(isEmailExist._id)
 
-        return res.status(200).json(successResponse('Login successful', token))
+        let isOnboradingDone = await hotelModel.findOne({ hotelAccountId: isEmailExist._id })
+        var onborading
+        if (isOnboradingDone) { onborading = true } else { onborading = false }
+
+        return res.status(200).json({type:"success",message:"Login successful",data:token,isOnboradingDone:onborading })
     } catch (error) {
         console.log("ERROR::", error)
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.messages))
@@ -133,22 +137,22 @@ exports.changePassword = async (req, res) => {
         let id = req.result.userId;
         let password = req.body.password;
         let newPassword = req.body.newPassword
-      
-    
+
+
         let hotelDetails = await hotelAccountsModel.findOne({ _id: id })
         if (!hotelDetails) {
-          return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Logged In hotel not found'))
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Logged In hotel not found'))
         }
         let isPassCorrect = await compareHashedPassword(password, hotelDetails.password)
         if (!isPassCorrect) {
-          return res.status(400).json(errorResponse('Entered current password is not correct'))
+            return res.status(400).json(errorResponse('Entered current password is not correct'))
         }
-    
+
         let passhash = await generateHashedPassword(newPassword)
         await hotelAccountsModel.findOneAndUpdate({ _id: id }, {
-          $set: {
-            password: passhash,
-          }
+            $set: {
+                password: passhash,
+            }
         })
         return res.status(200).json(successResponse("Password changed successfully"))
     } catch (error) {

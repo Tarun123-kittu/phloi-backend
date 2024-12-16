@@ -3,7 +3,8 @@ const hotelModel = require("../../models/hotelModel");
 const paymentModel = require("../../models/hotelPaymentsModel")
 const { errorResponse, successResponse } = require("../../utils/common/responseHandler")
 const messages = require("../../utils/common/messages")
-const { uploadFile, deleteFileFromAWS } = require("../../utils/common/awsUpload")
+const { uploadFile, deleteFileFromAWS } = require("../../utils/common/awsUpload");
+const { default: mongoose } = require("mongoose");
 
 
 
@@ -83,20 +84,82 @@ exports.saveHotelDetails = async (req, res) => {
 
 
 
-
 exports.get_hotel_details = async (req, res) => {
     try {
-        let id = req.result.userId
+        let id = req.result.userId;
+  
+        let objectId = new mongoose.Types.ObjectId(id);  
+        const hotelDetails = await hotelModel.aggregate([
+            {
+                $match: { hotelAccountId: objectId }  
+            },
+            {
+                $lookup: {
+                    from: 'hotel_payments',  
+                    localField: '_id',  
+                    foreignField: 'hotelId',  
+                    as: 'hotelPayments' 
+                }
+            },
+            {
+                $unwind: { 
+                    path: '$hotelPayments',  
+                    preserveNullAndEmptyArrays: true 
+                }
+            },
+            {
+                $sort: { 'hotelPayments.updatedAt': -1 }  
+            },
+            {
+                $group: {
+                    _id: '$_id', 
+                    username: { $first: '$username' },
+                    establishmentName: { $first: '$establishmentName' },
+                    establishmentType: { $first: '$establishmentType' },
+                    images: { $first: '$images' },
+                    address: { $first: '$address' },
+                    ownerDetails: { $first: '$ownerDetails' },
+                    uniqueFeatures: { $first: '$uniqueFeatures' },
+                    why_want_phloi: { $first: '$why_want_phloi' },
+                    adminVerified: { $first: '$adminVerified' },
+                    hotelPayments: { $first: '$hotelPayments' }, 
+                }
+            },
+            {
+                $addFields: {
+                    'hotelPayments.paymentAmount': { $ifNull: ['$hotelPayments.paymentAmount', null] },
+                    'hotelPayments.paymentStatus': { $ifNull: ['$hotelPayments.paymentStatus', 'pending'] },
+                    'hotelPayments.paymentDate': { $ifNull: ['$hotelPayments.paymentDate', null] },
+                    'hotelPayments.subscriptionEndDate': { $ifNull: ['$hotelPayments.subscriptionEndDate', null] },
+                    'hotelPayments.receiptUrl': { $ifNull: ['$hotelPayments.receiptUrl', null] }
+                }
+            },
+            {
+                $project: {
+                    username: 1,
+                    establishmentName: 1,
+                    establishmentType: 1,
+                    images: 1,
+                    address: 1,
+                    ownerDetails: 1,
+                    uniqueFeatures: 1,
+                    why_want_phloi: 1,
+                    adminVerified: 1,
+                    'hotelPayments.paymentAmount': 1,
+                    'hotelPayments.paymentStatus': 1,
+                    'hotelPayments.paymentDate': 1,
+                    'hotelPayments.subscriptionEndDate': 1,
+                    'hotelPayments.receiptUrl': 1
+                }
+            }
+        ]);
 
-        let hotelDetails = await hotelModel.find({ hotelAccountId: id }).select("username establishmentName establishmentType images address ownerDetails uniqueFeatures why_want_phloi adminVerified paymentStatus").lean()
-
-        return res.status(200).json(successResponse("Data retreived", hotelDetails))
+        return res.status(200).json(successResponse("Data retrieved", hotelDetails));
     } catch (error) {
         console.error("ERROR::", error);
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
-}
-
+};
 
 
 
