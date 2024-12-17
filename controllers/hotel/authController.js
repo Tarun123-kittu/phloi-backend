@@ -73,7 +73,7 @@ exports.forgetPassword = async (req, res) => {
                 forgetPsd_tokenCreatedAt: date,
             }
         })
-        const resetUrl = `http://localhost:3000/hotel/reset_password/${resetToken}`;
+        const resetUrl = `http://localhost:3000/hotels/reset-password/${resetToken}`;
         const emailResponse = await sendEmail(email, resetUrl);
         if (emailResponse.success) {
             return res.status(200).json(successResponse(emailResponse.message));
