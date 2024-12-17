@@ -34,7 +34,7 @@ const userSchema = new mongoose.Schema({
   images: [{ url: String, position: Number }],
   location: { type: { type: String, enum: ['Point'], }, coordinates: { type: [Number], }, },
   setting: {
-    distance_in: { type: String, default: "km", enum: ["km", "mi"] },
+    distance_in: { type: String, default: "mi", enum: ["km", "mi"] },
     read_receipts: { type: Boolean, default: true }
   },
   likedUsers: [{ type: mongoose.Schema.Types.ObjectId }],

@@ -157,6 +157,7 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
                 $project: {
                     _id: 1,
                     username: 1,
+                    bio:1,
                     images: 1,
                     gender: 1,
                     distance: 1,
