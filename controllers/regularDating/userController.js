@@ -841,6 +841,7 @@ exports.update_user_profile = async (req, res) => {
         email,
         username,
         dob,
+        bio,
         gender,
         intrested_to_see,
         sexual_orientation_preference_id,
