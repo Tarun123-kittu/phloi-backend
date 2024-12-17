@@ -421,7 +421,7 @@ exports.accept_or_reject_invitation = async (req, res) => {
             let data = {
                 userId: receiverId.toString(),
                 type: "hotel_invitation",
-                username: isUserExist.username,
+                sender_name: isUserExist.username,
                 image: isUserExist.images[0].url,
                 chatId: chatId.toString()
             }
