@@ -4,7 +4,7 @@ const config = require('../../config/config');
 
 const sendEmail = async (email, code) => {
   try {
-    const resetLink = `http://localhost:8000/api/v1//reset-password/${code}`;
+    const resetLink = `https://dev.phloii.com/reset-password/${code}`;
     let transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {

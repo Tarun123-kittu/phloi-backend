@@ -1,7 +1,7 @@
 let adminModel = require('../../models/adminModel')
 let { errorResponse, successResponse } = require('../../utils/common/responseHandler')
 let messages = require('../../utils/common/messages')
-let {sendEmail} = require('../../utils/common/emailSender')
+let { sendEmail } = require('../../utils/common/emailSender')
 let {
   compareHashedPassword,
   generateToken,
@@ -208,7 +208,6 @@ exports.reset_password = async (req, res) => {
   try {
     const { otp, password, confirmPassword } = req.body;
 
-
     if (!otp) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Otp is required')) }
 
     if (!password) { return res.status(400).json(errorResponse('Password is required')) }
@@ -219,8 +218,21 @@ exports.reset_password = async (req, res) => {
 
 
     const user = await adminModel.findOne({ forgetPsd_otp: otp });
-    if (!user) { return res.status(404).json(errorResponse('User not found')); }
+    if (!user) { return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, 'Otp changed to null or not created')); }
 
+    const OTP_EXPIRATION_TIME = 120;
+    const createdAt = new Date(user.forgetPsd_otpCreatedAt);
+    const now = new Date();
+    const otpTimeElapsed = Math.abs(now.getTime() - createdAt.getTime()) / 1000;
+
+    if (otpTimeElapsed > OTP_EXPIRATION_TIME) {
+      return res.status(400).json(errorResponse('Link expired, please repeat the step of forget password'));
+    }
+
+
+    if (otp !== user.forgetPsd_otp) {
+      return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'Incorrect OTP'));
+    }
 
     const hashedPassword = await generateHashedPassword(password);
 
@@ -229,7 +241,8 @@ exports.reset_password = async (req, res) => {
       {
         password: hashedPassword,
         forgetPsd_otpVerified: false,
-        forgetPsd_otp:null
+        forgetPsd_otp: null,
+        forgetPsd_otpCreatedAt:null
       }
     );
 
