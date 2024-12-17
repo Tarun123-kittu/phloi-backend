@@ -596,10 +596,6 @@ exports.undo_disliked_profile = async (req, res) => {
 
 
 
-
-
-
-
 exports.getTopPicks = async (req, res) => {
     try {
         const userId = req.result.userId;
@@ -670,6 +666,7 @@ exports.getTopPicks = async (req, res) => {
                     _id: 1,
                     username: 1,
                     gender: 1,
+                    bio:1,
                     show_gender: 1,
                     location: 1,
                     distance: 1,
@@ -701,6 +698,7 @@ exports.getTopPicks = async (req, res) => {
             return {
                 _id: nearbyUser._id,
                 username: nearbyUser.username,
+                bio:nearbyUser.bio,
                 age: nearbyUser.dob ? new Date().getFullYear() - new Date(nearbyUser.dob).getFullYear() : null,
                 images: nearbyUser.images || null,
                 study: nearbyUser.study,

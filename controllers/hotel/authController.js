@@ -73,7 +73,7 @@ exports.forgetPassword = async (req, res) => {
                 forgetPsd_tokenCreatedAt: date,
             }
         })
-        const resetUrl = `https://dev.phloii.com/api/v1/reset_password/${resetToken}`;
+        const resetUrl = `http://localhost:3000/hotel/reset_password/${resetToken}`;
         const emailResponse = await sendEmail(email, resetUrl);
         if (emailResponse.success) {
             return res.status(200).json(successResponse(emailResponse.message));

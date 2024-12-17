@@ -276,7 +276,7 @@ exports.user_registration_steps = async (req, res) => {
     let id = req.result.userId
     const {
         email,
-        username,bio, dob, gender, intrested_to_see,
+        username, bio, dob, gender, intrested_to_see,
         sexual_orientation_preference_id, relationship_type_preference_id,
         study, distance_preference, current_step, location, show_gender, show_sexual_orientation, step_11_answer, step_12_answer, step_13_answers
     } = req.body;
@@ -504,7 +504,7 @@ exports.user_registration_steps = async (req, res) => {
                 questionId: answer.questionId,
                 answerId: answer.answerId
             }));
-            
+
 
             find_user_id.current_step = current_step;
             completed_steps[11] = 12;
@@ -656,12 +656,12 @@ exports.get_user_details = async (req, res) => {
     try {
 
         const user_detail = await userModel.findById(id).lean();
-        
-    
+
+
         if (!user_detail) return res.status(400).json({ type: "error", message: "User does not exist" });
 
 
-        const {dob, completed_steps = [], user_characterstics, sexual_orientation_preference_id, relationship_type_preference_id } = user_detail;
+        const { dob, completed_steps = [], user_characterstics, sexual_orientation_preference_id, relationship_type_preference_id } = user_detail;
         const validSteps = completed_steps.filter(step => step !== null);
 
         const completedStepCount = validSteps.length;
@@ -678,7 +678,7 @@ exports.get_user_details = async (req, res) => {
                 (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate())
             );
             if (isBeforeBirthdayThisYear) {
-                age--; 
+                age--;
             }
         }
 
@@ -746,26 +746,26 @@ exports.get_user_details = async (req, res) => {
 
 
 
-exports.update_demo_step = async(req,res)=>{
-    try{
-    let userId = req.result.userId
-    
-    let isUserExist = await userModel.findById(userId)
-    if(!isUserExist){
-        return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"User not exist with this user Id"))
-    }
+exports.update_demo_step = async (req, res) => {
+    try {
+        let userId = req.result.userId
 
-    await userModel.findByIdAndUpdate(userId,{
-        $set:{
-            demo_steps:true 
+        let isUserExist = await userModel.findById(userId)
+        if (!isUserExist) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User not exist with this user Id"))
         }
-    })
-    return res.status(200).json(successResponse("Data updated successfully"))
-    }catch(error){
+
+        await userModel.findByIdAndUpdate(userId, {
+            $set: {
+                demo_steps: true
+            }
+        })
+        return res.status(200).json(successResponse("Data updated successfully"))
+    } catch (error) {
         console.error('Error updating image positions:', error);
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
-    
+
 }
 
 
@@ -819,7 +819,7 @@ exports.update_image_position = async (req, res) => {
 
 const stepFieldMappings = {
     2: ['email'],
-    3: ['username'],
+    3: ['username', "bio"],
     4: ['dob'],
     5: ['gender', 'show_gender'],
     6: ['intrested_to_see'],
@@ -884,7 +884,12 @@ exports.update_user_profile = async (req, res) => {
             if (lastValidStep) {
                 switch (step) {
                     case 2: return user.email;
-                    case 3: return user.username;
+                    case 3:
+                        if (fieldName === 'username') return user.username;
+                        if (fieldName === 'bio') return user.bio;
+                        break;
+
+
                     case 4: return user.dob;
                     case 5:
                         if (fieldName === 'gender') return user.gender;
@@ -939,7 +944,11 @@ exports.update_user_profile = async (req, res) => {
 
         switch (current_step) {
             case 2: updateStep(2, 'email', email); break;
-            case 3: updateStep(3, 'username', username); break;
+            case 3:
+                updateStep(3, 'username', username);
+                updateStep(3, 'bio', bio);  
+                break;
+
             case 4: updateStep(4, 'dob', dob); break;
             case 5:
                 updateStep(5, 'gender', gender);
@@ -1069,7 +1078,7 @@ exports.update_user_profile = async (req, res) => {
 exports.get_maximum_distance_by_admin = async (req, res) => {
     try {
         let maximumDistance = await generalSettingsModel.findOne().select("maximum_distance")
-        if(!maximumDistance){return res.status(400).json(errorResponse('No data found'))}
+        if (!maximumDistance) { return res.status(400).json(errorResponse('No data found')) }
         return res.status(200).json(successResponse('Data retreived successfully', maximumDistance))
     } catch (error) {
         console.error('ERROR::', error);
@@ -1353,19 +1362,19 @@ exports.get_options = async (req, res) => {
             return res.status(404).json(errorResponse(messages.generalError.notFound, 'Headings not found'));
         }
 
-        
+
         const stepsDataPromises = headings.map(async (heading) => {
             const step = heading.step;
 
-      
+
             const questions = await questionsModel.find({ step });
-            
-       
+
+
             const optionsPromises = questions.map(async (question) => {
                 const options = await userCharactersticsOptionsModel
                     .find({ question_id: question._id })
                     .select('_id question_id emoji text images');
-                
+
                 return {
                     questionId: question._id,
                     questionText: question.text,
