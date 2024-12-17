@@ -8,6 +8,8 @@ const messageSchema = new mongoose.Schema({
     read: { type: Boolean, default: false },
     read_chat: { type: Boolean, default: false },
     mediaType: { type: String },
+    meetingTime: { type: String },
+    meetingDate: { type: String },
     hotelData: {
         hotelId: { type: mongoose.Schema.Types.ObjectId },
         hotelName: { type: String },

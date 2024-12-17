@@ -159,10 +159,12 @@ exports.sendMessage = async (req, res) => {
         let address = req.body.address
         let hotelId = req.body.hotelId
         let hotelImage = req.body.hotelImage
+        let meetingTime = req.body.meetingTime
+        let meetingDate = req.body.meetingDate
         let meetUp = req.body.meetUp || false
 
 
-        console.log('hotel image   -----',hotelImage)
+        console.log('hotel image   -----', hotelImage)
         var convertToBool = (meetUp == 'true' || meetUp == true);
 
         if (!chatId) { return res.status(400).json(errorResponse(messages.validation.invalidInput, "Chat ID  are required.")); }
@@ -188,13 +190,15 @@ exports.sendMessage = async (req, res) => {
 
         let message = ''
         if (convertToBool) {
-            if (!hotelName || !address || !hotelId || !hotelImage) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Please provide all the fields of meetUp')) }
+            if (!hotelName || !address || !hotelId || !hotelImage || !meetingTime || !meetingDate) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Please provide all the fields of meetUp')) }
 
             message = new messageModel({
-                chat: chatId, 
-                sender: senderId, 
-                receiver: receiverId, 
+                chat: chatId,
+                sender: senderId,
+                receiver: receiverId,
                 text: 'Want to meet',
+                meetingTime: meetingTime,
+                meetingDate: meetingDate,
                 hotelData: {
                     hotelName: hotelName,
                     address: address,
@@ -289,7 +293,7 @@ exports.getMessages = async (req, res) => {
 
 
         const message = await messageModel.find({ chat: chatId })
-            .select('text sender createdAt read hotelData')
+            .select('text sender createdAt read hotelData meetingTime meetingDate')
             .populate('sender', 'username _id')
             .sort({ createdAt: -1 })
             .skip(skip)
