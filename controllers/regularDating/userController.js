@@ -276,7 +276,7 @@ exports.user_registration_steps = async (req, res) => {
     let id = req.result.userId
     const {
         email,
-        username, dob, gender, intrested_to_see,
+        username,bio, dob, gender, intrested_to_see,
         sexual_orientation_preference_id, relationship_type_preference_id,
         study, distance_preference, current_step, location, show_gender, show_sexual_orientation, step_11_answer, step_12_answer, step_13_answers
     } = req.body;
@@ -329,8 +329,9 @@ exports.user_registration_steps = async (req, res) => {
             updateFields["completed_steps"] = completed_steps;
         }
         if (current_step == 3) {
-            if (!username) { return res.status(400).json(errorResponse('Username is required.', 'username is required to complete step 3')) }
+            if (!username || !bio) { return res.status(400).json(errorResponse('Username and bio is required.', 'username and bio is required to complete step 3')) }
             user_obj["username"] = username;
+            user_obj["bio"] = bio;
             user_obj["current_step"] = current_step;
             completed_steps[2] = 3;
             updateFields["completed_steps"] = completed_steps;

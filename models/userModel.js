@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema({
   profile_verification_image: { type: String },
   show_me_to_verified_profiles: { type: Boolean, default: false },
   username: { type: String, default: null },
+  bio:{type:String},
   mobile_number: { type: Number, default: null },
   country_code: { type: Number, default: null },
   number: { type: Number, default: null },

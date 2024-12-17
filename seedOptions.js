@@ -1,14 +1,14 @@
 
 const mongoose = require('mongoose');
-const config = require('./config/config');  
+const config = require('./config/config');
 const Option = require('./models/optionsModel');
 
 const options = [
-   
+
     {
-        // question_id: '66fe594f05a11c463087a34a',
-        question_id: '66ff985963e8072c0fd6a4b6',
-        
+        question_id: '66fe594f05a11c463087a34a',
+        // question_id: '66ff985963e8072c0fd6a4b6',
+
         options: [
             { text: 'Straight' },
             { text: 'Gay' },
@@ -21,27 +21,27 @@ const options = [
             { text: 'Bicurious' }
         ]
     },
-  
+
     {
-        // question_id: '66fe594f05a11c463087a34c',
-        question_id: '66ff985963e8072c0fd6a4b8',
-        
+        question_id: '66fe594f05a11c463087a34c',
+        // question_id: '66ff985963e8072c0fd6a4b8',
+
         options: [
-            { text: 'Long-term partner', emoji: '❤' ,images:'https://phloii.s3.amazonaws.com/relationshiptTypes/heartWithArrow.png/20241011_153904' },
-            { text: 'Long-term, open to short', emoji: '😍',images:'https://phloii.s3.eu-north-1.amazonaws.com/relationshiptTypes/heartEyes.png/20241011_153951' },
-            { text: 'Short-term, open to long', emoji: '🥂',images:'https://phloii.s3.eu-north-1.amazonaws.com/relationshiptTypes/cheersGlass.png/20241011_154049' },
-            { text: 'Short-term fun', emoji: '🎉',images:'https://phloii.s3.eu-north-1.amazonaws.com/relationshiptTypes/partyPopper.png/20241011_154145' },
-            { text: 'New-friends', emoji: '👋',images:'https://phloii.s3.eu-north-1.amazonaws.com/relationshiptTypes/waveingHand.png/20241011_154425' },
-            { text: 'Still figuring it out', emoji: '🤔',images:'https://phloii.s3.eu-north-1.amazonaws.com/relationshiptTypes/emojiThinkingFace.png/20241011_154548' },
-            { text: 'Single with kids', emoji: '🙋‍♀️' ,images:'https://phloii.s3.eu-north-1.amazonaws.com/relationshiptTypes/singleWithKids.png/20241011_154709' },
-            { text: 'Single no kids', emoji: '👩‍🦰' ,images:'https://phloii.s3.eu-north-1.amazonaws.com/relationshiptTypes/singleNoKids.png/20241011_154745' }
+            { text: 'Long-term partner', emoji: '❤', images: 'https://phloii.s3.amazonaws.com/relationshiptTypes/heartWithArrow.png/20241011_153904' },
+            { text: 'Long-term, open to short', emoji: '😍', images: 'https://phloii.s3.eu-north-1.amazonaws.com/relationshiptTypes/heartEyes.png/20241011_153951' },
+            { text: 'Short-term, open to long', emoji: '🥂', images: 'https://phloii.s3.eu-north-1.amazonaws.com/relationshiptTypes/cheersGlass.png/20241011_154049' },
+            { text: 'Short-term fun', emoji: '🎉', images: 'https://phloii.s3.eu-north-1.amazonaws.com/relationshiptTypes/partyPopper.png/20241011_154145' },
+            { text: 'New-friends', emoji: '👋', images: 'https://phloii.s3.eu-north-1.amazonaws.com/relationshiptTypes/waveingHand.png/20241011_154425' },
+            { text: 'Still figuring it out', emoji: '🤔', images: 'https://phloii.s3.eu-north-1.amazonaws.com/relationshiptTypes/emojiThinkingFace.png/20241011_154548' },
+            { text: 'Single with kids', emoji: '🙋‍♀️', images: 'https://phloii.s3.eu-north-1.amazonaws.com/relationshiptTypes/singleWithKids.png/20241011_154709' },
+            { text: 'Single no kids', emoji: '👩‍🦰', images: 'https://phloii.s3.eu-north-1.amazonaws.com/relationshiptTypes/singleNoKids.png/20241011_154745' }
         ]
     },
-  
+
     {
-        // question_id: '66fe595005a11c463087a34e',
-        question_id: '66ff985963e8072c0fd6a4ba',
-        
+        question_id: '66fe595005a11c463087a34e',
+        // question_id: '66ff985963e8072c0fd6a4ba',
+
         options: [
             { text: 'I stay on WhatsApp' },
             { text: 'Big-time texter' },
@@ -54,9 +54,9 @@ const options = [
     },
 
     {
-        // question_id: '66fe595005a11c463087a350',
-        question_id: '66ff985963e8072c0fd6a4bc',
-        
+        question_id: '66fe595005a11c463087a350',
+        // question_id: '66ff985963e8072c0fd6a4bc',
+
         options: [
             { text: 'Thoughtful gesture' },
             { text: 'Presents' },
@@ -67,9 +67,9 @@ const options = [
     },
 
     {
-        // question_id: '66fe595005a11c463087a354',
-        question_id: '66ff985963e8072c0fd6a4be',
-        
+        question_id: '66fe595005a11c463087a354',
+        // question_id: '66ff985963e8072c0fd6a4be',
+
         options: [
             { text: 'Not for me' },
             { text: 'Sober' },
@@ -79,11 +79,11 @@ const options = [
             { text: 'Most nights' }
         ]
     },
-  
+
     {
-        // question_id: '66fe595005a11c463087a358',
-        question_id: '66ff985963e8072c0fd6a4c0',
-        
+        question_id: '66fe595005a11c463087a358',
+        // question_id: '66ff985963e8072c0fd6a4c0',
+
         options: [
             { text: 'Social smoker' },
             { text: 'Smoke when drinking' },
@@ -92,11 +92,11 @@ const options = [
             { text: 'Trying to quit' }
         ]
     },
- 
+
     {
         // question_id: '66fe595005a11c463087a35c',
         question_id: '66ff985963e8072c0fd6a4c2',
-        
+
         options: [
             { text: 'Everyday' },
             { text: 'Often' },
@@ -106,10 +106,10 @@ const options = [
     },
 
     {
-        // question_id: '66fe595005a11c463087a360', - local
-        question_id: '66ff985963e8072c0fd6a4c4', // development
-        
-         options : [
+        question_id: '66fe595005a11c463087a360', //- local
+        // question_id: '66ff985963e8072c0fd6a4c4', // development
+
+        options: [
             { text: 'Harry Potter' },
             { text: 'Spa' },
             { text: 'SoundCloud' },
@@ -357,18 +357,18 @@ async function seedOptions(optionsArray) {
         const { question_id, options } = optionData;
 
         for (const option of options) {
-       
+
             const existingOption = await Option.findOne({
                 question_id: question_id,
-                text: option.text, 
+                text: option.text,
             });
 
             if (!existingOption) {
-              
+
                 const optionDocument = new Option({
                     question_id: question_id,
                     text: option.text,
-                    emoji: option.emoji || null, 
+                    emoji: option.emoji || null,
                 });
 
                 await optionDocument.save()
