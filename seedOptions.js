@@ -6,8 +6,9 @@ const Option = require('./models/optionsModel');
 const options = [
    
     {
-        question_id: '66fe594f05a11c463087a34a',
-    
+        // question_id: '66fe594f05a11c463087a34a',
+        question_id: '66ff985963e8072c0fd6a4b6',
+        
         options: [
             { text: 'Straight' },
             { text: 'Gay' },
@@ -22,8 +23,9 @@ const options = [
     },
   
     {
-        question_id: '66fe594f05a11c463087a34c',
-   
+        // question_id: '66fe594f05a11c463087a34c',
+        question_id: '66ff985963e8072c0fd6a4b8',
+        
         options: [
             { text: 'Long-term partner', emoji: '❤' ,images:'https://phloii.s3.amazonaws.com/relationshiptTypes/heartWithArrow.png/20241011_153904' },
             { text: 'Long-term, open to short', emoji: '😍',images:'https://phloii.s3.eu-north-1.amazonaws.com/relationshiptTypes/heartEyes.png/20241011_153951' },
@@ -37,8 +39,9 @@ const options = [
     },
   
     {
-        question_id: '66fe595005a11c463087a34e',
-     
+        // question_id: '66fe595005a11c463087a34e',
+        question_id: '66ff985963e8072c0fd6a4ba',
+        
         options: [
             { text: 'I stay on WhatsApp' },
             { text: 'Big-time texter' },
@@ -51,8 +54,9 @@ const options = [
     },
 
     {
-        question_id: '66fe595005a11c463087a350',
-   
+        // question_id: '66fe595005a11c463087a350',
+        question_id: '66ff985963e8072c0fd6a4bc',
+        
         options: [
             { text: 'Thoughtful gesture' },
             { text: 'Presents' },
@@ -63,8 +67,9 @@ const options = [
     },
 
     {
-        question_id: '66fe595005a11c463087a354',
-
+        // question_id: '66fe595005a11c463087a354',
+        question_id: '66ff985963e8072c0fd6a4be',
+        
         options: [
             { text: 'Not for me' },
             { text: 'Sober' },
@@ -76,8 +81,9 @@ const options = [
     },
   
     {
-        question_id: '66fe595005a11c463087a358',
-
+        // question_id: '66fe595005a11c463087a358',
+        question_id: '66ff985963e8072c0fd6a4c0',
+        
         options: [
             { text: 'Social smoker' },
             { text: 'Smoke when drinking' },
@@ -88,8 +94,9 @@ const options = [
     },
  
     {
-        question_id: '66fe595005a11c463087a35c',
-   
+        // question_id: '66fe595005a11c463087a35c',
+        question_id: '66ff985963e8072c0fd6a4c2',
+        
         options: [
             { text: 'Everyday' },
             { text: 'Often' },
@@ -99,8 +106,9 @@ const options = [
     },
 
     {
-        question_id: '66fe595005a11c463087a360',
-       
+        // question_id: '66fe595005a11c463087a360', - local
+        question_id: '66ff985963e8072c0fd6a4c4', // development
+        
          options : [
             { text: 'Harry Potter' },
             { text: 'Spa' },
