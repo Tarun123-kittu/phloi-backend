@@ -1,27 +1,31 @@
+let hotelPaymentsModel = require("../../models/hotelPaymentsModel")
+let config = require("../../config/config")
+let stripe = require('stripe')(config.development.stripe_secret_key)
+
+
+
 
 const handleCheckoutSessionCompleted = async (session) => {
     try {
-             
-           const subscription = await stripe.subscriptions.retrieve(session.subscription);
-        
-  
-           const subscriptionEndDate = new Date(subscription.current_period_end * 1000); 
-           
-     
+        const subscription = await stripe.subscriptions.retrieve(session.subscription);
+        const subscriptionEndDate = new Date(subscription.current_period_end * 1000);
+
         await hotelPaymentsModel.findOneAndUpdate(
             { transactionId: session.id },
-            { 
+            {
                 paymentStatus: 'completed',
-                subscriptionId:session.subscription,
-                paymentDate: new Date(), 
-                subscriptionEndDate:subscriptionEndDate,
-                receiptUrl: session.receipt_url }
+                subscriptionId: session.subscription,
+                paymentDate: new Date(),
+                subscriptionEndDate: subscriptionEndDate,
+                receiptUrl: session.receipt_url
+            }
         );
         console.log(`Payment completed for session ${session.id}`);
     } catch (error) {
         console.error(`Error handling checkout session completion: ${error.message}`);
     }
 };
+
 
 
 const handleInvoicePaymentSucceeded = async (invoice) => {
@@ -31,12 +35,17 @@ const handleInvoicePaymentSucceeded = async (invoice) => {
     );
 };
 
+
+
+
 const handleInvoicePaymentFailed = async (invoice) => {
     await hotelPaymentsModel.findOneAndUpdate(
         { subscriptionId: invoice.subscription },
         { paymentStatus: 'failed', paymentDate: new Date() }
     );
 };
+
+
 
 const handleSubscriptionDeleted = async (subscription) => {
     await hotelPaymentsModel.findOneAndUpdate(
@@ -48,7 +57,6 @@ const handleSubscriptionDeleted = async (subscription) => {
 
 const handleSubscriptionUpdated = async (subscription) => {
     try {
-        console.log("subscription updated -----",subscription.status)
         await hotelPaymentsModel.findOneAndUpdate(
             { subscriptionId: subscription.id },
             {
@@ -63,9 +71,9 @@ const handleSubscriptionUpdated = async (subscription) => {
 };
 
 
+
 const handleInvoiceCreated = async (invoice) => {
     try {
-       
         await hotelPaymentsModel.findOneAndUpdate(
             { subscriptionId: invoice.subscription },
             { paymentStatus: 'created', paymentDate: new Date(invoice.created * 1000) }

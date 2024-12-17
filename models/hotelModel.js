@@ -24,7 +24,6 @@ const hotelSchema = new mongoose.Schema({
     images: [{ type: String }],
     onboardingCompleted: { type: Boolean, default: false },
     adminVerified: { type: Boolean, default: false },
-    paymentStatus: { type: String, enum: ["pending", "completed", "failed"], default: "pending" }
 }, { timestamps: true });
 
 hotelSchema.index({ hotelAccountId: 1, adminVerified: 1, createdAt: -1, updatedAt: -1 });

@@ -1,11 +1,17 @@
 let { errorResponse, successResponse } = require("../../utils/common/responseHandler")
 let messages = require("../../utils/common/messages")
 let config = require("../../config/config")
-const stripe = require('stripe')(config.development.stripe_secret_key)
+let stripe = require('stripe')(config.development.stripe_secret_key)
 let hotelPaymentsModel = require("../../models/hotelPaymentsModel")
-let notificationModel = require("../../models/notificationModel")
-const hotelModel = require("../../models/hotelModel")
-
+let hotelModel = require("../../models/hotelModel")
+let {
+    handleCheckoutSessionCompleted,
+    handleInvoicePaymentSucceeded,
+    handleInvoicePaymentFailed,
+    handleSubscriptionDeleted,
+    handleSubscriptionUpdated,
+    handleInvoiceCreated
+} = require("../../utils/common/payments")
 
 
 
@@ -14,12 +20,12 @@ const hotelModel = require("../../models/hotelModel")
 exports.subscribe = async (req, res) => {
     try {
         const { hotelId } = req.query;
-        if(!hotelId){ return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"Please provide hotel Id in params"))}
+        if (!hotelId) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please provide hotel Id in params")) }
 
         let isHotelExist = await hotelModel.findById(hotelId)
-        if(!isHotelExist){return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"Hotel not exist with this hotel Id"))}
+        if (!isHotelExist) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Hotel not exist with this hotel Id")) }
         const hotelSubscription = await hotelPaymentsModel.findOne({ hotelId }).sort({ updatedAt: -1 });
- 
+
         if (hotelSubscription && hotelSubscription) {
             const { paymentStatus, subscriptionEndDate } = hotelSubscription;
 
@@ -28,7 +34,7 @@ exports.subscribe = async (req, res) => {
             }
         }
 
-        return res.render("subscribe.ejs",{ hotelId });
+        return res.render("subscribe.ejs", { hotelId });
     } catch (error) {
         console.error("Error checking subscription status:", error);
         return res.status(500).json({ error: "Something went wrong" });
@@ -54,7 +60,7 @@ exports.checkout = async (req, res) => {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Price ID is missing in configuration."));
         }
 
-     
+
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             line_items: [
@@ -70,12 +76,12 @@ exports.checkout = async (req, res) => {
         });
 
 
-        const paymentAmount = 99; 
+        const paymentAmount = 99;
 
         const payment = new hotelPaymentsModel({
             hotelId,
             transactionId: session.id,
-            subscriptionId:"",
+            subscriptionId: "",
             paymentAmount,
             currency: 'USD',
             paymentStatus: 'pending',
@@ -98,6 +104,23 @@ exports.checkout = async (req, res) => {
 exports.success = async (req, res) => {
     try {
         const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
+        let checkHotelPayment = await hotelPaymentsModel.findOne({ transactionId: session.id})
+        if(checkHotelPayment.paymentStatus=='pending'){
+            console.log("webhook not work i am inside pending ----")
+            const subscription = await stripe.subscriptions.retrieve(session.subscription);
+            const subscriptionEndDate = new Date(subscription.current_period_end * 1000);
+            await hotelPaymentsModel.findOneAndUpdate(
+                { transactionId: session.id },
+                {
+                    paymentStatus: 'completed',
+                    subscriptionId: session.subscription,
+                    paymentDate: new Date(),
+                    subscriptionEndDate: subscriptionEndDate,
+                    receiptUrl: session.receipt_url
+                }
+            );
+        }
+      
         res.render("success.ejs")
     } catch (error) {
         console.error("Error saving hotel details:", error);
@@ -108,7 +131,6 @@ exports.success = async (req, res) => {
 
 
 exports.cancel = async (req, res) => {
-
     res.render('cancel.ejs')
 }
 
@@ -116,11 +138,11 @@ exports.cancel = async (req, res) => {
 
 
 exports.webhook = async (req, res) => {
+    console.log("in the webhook api ----")
     const sig = req.headers['stripe-signature'];
     let event;
 
     try {
-       
         event = stripe.webhooks.constructEvent(req.body, sig, config.development.webhook_singing_key);
         console.log("event ------", event.type);
     } catch (err) {
@@ -134,7 +156,7 @@ exports.webhook = async (req, res) => {
                 await handleInvoiceCreated(event.data.object);
                 break;
             case 'checkout.session.completed':
-                await handleCheckoutSessionCompleted(event.data.object);  
+                await handleCheckoutSessionCompleted(event.data.object);
                 break;
             case 'invoice.payment_succeeded':
                 await handleInvoicePaymentSucceeded(event.data.object);
@@ -159,85 +181,6 @@ exports.webhook = async (req, res) => {
     }
 };
 
-
-
-
-const handleCheckoutSessionCompleted = async (session) => {
-    try {
-             
-           const subscription = await stripe.subscriptions.retrieve(session.subscription);
-        
-  
-           const subscriptionEndDate = new Date(subscription.current_period_end * 1000); 
-           
-     
-        await hotelPaymentsModel.findOneAndUpdate(
-            { transactionId: session.id },
-            { 
-                paymentStatus: 'completed',
-                subscriptionId:session.subscription,
-                paymentDate: new Date(), 
-                subscriptionEndDate:subscriptionEndDate,
-                receiptUrl: session.receipt_url }
-        );
-        console.log(`Payment completed for session ${session.id}`);
-    } catch (error) {
-        console.error(`Error handling checkout session completion: ${error.message}`);
-    }
-};
-
-
-const handleInvoicePaymentSucceeded = async (invoice) => {
-    await hotelPaymentsModel.findOneAndUpdate(
-        { subscriptionId: invoice.subscription },
-        { paymentStatus: 'completed', paymentDate: new Date() }
-    );
-};
-
-const handleInvoicePaymentFailed = async (invoice) => {
-    await hotelPaymentsModel.findOneAndUpdate(
-        { subscriptionId: invoice.subscription },
-        { paymentStatus: 'failed', paymentDate: new Date() }
-    );
-};
-
-const handleSubscriptionDeleted = async (subscription) => {
-    await hotelPaymentsModel.findOneAndUpdate(
-        { subscriptionId: subscription.id },
-        { paymentStatus: 'canceled', paymentDate: new Date() }
-    );
-};
-
-
-const handleSubscriptionUpdated = async (subscription) => {
-    try {
-        console.log("subscription updated -----",subscription.status)
-        await hotelPaymentsModel.findOneAndUpdate(
-            { subscriptionId: subscription.id },
-            {
-                paymentStatus: subscription.status,
-                paymentDate: new Date(),
-                currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-            }
-        );
-    } catch (error) {
-        console.error(`Error updating subscription: ${error.message}`);
-    }
-};
-
-
-const handleInvoiceCreated = async (invoice) => {
-    try {
-       
-        await hotelPaymentsModel.findOneAndUpdate(
-            { subscriptionId: invoice.subscription },
-            { paymentStatus: 'created', paymentDate: new Date(invoice.created * 1000) }
-        );
-        console.log(`Invoice created for subscription ${invoice.subscription}`);
-    } catch (error) {
-        console.error(`Error handling invoice creation: ${error.message}`);
-    }
-};
 
 
 

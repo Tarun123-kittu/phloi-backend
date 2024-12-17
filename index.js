@@ -11,8 +11,9 @@ const server = http.createServer(app);
 const userModel = require('./models/userModel')
 const joinedRoomsModel = require('./models/joinedRoomsModel')
 const roomsModel = require('./models/exploreRoomsModel')
+const paymentController = require('./controllers/hotel/paymentsController')
 
-
+app.post("/api/v1/hotel/webhook",express.raw({ type: 'application/json' }), paymentController.webhook);
 
 const io = socketIo(server, {
   cors: {
@@ -81,6 +82,7 @@ app.use(cors())
 app.use(cors({
   origin: '*',
 }));
+
 app.use(express.text());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))

@@ -9,6 +9,7 @@ let hotelPaymentSchema = new mongoose.Schema(
         paymentAmount: { type: Number, required: true },
         currency: { type: String, default: 'USD' },
         paymentMethod: { type: String, default: 'card', required: true },
+        paymentStatus: { type: String, enum: ['pending', 'completed', 'failed', 'created','cancelled'], default: 'pending' },
         paymentDate: { type: Date, default: Date.now },
         subscriptionEndDate:{type:Date},
         receiptUrl: { type: String },

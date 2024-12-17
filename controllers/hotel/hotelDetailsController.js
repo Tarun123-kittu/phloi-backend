@@ -5,6 +5,7 @@ const { errorResponse, successResponse } = require("../../utils/common/responseH
 const messages = require("../../utils/common/messages")
 const { uploadFile, deleteFileFromAWS } = require("../../utils/common/awsUpload");
 const { default: mongoose } = require("mongoose");
+const hotelPaymentsModel = require("../../models/hotelPaymentsModel");
 
 
 
@@ -87,33 +88,32 @@ exports.saveHotelDetails = async (req, res) => {
 exports.get_hotel_details = async (req, res) => {
     try {
         let id = req.result.userId;
-  
-        let objectId = new mongoose.Types.ObjectId(id);  
+
+        let objectId = new mongoose.Types.ObjectId(id);
         const hotelDetails = await hotelModel.aggregate([
             {
-                $match: { hotelAccountId: objectId }  
+                $match: { hotelAccountId: objectId }
             },
             {
                 $lookup: {
-                    from: 'hotel_payments',  
-                    localField: '_id',  
-                    foreignField: 'hotelId',  
-                    as: 'hotelPayments' 
+                    from: 'hotel_payments',
+                    localField: '_id',
+                    foreignField: 'hotelId',
+                    as: 'hotelPayments'
                 }
             },
             {
-                $unwind: { 
-                    path: '$hotelPayments',  
-                    preserveNullAndEmptyArrays: true 
+                $unwind: {
+                    path: '$hotelPayments',
+                    preserveNullAndEmptyArrays: true
                 }
             },
             {
-                $sort: { 'hotelPayments.updatedAt': -1 }  
+                $sort: { 'hotelPayments.updatedAt': -1 }
             },
             {
                 $group: {
-                    _id: '$_id', 
-                    username: { $first: '$username' },
+                    _id: '$_id',
                     establishmentName: { $first: '$establishmentName' },
                     establishmentType: { $first: '$establishmentType' },
                     images: { $first: '$images' },
@@ -122,7 +122,7 @@ exports.get_hotel_details = async (req, res) => {
                     uniqueFeatures: { $first: '$uniqueFeatures' },
                     why_want_phloi: { $first: '$why_want_phloi' },
                     adminVerified: { $first: '$adminVerified' },
-                    hotelPayments: { $first: '$hotelPayments' }, 
+                    hotelPayments: { $first: '$hotelPayments' },
                 }
             },
             {
@@ -136,7 +136,6 @@ exports.get_hotel_details = async (req, res) => {
             },
             {
                 $project: {
-                    username: 1,
                     establishmentName: 1,
                     establishmentType: 1,
                     images: 1,
@@ -162,6 +161,41 @@ exports.get_hotel_details = async (req, res) => {
 };
 
 
+
+
+exports.get_hotel_data = async (req, res) => {
+    try {
+        const hotelId = req.query.hotelId;
+
+        const [hotel, payment] = await Promise.all([
+            hotelModel.findById(hotelId).select('establishmentName establishmentType address ownerDetails why_want_phloi uniqueFeatures inPersonVisitAvailability images adminVerified'),
+            hotelPaymentsModel.findOne({ hotelId }).sort({ updatedAt: -1 }).select("paymentStatus paymentAmount paymentDate subscriptionEndDate")
+        ]);
+
+    
+        if (!hotel) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Hotel with this hotelId is not registered"));
+        }
+
+   
+        const data = {
+            hotel,
+            paymentDetails: {
+                _id: payment?._id ?? null,
+                paymentAmount: payment?.paymentAmount ?? null,
+                paymentStatus: payment?.paymentStatus ?? null,
+                paymentDate: payment?.paymentDate ?? null,
+                subscriptionEndDate: payment?.subscriptionEndDate ?? null
+            }
+        };
+
+        return res.status(200).json(successResponse("Data retrieved successfully", data));
+
+    } catch (error) {
+        console.error("ERROR::", error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    }
+};
 
 
 
@@ -194,11 +228,11 @@ exports.update_hotel_details = async (req, res) => {
 
         let images = req.files?.images || [];
         if (!Array.isArray(images)) {
- 
+
             images = [images];
         }
 
-        
+
         const existingHotel = await hotelModel.findById(hotelId).select("images");
         if (!existingHotel) {
             return res.status(404).json(errorResponse("Hotel not found."));
@@ -207,7 +241,7 @@ exports.update_hotel_details = async (req, res) => {
         let imageUrls = existingHotel.images;
         const currentImageCount = imageUrls.length;
 
-    
+
         if (images.length > 0) {
             const totalImageCount = currentImageCount + images.length;
 
@@ -227,7 +261,7 @@ exports.update_hotel_details = async (req, res) => {
             return res.status(400).json(errorResponse("You must have exactly 5 images after the update."));
         }
 
-      
+
         const updatedData = {
             establishmentName: establishmentName || existingHotel.establishmentName,
             establishmentType: establishmentType || existingHotel.establishmentType,
@@ -251,7 +285,7 @@ exports.update_hotel_details = async (req, res) => {
             images: imageUrls,
         };
 
-      
+
         const updatedHotel = await hotelModel.findByIdAndUpdate(
             hotelId,
             { $set: updatedData, adminVerified: false },
