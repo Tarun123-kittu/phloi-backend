@@ -27,6 +27,10 @@ const uploadFile = async (file, data = null) => {
         key = `${data}/profile_images/${userId}/${filename}`
     }
 
+    if( data == 'Secret dating avatar'){
+          key = `Secret Dating/avatar/${userId}/${filename}`
+    }
+
     if (data == 'Chat') {
         let chatId = file.chatId
         key = `Chat/${chatId}/${userId}/${current_time}`;

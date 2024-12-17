@@ -4,7 +4,7 @@ const config = require('../../config/config');
 
 const sendEmail = async (email, code) => {
   try {
-    const resetLink = `https://dev.phloii.com/reset-password/${code}`;
+
     let transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -37,7 +37,7 @@ const sendEmail = async (email, code) => {
     ">
     Please Complete Verification 
   </h1>
-  <a href="${resetLink}" style="
+  <a href="${code}" style="
       font-size: 18px; 
       margin: 20px 0; 
       font-weight: 500;

@@ -2,7 +2,7 @@ let hotelModel = require("../../models/hotelModel")
 let { errorResponse, successResponse } = require('../../utils/common/responseHandler')
 const messages = require('../../utils/common/messages')
 const { generateHashedPassword, compareHashedPassword, generateToken, generateOtp, passwordResetToken } = require('../../utils/common/commonFunctions')
-const sendEmail = require("../../utils/common/emailSender")
+const {sendEmail} = require("../../utils/common/emailSender")
 const hotelAccountsModel = require("../../models/hotelAccounts")
 
 
@@ -73,7 +73,7 @@ exports.forgetPassword = async (req, res) => {
                 forgetPsd_tokenCreatedAt: date,
             }
         })
-        const resetUrl = `http://localhost:3000/reset_password/${resetToken}`;
+        const resetUrl = `https://dev.phloii.com/api/v1/reset_password/${resetToken}`;
         const emailResponse = await sendEmail(email, resetUrl);
         if (emailResponse.success) {
             return res.status(200).json(successResponse(emailResponse.message));

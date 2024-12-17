@@ -5,6 +5,7 @@ let secretDatingModel = require("../../models/secretDatingUserModel")
 let exploreRoomsModel = require("../../models/exploreRoomsModel")
 let sendPushNotification = require("../../utils/common/pushNotifications")
 let optionsModel = require("../../models/optionsModel")
+let uploadFile = require("../../utils/common/awsUpload")
 
 
 
@@ -192,22 +193,39 @@ exports.active_inactive_users = async (req, res) => {
 
 exports.test_pushNotification = async (req, res) => {
     try {
-        let mongoose = require("mongoose")
-        const questionIdsToDelete = [
-            '66fe594f05a11c463087a34a',
-            '66fe594f05a11c463087a34c',
-            '66fe595005a11c463087a34e',
-            '66fe595005a11c463087a350',
-            '66fe595005a11c463087a354',
-            '66fe595005a11c463087a358',
-            '66fe595005a11c463087a35c',
-            '66fe595005a11c463087a360'
-          ].map(id =>new mongoose.Types.ObjectId(id)); 
-          
-         await optionsModel.deleteMany({ question_id: { $in: questionIdsToDelete } })
-        let message = 'Hii welcome to Phloii....'
-        let result = sendPushNotification("cuF7ulV5IUmMtAlLJ6Lmuh:APA91bET3Y_Q3I5aB6Rk0Rlw5EwufVR5scXrRbATQ2cLLFuwKDKN2olE7K1xFbmZvfgrcLAvEQfh65AVBTSWbKVVqWcR9mOJ6cU8hcdnvw3_kLJ3I3Wm4TY", message)
-        res.send("working.. ")
+        let imageFile = req.files.image
+
+        const uploadedImage = await uploadFile(imageFile, 'Secret dating avatar');
+
+        if (!uploadedImage || !uploadedImage.Location) {
+            return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, "Failed to upload the image to S3"));
+        }
+
+        res.send(uploadedImage.Location) ;
+
+        //delete the options selected ********
+        //     let mongoose = require("mongoose")
+        //     const questionIdsToDelete = [
+        //         '66fe594f05a11c463087a34a',
+        //         '66fe594f05a11c463087a34c',
+        //         '66fe595005a11c463087a34e',
+        //         '66fe595005a11c463087a350',
+        //         '66fe595005a11c463087a354',
+        //         '66fe595005a11c463087a358',
+        //         '66fe595005a11c463087a35c',
+        //         '66fe595005a11c463087a360'
+        //       ].map(id =>new mongoose.Types.ObjectId(id)); 
+
+        //      await optionsModel.deleteMany({ question_id: { $in: questionIdsToDelete } })
+
+
+        // test push notification *************
+        // let message = 'Hii welcome to Phloii....'
+        // let result = sendPushNotification("cuF7ulV5IUmMtAlLJ6Lmuh:APA91bET3Y_Q3I5aB6Rk0Rlw5EwufVR5scXrRbATQ2cLLFuwKDKN2olE7K1xFbmZvfgrcLAvEQfh65AVBTSWbKVVqWcR9mOJ6cU8hcdnvw3_kLJ3I3Wm4TY", message)
+        // res.send("working.. ")
+
+
+
     } catch (error) {
         console.log("ERROR::", error);
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
