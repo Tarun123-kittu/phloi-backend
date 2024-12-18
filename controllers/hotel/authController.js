@@ -46,7 +46,7 @@ exports.signIn = async (req, res) => {
         var onborading
         if (isOnboradingDone) { onborading = true } else { onborading = false }
 
-        return res.status(200).json({type:"success",message:"Login successful",data:token,isOnboradingDone:onborading })
+        return res.status(200).json({type:"success",message:"Login successful",data:token,isOnboradingDone:onborading, email:isEmailExist.email,username:isEmailExist.username })
     } catch (error) {
         console.log("ERROR::", error)
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.messages))
