@@ -11,7 +11,7 @@ const hotelPaymentsModel = require("../../models/hotelPaymentsModel");
 
 exports.saveHotelDetails = async (req, res) => {
     try {
-        const userId = req.result.userId
+        const userId = req.result.userId;
 
         const {
             establishmentName,
@@ -29,22 +29,27 @@ exports.saveHotelDetails = async (req, res) => {
             uniqueFeatures,
             safeWord,
             inPersonVisitAvailability,
+
+            customerServiceNumber,
+            food,
+            atmosphere,
+            services,
+            openTiming,
+            closeTiming
         } = req.body;
 
-        const files = req.files?.images
+        const files = req.files?.images;
         if (!files || files.length !== 5) {
             return res.status(400).json(errorResponse("You must upload exactly 5 images."));
         }
 
-
         const imageUrls = [];
-        for (var file of files) {
-            file.establishmentName = establishmentName
-            file.establishmentType = establishmentType
+        for (const file of files) {
+            file.establishmentName = establishmentName;
+            file.establishmentType = establishmentType;
             const uploadedImage = await uploadFile(file, "Hotels");
             imageUrls.push(uploadedImage.Location);
         }
-
 
         const newAddedHotel = await hotelModel.create({
             hotelAccountId: userId,
@@ -68,18 +73,25 @@ exports.saveHotelDetails = async (req, res) => {
             safeWord,
             inPersonVisitAvailability,
             images: imageUrls,
+            
+            customerServiceNumber,
+            food,
+            atmosphere,
+            services,
+            openCloseTimings:{
+                open:openTiming,
+                close:closeTiming
+            },
             onboardingCompleted: true,
+        });
 
-        }
-        );
-
-        return res.status(200).json(successResponse("Hotel details saved successfully"))
-
+        return res.status(200).json(successResponse("Hotel details saved successfully"));
     } catch (error) {
         console.error("Error saving hotel details:", error);
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
+
 
 
 

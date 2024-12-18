@@ -104,8 +104,8 @@ exports.checkout = async (req, res) => {
 exports.success = async (req, res) => {
     try {
         const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
-        let checkHotelPayment = await hotelPaymentsModel.findOne({ transactionId: session.id})
-        if(checkHotelPayment.paymentStatus=='pending'){
+        let checkHotelPayment = await hotelPaymentsModel.findOne({ transactionId: session.id })
+        if (checkHotelPayment.paymentStatus == 'pending') {
             console.log("webhook not work i am inside pending ----")
             const subscription = await stripe.subscriptions.retrieve(session.subscription);
             const subscriptionEndDate = new Date(subscription.current_period_end * 1000);
@@ -119,8 +119,14 @@ exports.success = async (req, res) => {
                     receiptUrl: session.receipt_url
                 }
             );
+            let hotelId = session.metadata.hotelId
+            await hotelModel.findByIdAndUpdate( hotelId ,{
+                $set:{
+                    paymentStatus:"completed"
+                }
+            })
         }
-      
+
         res.render("success.ejs")
     } catch (error) {
         console.error("Error saving hotel details:", error);

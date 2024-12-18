@@ -1,4 +1,5 @@
 let hotelPaymentsModel = require("../../models/hotelPaymentsModel")
+let hotelModel = require("../../models/hotelModel")
 let config = require("../../config/config")
 let stripe = require('stripe')(config.development.stripe_secret_key)
 
@@ -20,6 +21,14 @@ const handleCheckoutSessionCompleted = async (session) => {
                 receiptUrl: session.receipt_url
             }
         );
+
+        let hotelId = session.metadata.hotelId
+        console.log("hotel id ----",hotelId)
+        await hotelModel.findByIdAndUpdate( hotelId , {
+            $set: {
+                paymentStatus: "completed"
+            }
+        })
         console.log(`Payment completed for session ${session.id}`);
     } catch (error) {
         console.error(`Error handling checkout session completion: ${error.message}`);

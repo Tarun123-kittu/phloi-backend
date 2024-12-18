@@ -99,6 +99,26 @@ const saveHotelDetailsValidator = [
     check("ownerEmail").isEmail().withMessage("Invalid email address"),
     check("why_want_phloi").notEmpty().withMessage("why you choose phloii please add reason"),
     check("inPersonVisitAvailability").notEmpty().withMessage("Please indicate whether you are open to an in-person visit"),
+
+    check("customerServiceNumber").notEmpty().withMessage("Please provide a number on which customers can get help to know you more"),
+    check("food").isArray({ min: 1 }).withMessage("At least one food option is required"),
+    check("food.*").isString().withMessage("Each food option must be a string"),
+
+    check("atmosphere").isArray({ min: 1 }).withMessage("At least one atmosphere type is required"),
+    check("atmosphere.*").isString().withMessage("Each atmosphere type must be a string"),
+
+    check("services").isArray({ min: 1 }).withMessage("At least one service is required"),
+    check("services.*").isString().withMessage("Each service must be a string"),
+
+    check("openTiming")
+        .matches(/^(?:[01]\d|2[0-3]):[0-5]\d$/)
+        .withMessage("Opening time must be in military time format (HH:MM)"),
+
+    check("closeTiming")
+        .matches(/^(?:[01]\d|2[0-3]):[0-5]\d$/)
+        .withMessage("Closing time must be in military time format (HH:MM)"),
+
+
     (req, res, next) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -114,13 +134,13 @@ const changePasswordValidator = [
     check("password").notEmpty().withMessage("Please provide your recent password"),
     check("newPassword").notEmpty().withMessage("Please provide new password"),
     check("newPassword", "Password must be at least 6 characters long, include 1 uppercase letter, 1 number, and 1 symbol")
-    .isStrongPassword({
-        minLength: 6,
-        minLowercase: 1,
-        minUppercase: 1,
-        minNumbers: 1,
-        minSymbols: 1,
-    }),
+        .isStrongPassword({
+            minLength: 6,
+            minLowercase: 1,
+            minUppercase: 1,
+            minNumbers: 1,
+            minSymbols: 1,
+        }),
     check("confirmPassword").notEmpty().withMessage("Please provide confirm password"),
     body('confirmPassword').custom((value, { req }) => {
         if (value !== req.body.newPassword) {
