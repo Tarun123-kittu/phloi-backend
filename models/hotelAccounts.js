@@ -6,7 +6,7 @@ const hotelAccountsSchema = new mongoose.Schema({
     password: { type: String, required: true },
     password_reset_token: { type: String },
     forgetPsd_tokenCreatedAt: { type: Date },
-
+    
 }, { timestamps: true });
 
 module.exports = mongoose.model('hotel_account', hotelAccountsSchema);
