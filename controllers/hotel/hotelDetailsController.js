@@ -130,6 +130,10 @@ exports.get_hotel_details = async (req, res) => {
                     establishmentType: { $first: '$establishmentType' },
                     images: { $first: '$images' },
                     address: { $first: '$address' },
+                    food:{$first: '$food'},
+                    atmostphere:{$first: '$atmosphere'},
+                    services:{$first: '$services'},
+                    openCloseTimings:{$first: '$openCloseTimings'},
                     ownerDetails: { $first: '$ownerDetails' },
                     uniqueFeatures: { $first: '$uniqueFeatures' },
                     why_want_phloi: { $first: '$why_want_phloi' },
@@ -156,11 +160,16 @@ exports.get_hotel_details = async (req, res) => {
                     uniqueFeatures: 1,
                     why_want_phloi: 1,
                     adminVerified: 1,
+                    food:1,
+                    atmostphere:1,
+                    services:1,
+                    openCloseTimings:1,
                     'hotelPayments.paymentAmount': 1,
                     'hotelPayments.paymentStatus': 1,
                     'hotelPayments.paymentDate': 1,
                     'hotelPayments.subscriptionEndDate': 1,
                     'hotelPayments.receiptUrl': 1
+                    
                 }
             }
         ]);
@@ -180,7 +189,7 @@ exports.get_hotel_data = async (req, res) => {
         const hotelId = req.query.hotelId;
 
         const [hotel, payment] = await Promise.all([
-            hotelModel.findById(hotelId).select('establishmentName establishmentType address ownerDetails why_want_phloi uniqueFeatures inPersonVisitAvailability images adminVerified'),
+            hotelModel.findById(hotelId).select('establishmentName establishmentType address ownerDetails why_want_phloi uniqueFeatures inPersonVisitAvailability images adminVerified food atmosphere services openCloseTimings'),
             hotelPaymentsModel.findOne({ hotelId }).sort({ updatedAt: -1 }).select("paymentStatus paymentAmount paymentDate subscriptionEndDate")
         ]);
 
@@ -236,14 +245,21 @@ exports.update_hotel_details = async (req, res) => {
             uniqueFeatures,
             safeWord,
             inPersonVisitAvailability,
+
+            customerServiceNumber,
+            food,
+            atmosphere,
+            services,
+            openCloseTimings: {
+                open: openTiming,
+                close: closeTiming
+            } = {}
         } = req.body;
 
         let images = req.files?.images || [];
         if (!Array.isArray(images)) {
-
             images = [images];
         }
-
 
         const existingHotel = await hotelModel.findById(hotelId).select("images");
         if (!existingHotel) {
@@ -252,7 +268,6 @@ exports.update_hotel_details = async (req, res) => {
 
         let imageUrls = existingHotel.images;
         const currentImageCount = imageUrls.length;
-
 
         if (images.length > 0) {
             const totalImageCount = currentImageCount + images.length;
@@ -268,11 +283,9 @@ exports.update_hotel_details = async (req, res) => {
             imageUrls = imageUrls.concat(uploadedUrls);
         }
 
-
         if (imageUrls.length !== 5) {
             return res.status(400).json(errorResponse("You must have exactly 5 images after the update."));
         }
-
 
         const updatedData = {
             establishmentName: establishmentName || existingHotel.establishmentName,
@@ -295,8 +308,15 @@ exports.update_hotel_details = async (req, res) => {
             safeWord: safeWord || existingHotel.safeWord,
             inPersonVisitAvailability: inPersonVisitAvailability ?? existingHotel.inPersonVisitAvailability,
             images: imageUrls,
+            customerServiceNumber: customerServiceNumber || existingHotel.customerServiceNumber,
+            food: food || existingHotel.food,
+            atmosphere: atmosphere || existingHotel.atmosphere,
+            services: services || existingHotel.services,
+            openCloseTimings: {
+                open: openTiming || existingHotel.openCloseTimings?.open,
+                close: closeTiming || existingHotel.openCloseTimings?.close
+            }
         };
-
 
         const updatedHotel = await hotelModel.findByIdAndUpdate(
             hotelId,
@@ -310,6 +330,7 @@ exports.update_hotel_details = async (req, res) => {
         return res.status(500).json(errorResponse("Something went wrong.", error.message));
     }
 };
+
 
 
 
