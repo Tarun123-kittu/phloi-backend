@@ -572,7 +572,7 @@ exports.user_registration_steps = async (req, res) => {
         if (current_step == 14) {
 
             let imageList = images?.images ? (Array.isArray(images.images) ? images.images : [images.images]) : [];
-
+         console.log('images list -------',imageList)
 
             if (imageList.length < 2) {
                 return res.status(400).json(errorResponse("At least two images are required"));
