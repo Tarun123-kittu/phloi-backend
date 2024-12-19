@@ -134,6 +134,7 @@ exports.get_hotel_details = async (req, res) => {
                     atmostphere:{$first: '$atmosphere'},
                     services:{$first: '$services'},
                     openCloseTimings:{$first: '$openCloseTimings'},
+                    customerServiceNumber:{$first: '$customerServiceNumber'},
                     ownerDetails: { $first: '$ownerDetails' },
                     uniqueFeatures: { $first: '$uniqueFeatures' },
                     why_want_phloi: { $first: '$why_want_phloi' },
@@ -164,6 +165,7 @@ exports.get_hotel_details = async (req, res) => {
                     atmostphere:1,
                     services:1,
                     openCloseTimings:1,
+                    customerServiceNumber:1,
                     'hotelPayments.paymentAmount': 1,
                     'hotelPayments.paymentStatus': 1,
                     'hotelPayments.paymentDate': 1,
@@ -189,7 +191,7 @@ exports.get_hotel_data = async (req, res) => {
         const hotelId = req.query.hotelId;
 
         const [hotel, payment] = await Promise.all([
-            hotelModel.findById(hotelId).select('establishmentName establishmentType address ownerDetails why_want_phloi uniqueFeatures inPersonVisitAvailability images adminVerified food atmosphere services openCloseTimings'),
+            hotelModel.findById(hotelId).select('establishmentName establishmentType address ownerDetails why_want_phloi uniqueFeatures inPersonVisitAvailability images adminVerified food atmosphere services openCloseTimings customerServiceNumber'),
             hotelPaymentsModel.findOne({ hotelId }).sort({ updatedAt: -1 }).select("paymentStatus paymentAmount paymentDate subscriptionEndDate")
         ]);
 
