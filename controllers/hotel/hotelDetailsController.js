@@ -40,8 +40,8 @@ exports.saveHotelDetails = async (req, res) => {
         } = req.body;
 
         const files = req.files?.images;
-        if (!files || files.length !== 5) {
-            return res.status(400).json(errorResponse("You must upload exactly 5 images."));
+        if (!files || files.length < 2) {
+            return res.status(400).json(errorResponse("At least two images are required"));
         }
 
         const imageUrls = [];
