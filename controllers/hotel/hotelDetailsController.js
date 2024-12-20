@@ -389,7 +389,19 @@ exports.get_hotel_notifications = async (req, res) => {
 
         let hotelNotifications = await notificationModel.find({ userId: hotelAccountId }).select(" notification_text read createdAt")
 
-        return res.status(200).json(successResponse("Notification retreived successfully",hotelNotifications))
+        return res.status(200).json(successResponse("Notification retreived successfully", hotelNotifications))
+
+    } catch (error) {
+        console.error("ERROR::", error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    }
+}
+
+
+
+
+exports.delete_subscription = async (req, res) => {
+    try {
 
     } catch (error) {
         console.error("ERROR::", error);

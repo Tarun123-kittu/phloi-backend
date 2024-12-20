@@ -18,7 +18,7 @@ exports.login = async (req, res) => {
 
         let otp = generateOtp();
 
-        // otp = '1111'
+        otp = '1111'
         // if (mobile_number == '+12082276076' || mobile_number == '+918278722656') {
         //     otp = "1111"
         // }
