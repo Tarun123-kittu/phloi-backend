@@ -272,9 +272,9 @@ exports.update_hotel_details = async (req, res) => {
         if (images.length > 0) {
             const totalImageCount = currentImageCount + images.length;
 
-            if (totalImageCount > 5) {
-                return res.status(400).json(errorResponse(`You can only upload ${5 - currentImageCount} more image(s) to maintain a total of 5 images.`));
-            }
+            // if (totalImageCount > 5) {
+            //     return res.status(400).json(errorResponse(`You can only upload ${5 - currentImageCount} more image(s) to maintain a total of 5 images.`));
+            // }
 
             console.log("Uploading new images...");
             const uploadPromises = images.map((file) => uploadFile(file, "Hotels"));
@@ -400,11 +400,3 @@ exports.get_hotel_notifications = async (req, res) => {
 
 
 
-exports.delete_subscription = async (req, res) => {
-    try {
-
-    } catch (error) {
-        console.error("ERROR::", error);
-        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
-    }
-}
