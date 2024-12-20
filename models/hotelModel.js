@@ -25,8 +25,8 @@ const hotelSchema = new mongoose.Schema({
     onboardingCompleted: { type: Boolean, default: false },
     adminVerified: { type: Boolean, default: false },
     paymentStatus: { type: String, enum: ["pending", "completed", "failed"], default: "pending" },
-    
-    customerServiceNumber:{type:String},
+    subscriptionEndDate: { type: Date },
+    customerServiceNumber: { type: String },
     food: [{ type: String }],
     atmosphere: [{ type: String }],
     services: [{ type: String }],

@@ -29,7 +29,8 @@ const handleCheckoutSessionCompleted = async (session) => {
         console.log("hotel id ----",hotelId)
         await hotelModel.findByIdAndUpdate( hotelId , {
             $set: {
-                paymentStatus: "completed"
+                paymentStatus: "completed",
+                subscriptionEndDate:subscriptionEndDate
             }
         })
         console.log(`Payment completed for session ${session.id}`);

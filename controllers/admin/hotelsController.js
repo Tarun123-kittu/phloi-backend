@@ -17,7 +17,7 @@ exports.get_hotel_verification_requests = async (req, res) => {
         const [hotelVerificationRequests, totalRequests] = await Promise.all([
             hotelModel
                 .find({ adminVerified: false })
-                .select("establishmentName establishmentType address.country paymentStatus createdAt")
+                .select("establishmentName establishmentType address.country paymentStatus address.state address.pinCode createdAt")
                 .sort({ updatedAt: -1 })
                 .skip(skip)
                 .limit(limit)
