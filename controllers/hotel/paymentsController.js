@@ -104,9 +104,9 @@ exports.checkout = async (req, res) => {
 exports.success = async (req, res) => {
     try {
         const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
+        console.log("session -------",session)
         let checkHotelPayment = await hotelPaymentsModel.findOne({ transactionId: session.id })
         if (checkHotelPayment.paymentStatus == 'pending') {
-            console.log("webhook not work i am inside pending ----")
             const subscription = await stripe.subscriptions.retrieve(session.subscription);
             const subscriptionEndDate = new Date(subscription.current_period_end * 1000);
             await hotelPaymentsModel.findOneAndUpdate(
@@ -116,7 +116,8 @@ exports.success = async (req, res) => {
                     subscriptionId: session.subscription,
                     paymentDate: new Date(),
                     subscriptionEndDate: subscriptionEndDate,
-                    receiptUrl: session.receipt_url
+                    receiptUrl: session.receipt_url,
+                    customerId:session.customer
                 }
             );
             let hotelId = session.metadata.hotelId
@@ -192,3 +193,34 @@ exports.webhook = async (req, res) => {
 
 
 
+exports.delete_subscription = async (req, res) => {
+    try {
+        let {customerId } = req.body;
+
+        if ( !customerId) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please provide  customerId"));
+        }
+
+        
+        const subscriptions = await stripe.subscriptions.list({ customer: customerId, status: 'active' });
+
+        if (subscriptions.data.length === 0) {
+            return res.status(404).json(errorResponse(messages.generalError.notFound, "No active subscription found for this customer."));
+        }
+
+      
+        const subscriptionId = subscriptions.data[0].id;
+
+      
+        await stripe.subscriptions.cancel(subscriptionId);
+
+        res.status(200).json({
+            success: true,
+            message: 'Subscription cancellation initiated',
+            subscriptionId: subscriptionId,
+        });
+    } catch (error) {
+        console.error("ERROR::", error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    }
+};

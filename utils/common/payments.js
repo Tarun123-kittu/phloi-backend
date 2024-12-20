@@ -8,7 +8,9 @@ let stripe = require('stripe')(config.development.stripe_secret_key)
 
 const handleCheckoutSessionCompleted = async (session) => {
     try {
+
         const subscription = await stripe.subscriptions.retrieve(session.subscription);
+
         const subscriptionEndDate = new Date(subscription.current_period_end * 1000);
 
         await hotelPaymentsModel.findOneAndUpdate(
@@ -18,7 +20,8 @@ const handleCheckoutSessionCompleted = async (session) => {
                 subscriptionId: session.subscription,
                 paymentDate: new Date(),
                 subscriptionEndDate: subscriptionEndDate,
-                receiptUrl: session.receipt_url
+                receiptUrl: session.receipt_url,
+                customerId:session.customer
             }
         );
 

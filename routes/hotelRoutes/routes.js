@@ -39,6 +39,7 @@ router.get("/subscribe", paymentController.subscribe)
 router.post("/checkout", paymentController.checkout)
 router.get("/success", paymentController.success)
 router.get("/cancel", paymentController.cancel)
+router.put("/delete_subscription",verifyHotelToken, paymentController.delete_subscription)
 
 
 
