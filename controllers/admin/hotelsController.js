@@ -95,7 +95,7 @@ exports.accept_reject_hotel_verification = async (req, res) => {
             type:'hotel'
         }); 
 
-        const emailResponse = await sendHotelVerificationEmail(isHotelExist.ownerDetails.ownerEmail, requestResponse, isHotelExist.establishmentName, isHotelExist.paymentStatus);
+        const emailResponse = await sendHotelVerificationEmail(isHotelExist.ownerDetails.ownerEmail, requestResponse, isHotelExist.establishmentName, isHotelExist.paymentStatus,hotelId);
         if (emailResponse.success) {
             return res.status(200).json(successResponse('Verification email has been sent successfully'));
         } else {
