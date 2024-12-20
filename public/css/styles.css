@@ -1,4 +1,5 @@
 /* Reset default browser styles */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400&family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap');
 * {
     margin: 0;
     padding: 0;
@@ -7,7 +8,7 @@
 
 /* Body and font settings */
 body {
-    font-family: 'Arial', sans-serif;
+    font-family: 'Poppins';
     background-color: #f7f7f7;
     color: #333;
     display: flex;
@@ -19,79 +20,87 @@ body {
 
 /* Center content in a container */
 .checkout-container {
-    background: linear-gradient(135deg, #ddf0f5, #5c6a7b); /* Blue gradient */
-    border-radius: 8px;
-    padding: 50px;
-    max-width: 600px;
-    width: 100%;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+     font-family: 'Poppins';
+    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
+    background-color: #000;
+    width: 100%;
 }
 
 .checkout-content {
-    background-color: white;
+     font-family: 'Poppins';
+    background-color: #0E0E0E;
     border-radius: 10px;
     padding: 40px;
     text-align: center;
     width: 100%;
+    max-width: 650px;
 }
 
 .checkout-heading {
-    font-size: 2.0rem;
-    color: #333;
+     font-family: 'Poppins';
+    font-size: 24px;
+    color: #FBB90D;
     font-weight: 600;
     margin-bottom: 20px;
 }
 
 .description {
+     font-family: 'Poppins';
     font-size: 1.2rem;
-    color: #555;
+    color: #C8C8D0;
     margin-bottom: 25px;
 }
 
 .price-info {
+     font-family: 'Poppins';
     margin-bottom: 20px;
 }
 
 .price-text {
+     font-family: 'Poppins';
     font-size: 1.5rem;
-    color: #28a745;
+    color: #FBB90D;
     font-weight: bold;
 }
 
 .price {
+     font-family: 'Poppins';
     font-size: 1.8rem;
     font-weight: 600;
-    color: #00c6ff;
+    color: #FBB90D;
 }
 
 .subscription-info {
+     font-family: 'Poppins';
     margin-bottom: 30px;
 }
 
 .info-text {
+     font-family: 'Poppins';
     font-size: 1rem;
-    color: #444;
+    color: #C8C8D0;
     line-height: 1.5;
     margin-bottom: 25px;
 }
 
 .checkout-button {
-    background-color: #0072ff;
-    color: white;
+     font-family: 'Poppins';
+    background: linear-gradient(90deg, #FBB90D 0%, #22EBFF 100%);
+    color: #000;
     border: none;
     padding: 15px 30px;
     font-size: 0.9rem;
     font-weight: 500;
     border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
-    width: 50%;
+ 
 }
 
 .checkout-button:hover {
+     font-family: 'Poppins';
     background-color: #005bb5;
 }
 
