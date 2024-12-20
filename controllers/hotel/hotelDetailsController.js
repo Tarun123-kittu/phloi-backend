@@ -6,6 +6,7 @@ const messages = require("../../utils/common/messages")
 const { uploadFile, deleteFileFromAWS } = require("../../utils/common/awsUpload");
 const { default: mongoose } = require("mongoose");
 const hotelPaymentsModel = require("../../models/hotelPaymentsModel");
+const notificationModel = require("../../models/notificationModel")
 
 
 
@@ -73,14 +74,14 @@ exports.saveHotelDetails = async (req, res) => {
             safeWord,
             inPersonVisitAvailability,
             images: imageUrls,
-            
+
             customerServiceNumber,
             food,
             atmosphere,
             services,
-            openCloseTimings:{
-                open:openTiming,
-                close:closeTiming
+            openCloseTimings: {
+                open: openTiming,
+                close: closeTiming
             },
             onboardingCompleted: true,
         });
@@ -129,11 +130,11 @@ exports.get_hotel_details = async (req, res) => {
                     establishmentType: { $first: '$establishmentType' },
                     images: { $first: '$images' },
                     address: { $first: '$address' },
-                    food:{$first: '$food'},
-                    atmostphere:{$first: '$atmosphere'},
-                    services:{$first: '$services'},
-                    openCloseTimings:{$first: '$openCloseTimings'},
-                    customerServiceNumber:{$first: '$customerServiceNumber'},
+                    food: { $first: '$food' },
+                    atmostphere: { $first: '$atmosphere' },
+                    services: { $first: '$services' },
+                    openCloseTimings: { $first: '$openCloseTimings' },
+                    customerServiceNumber: { $first: '$customerServiceNumber' },
                     ownerDetails: { $first: '$ownerDetails' },
                     uniqueFeatures: { $first: '$uniqueFeatures' },
                     why_want_phloi: { $first: '$why_want_phloi' },
@@ -160,17 +161,17 @@ exports.get_hotel_details = async (req, res) => {
                     uniqueFeatures: 1,
                     why_want_phloi: 1,
                     adminVerified: 1,
-                    food:1,
-                    atmostphere:1,
-                    services:1,
-                    openCloseTimings:1,
-                    customerServiceNumber:1,
+                    food: 1,
+                    atmostphere: 1,
+                    services: 1,
+                    openCloseTimings: 1,
+                    customerServiceNumber: 1,
                     'hotelPayments.paymentAmount': 1,
                     'hotelPayments.paymentStatus': 1,
                     'hotelPayments.paymentDate': 1,
                     'hotelPayments.subscriptionEndDate': 1,
                     'hotelPayments.receiptUrl': 1
-                    
+
                 }
             }
         ]);
@@ -194,12 +195,12 @@ exports.get_hotel_data = async (req, res) => {
             hotelPaymentsModel.findOne({ hotelId }).sort({ updatedAt: -1 }).select("paymentStatus paymentAmount paymentDate subscriptionEndDate")
         ]);
 
-    
+
         if (!hotel) {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Hotel with this hotelId is not registered"));
         }
 
-   
+
         const data = {
             hotel,
             paymentDetails: {
@@ -381,3 +382,17 @@ exports.delete_Hotel_image = async (req, res) => {
 
 
 
+
+exports.get_hotel_notifications = async (req, res) => {
+    try {
+        const hotelAccountId = req.result.userId;
+
+        let hotelNotifications = await notificationModel.find({ userId: hotelAccountId }).select(" notification_text read createdAt")
+
+        return res.status(200).json(successResponse("Notification retreived successfully",hotelNotifications))
+
+    } catch (error) {
+        console.error("ERROR::", error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    }
+}

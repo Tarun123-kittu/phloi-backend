@@ -68,7 +68,6 @@ exports.monthly_joined_users = async (req, res) => {
 
 
 
-
 exports.secretDating_monthly_joined_users = async (req, res) => {
     try {
         const year = req.query.year || new Date().getFullYear();
@@ -189,6 +188,16 @@ exports.active_inactive_users = async (req, res) => {
     }
 }
 
+
+exports.get_all_sercretDating_users_count = async(req,res)=>{
+    try{
+    let secretDatingUsers = await  secretDatingModel.countDocuments()
+    return res.status(200).json(successResponse("Secret dating users count",secretDatingUsers))
+    }catch(error){
+        console.log("ERROR::", error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    }
+}
 
 
 exports.test_pushNotification = async (req, res) => {

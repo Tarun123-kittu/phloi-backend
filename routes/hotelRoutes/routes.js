@@ -21,23 +21,24 @@ router.post("/signUp", signUpValidator, hotelAuthController.signUp)
 router.post("/signIn", signInValidator, hotelAuthController.signIn)
 router.post("/forgetPassword", forgetPasswordValidator, hotelAuthController.forgetPassword)
 router.put("/resetPassword", resetPasswordValidator, hotelAuthController.resetPassword)
-router.put("/changePassword",verifyHotelToken,changePasswordValidator,hotelAuthController.changePassword)
+router.put("/changePassword", verifyHotelToken, changePasswordValidator, hotelAuthController.changePassword)
 
 
 // hotel onboarding
 router.post("/saveHotelDetails", verifyHotelToken, saveHotelDetailsValidator, hotelDetailsController.saveHotelDetails)
-router.get("/get_hotel_details",verifyHotelToken,hotelDetailsController.get_hotel_details)
-router.get("/get_hotel_data",verifyHotelToken,hotelDetailsController.get_hotel_data)
-router.put("/update_hotel_details",verifyHotelToken,hotelDetailsController.update_hotel_details)
-router.delete("/delete_Hotel_image",verifyHotelToken,deleteHotelImageValidator,hotelDetailsController.delete_Hotel_image)
+router.get("/get_hotel_details", verifyHotelToken, hotelDetailsController.get_hotel_details)
+router.get("/get_hotel_data", verifyHotelToken, hotelDetailsController.get_hotel_data)
+router.put("/update_hotel_details", verifyHotelToken, hotelDetailsController.update_hotel_details)
+router.delete("/delete_Hotel_image", verifyHotelToken, deleteHotelImageValidator, hotelDetailsController.delete_Hotel_image)
+router.get("/get_hotel_notifications", verifyHotelToken, hotelDetailsController.get_hotel_notifications)
 
 
 
 //payments
-router.get("/subscribe",paymentController.subscribe)
-router.post("/checkout",paymentController.checkout)
-router.get("/success",paymentController.success)
-router.get("/cancel",paymentController.cancel)
+router.get("/subscribe", paymentController.subscribe)
+router.post("/checkout", paymentController.checkout)
+router.get("/success", paymentController.success)
+router.get("/cancel", paymentController.cancel)
 
 
 
