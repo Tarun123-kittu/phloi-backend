@@ -208,7 +208,8 @@ exports.get_hotel_data = async (req, res) => {
                 paymentAmount: payment?.paymentAmount ?? null,
                 paymentStatus: payment?.paymentStatus ?? null,
                 paymentDate: payment?.paymentDate ?? null,
-                subscriptionEndDate: payment?.subscriptionEndDate ?? null
+                subscriptionEndDate: payment?.subscriptionEndDate ?? null,
+                customerId:payment?.customerId ?? null,
             }
         };
 
