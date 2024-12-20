@@ -96,7 +96,6 @@ exports.saveHotelDetails = async (req, res) => {
 
 
 
-
 exports.get_hotel_details = async (req, res) => {
     try {
         let id = req.result.userId;
@@ -252,10 +251,8 @@ exports.update_hotel_details = async (req, res) => {
             food,
             atmosphere,
             services,
-            openCloseTimings: {
-                open: openTiming,
-                close: closeTiming
-            } = {}
+            openTiming,
+            closeTiming
         } = req.body;
 
         let images = req.files?.images || [];
