@@ -62,10 +62,18 @@ const handleInvoicePaymentFailed = async (invoice) => {
 
 
 const handleSubscriptionDeleted = async (subscription) => {
-    await hotelPaymentsModel.findOneAndUpdate(
+    let hotel = await hotelPaymentsModel.findOneAndUpdate(
         { subscriptionId: subscription.id },
-        { paymentStatus: 'canceled', subscriptionCancelDate: new Date() }
+        { paymentStatus: 'cancelled', subscriptionCancelDate: new Date() }
     );
+
+    let hotelId = hotel.hotelId
+    await hotelModel.findByIdAndUpdate(hotelId,{
+        $set:{
+            paymentStatus:'cancelled'
+        }
+    })
+
 };
 
 

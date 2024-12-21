@@ -12,17 +12,24 @@ exports.get_hotel_verification_requests = async (req, res) => {
         const page = parseInt(req.query.page, 10) || 1;
         const limit = parseInt(req.query.limit, 10) || 10;
         const skip = (page - 1) * limit;
+        const showVerifiedHotel = req.query.showVerifiedHotel
 
+
+        if (showVerifiedHotel !== true && showVerifiedHotel !== false && showVerifiedHotel !== 'true' && showVerifiedHotel !== 'false') {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,'Please provide a valid boolean in showVerifiedHotel'));
+        }
+        const isShowVerifiedHotel = showVerifiedHotel === true || showVerifiedHotel === 'true';
+        
 
         const [hotelVerificationRequests, totalRequests] = await Promise.all([
             hotelModel
-                .find({ adminVerified: false })
+                .find({ adminVerified: isShowVerifiedHotel })
                 .select("establishmentName establishmentType address.country paymentStatus address.state address.pinCode createdAt")
                 .sort({ updatedAt: -1 })
                 .skip(skip)
                 .limit(limit)
                 .lean(),
-            hotelModel.countDocuments({ adminVerified: false }),
+            hotelModel.countDocuments({ adminVerified: isShowVerifiedHotel }),
         ]);
 
         const responseData = {
