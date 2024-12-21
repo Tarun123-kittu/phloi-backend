@@ -30,7 +30,9 @@ exports.subscribe = async (req, res) => {
             const { paymentStatus, subscriptionEndDate } = hotelSubscription;
 
             if (['completed'].includes(paymentStatus) && subscriptionEndDate > new Date()) {
-                return res.status(400).json({ message: "You already have an active subscription. Please wait until your current subscription ends." });
+                let url = config.development.hotel_dashboard_url
+                return res.render("activeSubscription.ejs",{url})
+                // return res.status(400).json({ message: "You already have an active subscription. Please wait until your current subscription ends." });
             }
         }
 
@@ -141,7 +143,6 @@ exports.cancel = async (req, res) => {
     let url = config.development.hotel_dashboard_url
     res.render('cancel.ejs',{url})
 }
-
 
 
 
