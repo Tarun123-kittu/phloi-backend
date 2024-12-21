@@ -40,8 +40,8 @@ exports.saveHotelDetails = async (req, res) => {
         } = req.body;
 
         const files = req.files?.images;
-        if (!files || files.length < 2) {
-            return res.status(400).json(errorResponse("At least two images are required"));
+        if (!files || files.length < 5) {
+            return res.status(400).json(errorResponse("At least five images are required"));
         }
 
         const imageUrls = [];
@@ -284,9 +284,9 @@ exports.update_hotel_details = async (req, res) => {
             imageUrls = imageUrls.concat(uploadedUrls);
         }
 
-        // if (imageUrls.length !== 5) {
-        //     return res.status(400).json(errorResponse("You must have exactly 5 images after the update."));
-        // }
+        if (imageUrls.length < 5) {
+            return res.status(400).json(errorResponse("You have to add atleast 5 images"));
+        }
 
         const updatedData = {
             establishmentName: establishmentName || existingHotel.establishmentName,
