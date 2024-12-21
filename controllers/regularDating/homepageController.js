@@ -199,8 +199,12 @@ exports.like_profile = async (req, res) => {
                     userId,
                     type: "match"
                 };
-
-                await sendPushNotification(deviceToken, msg, data, title);
+                if(!deviceToken || deviceToken ==null){
+                 console.log("device token not found")
+                }else{
+                    await sendPushNotification(deviceToken, msg, data, title);
+                }
+                
             };
 
             await sendMatchNotification(likedUser.deviceToken, currentUser.username, likedUserId);

@@ -113,7 +113,7 @@ exports.getChats = async (req, res) => {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User ID is required"));
         }
 
-      
+
         const chats = await chatModel.find({ participants: userId, type: 'regular dating' })
             .populate({
                 path: 'lastMessage',
@@ -316,12 +316,13 @@ exports.sendMessage = async (req, res) => {
             sender_name: senderDetails.username
         }
 
-
-
         console.log("device token ---->", receiver.deviceToken)
-        if (!receiver.deviceToken) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "please provide device token for the notification receiver.")) }
-        let pushNotification = await sendPushNotification(receiver.deviceToken, msg, data, title)
-
+        if (!receiver.deviceToken || receiver.deviceToken == null) {
+            console.log("token not found")
+        } else {
+            let pushNotification = await sendPushNotification(receiver.deviceToken, msg, data, title)
+            console.log("push notification-----",pushNotification)
+        }
         io.emit(`send_message`, {
             chatId: chatId,
             messageId: message._id,
@@ -499,7 +500,12 @@ exports.accept_or_reject_invitation = async (req, res) => {
                 chatId: chatId.toString()
             }
             console.log(" accept reject invitation --------", data)
-            let pushNotification = await sendPushNotification(receiver.deviceToken, msg, data, title)
+            if (!receiver.deviceToken || receiver.deviceToken == null) {
+                console.log("token not found")
+            } else {
+                let pushNotification = await sendPushNotification(receiver.deviceToken, msg, data, title)
+                console.log("push notification ---", pushNotification)
+            }
         }
         io.emit('invitation_updated', {
             chatId: updatedMessage.chat,
@@ -567,8 +573,8 @@ exports.get_all_verified_hotels = async (req, res) => {
         if (!isUserExist) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User not exist with this userId")) }
 
 
-        let allVerifiedHotels = await hotelModel.find({ adminVerified: true,  subscriptionEndDate: { $gte: new Date() }}).select("establishmentName establishmentType address images customerServiceNumber openCloseTimings").lean()
-      
+        let allVerifiedHotels = await hotelModel.find({ adminVerified: true, subscriptionEndDate: { $gte: new Date() } }).select("establishmentName establishmentType address images customerServiceNumber openCloseTimings").lean()
+
         return res.status(200).json(successResponse("Data reterived", allVerifiedHotels))
 
     } catch (error) {

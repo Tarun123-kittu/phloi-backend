@@ -255,6 +255,7 @@ exports.logout = async (req, res) => {
         await userModel.findByIdAndUpdate(userId, {
             $set: {
                 online_status: false,
+                deviceToken:null
             }
         })
         io.emit('logout', userId)

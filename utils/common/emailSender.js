@@ -80,7 +80,7 @@ const sendEmail = async (email, code) => {
 const sendHotelVerificationEmail = async (email, status,hotelName,paymentStatus,hotelId) => {
 
   try {
-
+ console.log("payment status ----",paymentStatus,email)
     let transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -150,7 +150,7 @@ const sendHotelVerificationEmail = async (email, status,hotelName,paymentStatus,
     };
     await transporter.sendMail(mailDetails);
 
-
+ 
     return { success: true, message: "Link has been sent to your email" };
   } catch (error) {
 

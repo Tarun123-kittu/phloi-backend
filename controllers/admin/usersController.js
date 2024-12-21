@@ -28,7 +28,7 @@ exports.get_all_users = async (req, res) => {
             },
         });
 
-     
+
         if (search && search.trim()) {
             const searchFilters = {
                 $or: [
@@ -40,7 +40,7 @@ exports.get_all_users = async (req, res) => {
             pipeline.push({ $match: searchFilters });
         }
 
-  
+
         if (gender) {
             pipeline.push({
                 $match: {
@@ -49,7 +49,7 @@ exports.get_all_users = async (req, res) => {
             });
         }
 
-       
+
         if (username) {
             pipeline.push({
                 $match: {
@@ -58,7 +58,7 @@ exports.get_all_users = async (req, res) => {
             });
         }
 
-       
+
         if (verified !== undefined) {
             const isVerified = verified === "true" || verified == true;
             pipeline.push({
@@ -68,7 +68,7 @@ exports.get_all_users = async (req, res) => {
             });
         }
 
-    
+
         pipeline.push({
             $project: {
                 username: 1,
@@ -89,13 +89,13 @@ exports.get_all_users = async (req, res) => {
         pipeline.push({ $skip: skip });
         pipeline.push({ $limit: parseInt(limit) });
 
-  
+
         const countPipeline = [...pipeline];
         countPipeline.pop();
-        countPipeline.pop(); 
+        countPipeline.pop();
         countPipeline.push({ $count: "total" });
 
-      
+
         const [users, totalResult] = await Promise.all([
             userModel.aggregate(pipeline),
             userModel.aggregate(countPipeline),
@@ -371,12 +371,15 @@ exports.approve_or_reject_verification = async (req, res) => {
 
         let message = `You verification request is ${verificationStatus == true ? 'accepted' : 'rejected'}`
         let data = {
-            userId : userId,
-            type:'profile_verification_update'
+            userId: userId,
+            type: 'profile_verification_update'
         }
-        let pushNotification = await  sendPushNotification(isUserExist.deviceToken, message,data)
-        console.log("notification response ------->",pushNotification)
-
+        if (!isUserExist.deviceToken || isUserExist.deviceToken == null) {
+        console.log("no token found")
+        } else {
+            let pushNotification = await sendPushNotification(isUserExist.deviceToken, message, data)
+            console.log("notification response ------->", pushNotification)
+        }
         io.emit('verification_update', userId);
 
         return res.status(200).json(successResponse('Verification status updated successfully'));
