@@ -35,6 +35,7 @@ router.put("/update_section", verifyAdminToken, safetyAndPrivacyController.updat
 router.delete("/delete_section", verifyAdminToken, safetyAndPrivacyController.delete_section)
 router.put("/add_page_to_section", verifyAdminToken, safetyAndPrivacyController.add_page_to_section)
 router.delete("/delete_page", verifyAdminToken, safetyAndPrivacyController.delete_page)
+router.get("/get_page_by_id",safetyAndPrivacyController.get_page_by_id)
 
 
 

@@ -164,3 +164,50 @@ exports.delete_page = async (req, res) => {
 }
 
 
+
+
+exports.get_page_by_id = async (req, res) => {
+  try {
+    const pageId = req.query.pageId;
+
+    if (!pageId) {
+      return res.status(400).json(
+        errorResponse(
+          messages.generalError.somethingWentWrong,
+          "Page ID is required"
+        )
+      );
+    }
+
+    
+    const setting = await SettingModel.findOne()
+    if (!setting || !setting.pages) {
+      return res.status(400).json(
+        errorResponse(
+          messages.generalError.somethingWentWrong,
+          "No pages found"
+        )
+      );
+    }
+
+    
+    const page = setting.pages.find((p) => p._id.toString() === pageId);
+
+    if (!page) {
+      return res.status(404).json(
+        errorResponse(
+          messages.generalError.somethingWentWrong,
+          "Page not found with this ID"
+        )
+      );
+    }
+
+
+    return res.status(200).json(successResponse("Page details retrieved", page));
+  } catch (error) {
+    console.error("ERROR::", error);
+    return res
+      .status(500)
+      .json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+  }
+};

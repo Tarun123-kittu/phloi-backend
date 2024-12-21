@@ -92,7 +92,7 @@ const handleSubscriptionUpdated = async (subscription) => {
             await hotelModel.findOneAndUpdate({ hotelId: updatedHotel.hotelId }, {
                 $set: {
                     paymentStatus: "completed",
-                    subscriptionEndDate: subscriptionEndDate
+                    subscriptionEndDate: new Date(subscription.current_period_end * 1000),
                 }
             })
 

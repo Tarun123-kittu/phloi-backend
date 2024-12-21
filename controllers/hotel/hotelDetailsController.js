@@ -387,6 +387,7 @@ exports.delete_Hotel_image = async (req, res) => {
 exports.get_hotel_notifications = async (req, res) => {
     try {
         const hotelAccountId = req.result.userId;
+        console.log(hotelAccountId)
 
         let hotelNotifications = await notificationModel.find({ userId: hotelAccountId }).select(" notification_text read createdAt")
 
