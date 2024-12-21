@@ -6,6 +6,7 @@ let stripe = require('stripe')(config.development.stripe_secret_key)
 
 
 
+
 const handleCheckoutSessionCompleted = async (session) => {
     try {
 

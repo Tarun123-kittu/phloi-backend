@@ -284,9 +284,9 @@ exports.update_hotel_details = async (req, res) => {
             imageUrls = imageUrls.concat(uploadedUrls);
         }
 
-        if (imageUrls.length !== 5) {
-            return res.status(400).json(errorResponse("You must have exactly 5 images after the update."));
-        }
+        // if (imageUrls.length !== 5) {
+        //     return res.status(400).json(errorResponse("You must have exactly 5 images after the update."));
+        // }
 
         const updatedData = {
             establishmentName: establishmentName || existingHotel.establishmentName,
