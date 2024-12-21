@@ -166,15 +166,15 @@ exports.delete_page = async (req, res) => {
 
 
 
-exports.get_page_by_id = async (req, res) => {
+exports.get_page_by_slug = async (req, res) => {
   try {
-    const pageId = req.query.pageId;
+    const slug = req.query.slug;
 
-    if (!pageId) {
+    if (!slug) {
       return res.status(400).json(
         errorResponse(
           messages.generalError.somethingWentWrong,
-          "Page ID is required"
+          "Slug is required"
         )
       );
     }
@@ -191,13 +191,13 @@ exports.get_page_by_id = async (req, res) => {
     }
 
     
-    const page = setting.pages.find((p) => p._id.toString() === pageId);
+    const page = setting.pages.find((p) => p.slug === slug);
 
     if (!page) {
       return res.status(404).json(
         errorResponse(
           messages.generalError.somethingWentWrong,
-          "Page not found with this ID"
+          "Page not found with this slug"
         )
       );
     }
