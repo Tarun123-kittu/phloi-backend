@@ -63,19 +63,106 @@ exports.secretDating_create_chat = async (req, res) => {
 
 
 
+// exports.secretDating_getChats = async (req, res) => {
+//     try {
+//         const userId = req.result.userId;
+//         const page = parseInt(req.query.page) || 1;
+//         const limit = parseInt(req.query.limit) || 10;
+//         const skip = (page - 1) * limit;
+//         const searchQuery = req.query.search || "";
+
+//         if (!userId) {
+//             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User ID is required"));
+//         }
+
+
+//         const chats = await chatModel.find({
+//             participants: userId,
+//             type: 'secret dating'
+//         })
+//             .populate({
+//                 path: 'lastMessage',
+//                 populate: {
+//                     path: 'sender',
+//                     select: 'username'
+//                 }
+//             })
+//             .populate({
+//                 path: 'participants',
+//                 select: 'username online_status',
+//                 match: { _id: { $ne: userId } }
+//             })
+//             .sort({ updatedAt: -1 }) 
+//             .skip(skip)
+//             .limit(limit);
+
+//         if (!chats || chats.length === 0) {
+//             return res.status(200).json(successResponse("No chats found", []));
+//         }
+
+//         let chatDetails = await Promise.all(chats.map(async chat => {
+//             const otherParticipant = chat.participants[0];
+
+
+//             const secretUserData = await secretDatingUserModel.findOne({
+//                 user_id: otherParticipant._id
+//             }).select('name avatar profile_image');
+
+//             const unreadCount = await messageModel.countDocuments({
+//                 chat: chat._id,
+//                 receiver: userId,
+//                 read_chat: false
+//             });
+
+//             const lastMessageText = chat.lastMessage ? chat.lastMessage.text : null;
+//             const lastMessageSenderName = chat.lastMessage && chat.lastMessage.sender ? chat.lastMessage.sender.username : null;
+//             const messageSentAt = chat.lastMessage ? chat.lastMessage.createdAt : null;
+
+//             return {
+//                 chatId: chat._id,
+//                 otherParticipantId: otherParticipant ? otherParticipant._id : null,
+//                 otherParticipantName: secretUserData ? secretUserData.name : null,
+//                 otherParticipantAvatar: secretUserData ? secretUserData.avatar : null,
+//                 otherParticipantImage: secretUserData ? secretUserData.profile_image : null,
+//                 lastMessage: lastMessageText,
+//                 lastMessageSender: lastMessageSenderName,
+//                 unreadCount: unreadCount,
+//                 messageSentAt: messageSentAt,
+//                 onlineStatus: otherParticipant ? otherParticipant.online_status : null
+//             };
+//         }));
+
+//         const totalChatsCount = await chatModel.countDocuments({
+//             participants: userId,
+//             type: 'secret dating',
+//             'participants.username': { $regex: searchQuery, $options: "i" }
+//         });
+
+
+//         res.status(200).json(successResponse("Secret dating chats retrieved successfully", {
+//             chats: chatDetails,
+//             currentPage: page,
+//             totalChats: totalChatsCount,
+//             totalPages: Math.ceil(totalChatsCount / limit)
+//         }));
+
+//     } catch (error) {
+//         console.error("ERROR::", error);
+//         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+//     }
+// };
+
+
+
 exports.secretDating_getChats = async (req, res) => {
     try {
         const userId = req.result.userId;
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-        const skip = (page - 1) * limit;
-        const searchQuery = req.query.search || "";
 
         if (!userId) {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User ID is required"));
         }
 
-
+       
         const chats = await chatModel.find({
             participants: userId,
             type: 'secret dating'
@@ -92,22 +179,22 @@ exports.secretDating_getChats = async (req, res) => {
                 select: 'username online_status',
                 match: { _id: { $ne: userId } }
             })
-            .sort({ updatedAt: -1 }) 
-            .skip(skip)
-            .limit(limit);
+            .sort({ updatedAt: -1 });
 
         if (!chats || chats.length === 0) {
             return res.status(200).json(successResponse("No chats found", []));
         }
 
+       
         let chatDetails = await Promise.all(chats.map(async chat => {
             const otherParticipant = chat.participants[0];
 
-
+          
             const secretUserData = await secretDatingUserModel.findOne({
                 user_id: otherParticipant._id
             }).select('name avatar profile_image');
 
+           
             const unreadCount = await messageModel.countDocuments({
                 chat: chat._id,
                 receiver: userId,
@@ -132,18 +219,9 @@ exports.secretDating_getChats = async (req, res) => {
             };
         }));
 
-        const totalChatsCount = await chatModel.countDocuments({
-            participants: userId,
-            type: 'secret dating',
-            'participants.username': { $regex: searchQuery, $options: "i" }
-        });
-
-
+       
         res.status(200).json(successResponse("Secret dating chats retrieved successfully", {
-            chats: chatDetails,
-            currentPage: page,
-            totalChats: totalChatsCount,
-            totalPages: Math.ceil(totalChatsCount / limit)
+            chats: chatDetails
         }));
 
     } catch (error) {
@@ -151,9 +229,6 @@ exports.secretDating_getChats = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
-
-
-
 
 
 

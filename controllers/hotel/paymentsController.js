@@ -104,7 +104,7 @@ exports.checkout = async (req, res) => {
 exports.success = async (req, res) => {
     try {
         const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
-        console.log("session -------",session)
+       
         let checkHotelPayment = await hotelPaymentsModel.findOne({ transactionId: session.id })
         if (checkHotelPayment.paymentStatus == 'pending') {
             const subscription = await stripe.subscriptions.retrieve(session.subscription);
@@ -117,18 +117,18 @@ exports.success = async (req, res) => {
                     paymentDate: new Date(),
                     subscriptionEndDate: subscriptionEndDate,
                     receiptUrl: session.receipt_url,
-                    customerId:session.customer
+                    customerId: session.customer
                 }
             );
             let hotelId = session.metadata.hotelId
-            await hotelModel.findByIdAndUpdate( hotelId ,{
-                $set:{
-                    paymentStatus:"completed"
+            await hotelModel.findByIdAndUpdate(hotelId, {
+                $set: {
+                    paymentStatus: "completed"
                 }
             })
         }
-
-        res.render("success.ejs")
+        let url = config.development.hotel_dashboard_url
+        res.render("success.ejs", { url })
     } catch (error) {
         console.error("Error saving hotel details:", error);
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
@@ -138,7 +138,8 @@ exports.success = async (req, res) => {
 
 
 exports.cancel = async (req, res) => {
-    res.render('cancel.ejs')
+    let url = config.development.hotel_dashboard_url
+    res.render('cancel.ejs',{url})
 }
 
 
@@ -195,23 +196,23 @@ exports.webhook = async (req, res) => {
 
 exports.delete_subscription = async (req, res) => {
     try {
-        let {customerId } = req.body;
+        let { customerId } = req.body;
 
-        if ( !customerId) {
+        if (!customerId) {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please provide  customerId"));
         }
 
-        
+
         const subscriptions = await stripe.subscriptions.list({ customer: customerId, status: 'active' });
 
         if (subscriptions.data.length === 0) {
             return res.status(404).json(errorResponse(messages.generalError.notFound, "No active subscription found for this customer."));
         }
 
-      
+
         const subscriptionId = subscriptions.data[0].id;
 
-      
+
         await stripe.subscriptions.cancel(subscriptionId);
 
         res.status(200).json({

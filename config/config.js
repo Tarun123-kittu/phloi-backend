@@ -21,7 +21,8 @@ const development = {
     stripe_secret_key:process.env.STRIPE_SECRET_KEY,
     stripe_product_price_id:process.env.PRICE_ID,
     stripe_return_url:process.env.STRIPE_RETURN_URL,
-    webhook_singing_key:process.env.WEBHOOK_SIGNING_SECRET
+    webhook_singing_key:process.env.WEBHOOK_SIGNING_SECRET,
+    hotel_dashboard_url:process.env.HOTEL_DASHBOARD_URL
 };
 
 if (!development.db_url) {

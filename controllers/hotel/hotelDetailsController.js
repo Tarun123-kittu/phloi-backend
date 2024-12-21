@@ -191,7 +191,7 @@ exports.get_hotel_data = async (req, res) => {
         const hotelId = req.query.hotelId;
 
         const [hotel, payment] = await Promise.all([
-            hotelModel.findById(hotelId).select('establishmentName establishmentType address ownerDetails why_want_phloi uniqueFeatures inPersonVisitAvailability images adminVerified food atmosphere services openCloseTimings customerServiceNumber'),
+            hotelModel.findById(hotelId).select('establishmentName establishmentType address ownerDetails why_want_phloi uniqueFeatures inPersonVisitAvailability images adminVerified food atmosphere services openCloseTimings customerServiceNumber safeWord'),
             hotelPaymentsModel.findOne({ hotelId }).sort({ createdAt: -1 }).select("paymentStatus paymentAmount paymentDate customerId subscriptionEndDate")
         ]);
 
