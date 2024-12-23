@@ -161,9 +161,6 @@ exports.webhook = async (req, res) => {
 
     try {
         switch (event.type) {
-            case 'invoice.created':
-                await handleInvoiceCreated(event.data.object);
-                break;
             case 'checkout.session.completed':
                 await handleCheckoutSessionCompleted(event.data.object);
                 break;
