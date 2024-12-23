@@ -4,6 +4,7 @@ const messages = require('../../utils/common/messages')
 const { generateHashedPassword, compareHashedPassword, generateToken, generateOtp, passwordResetToken } = require('../../utils/common/commonFunctions')
 const {sendEmail} = require("../../utils/common/emailSender")
 const hotelAccountsModel = require("../../models/hotelAccounts")
+const config = require("../../config/config")
 
 
 
@@ -73,7 +74,7 @@ exports.forgetPassword = async (req, res) => {
                 forgetPsd_tokenCreatedAt: date,
             }
         })
-        const resetUrl = `http://localhost:3000/hotels/reset-password/${resetToken}`;
+        const resetUrl = `${config.development.hotel_dashboard_url}reset-password/${resetToken}`;
         const emailResponse = await sendEmail(email, resetUrl);
         if (emailResponse.success) {
             return res.status(200).json(successResponse(emailResponse.message));
