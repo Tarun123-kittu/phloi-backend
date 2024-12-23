@@ -21,7 +21,7 @@ body {
 /* Center content in a container */
 .checkout-container {
      font-family: 'Poppins';
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -107,7 +107,7 @@ body {
 
 @media (max-width: 768px) {
     .checkout-container {
-        padding: 30px;
+        padding: 15px;
     }
 
     .checkout-content {
@@ -115,7 +115,10 @@ body {
     }
 
     .checkout-heading {
-        font-size: 2rem;
+        font-size: 1.2rem;
+    }
+    .price{
+        font-size: 1.5rem;
     }
 
     .price-text {
@@ -123,7 +126,10 @@ body {
     }
 
     .info-text {
-        font-size: 0.9rem;
+        font-size: 14px;
+    }
+    .description {
+        font-size: 14px;
     }
 }
 
