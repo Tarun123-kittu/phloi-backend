@@ -5,6 +5,13 @@ let messages = require('../../utils/common/messages')
 
 
 
+const createSlug = (title) => {
+  return title
+    .toLowerCase() 
+    .replace(/[^a-z0-9]+/g, '-') 
+    .replace(/^-+|-+$/g, ''); 
+};
+
 exports.add_section = async (req, res) => {
   try {
     const { section, pages } = req.body;
@@ -13,7 +20,13 @@ exports.add_section = async (req, res) => {
       return res.status(400).json(errorResponse('Section name is required'));
     }
 
-    const newSection = new SettingModel({ section, pages });
+ 
+    const updatedPages = pages.map((page) => ({
+      ...page,
+      slug: createSlug(page.title),
+    }));
+
+    const newSection = new SettingModel({ section, pages: updatedPages });
     await newSection.save();
 
     return res.status(201).json(successResponse('Section added successfully', newSection));
@@ -22,6 +35,7 @@ exports.add_section = async (req, res) => {
     return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
   }
 };
+
 
 
 
@@ -63,22 +77,36 @@ exports.get_section_by_id = async (req, res) => {
 
 exports.update_section = async (req, res) => {
   try {
-    const id = req.body.sectionId;
-    const { section, pages } = req.body;
+    const { sectionId: id, section, pages } = req.body;
 
     if (!id) {
-      return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, 'Please provide section Id which you want to update in the body'))
+      return res.status(400).json(
+        errorResponse('Please provide the section ID which you want to update')
+      );
     }
 
-    const updatedSection = await SettingModel.findByIdAndUpdate(id, { section, pages }, { new: true });
+    let updatedData = { section };
+    if (pages) {
+      updatedData.pages = pages.map((page) => ({
+        ...page,
+        slug: createSlug(page.title),
+      }));
+    }
+
+    const updatedSection = await SettingModel.findByIdAndUpdate(id, updatedData, {
+      new: true,
+    });
+
     if (!updatedSection) {
       return res.status(404).json(errorResponse('Section not found'));
     }
 
-    return res.status(200).json(successResponse('Section updated successfully'));
+    return res.status(200).json(successResponse('Section updated successfully', updatedSection));
   } catch (error) {
     console.error('ERROR::', error);
-    return res.status(500).json(errorResponse('Something went wrong', error.message));
+    return res.status(500).json(
+      errorResponse('Something went wrong', error.message)
+    );
   }
 };
 
@@ -111,11 +139,15 @@ exports.delete_section = async (req, res) => {
 
 exports.add_page_to_section = async (req, res) => {
   try {
-    const id = req.body.sectionId
-    const { title, content, slug } = req.body;
+    const id = req.body.sectionId;
+    const { title, content } = req.body;
 
-    if (!id) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Please provide section Id in the body")) }
-    if (!title || !content || !slug) {
+    if (!id) {
+      return res.status(400).json(
+        errorResponse(messages.generalError.somethingWentWrong, "Please provide section Id in the body")
+      );
+    }
+    if (!title || !content) {
       return res.status(400).json(errorResponse('All fields are required for the page'));
     }
 
@@ -124,15 +156,25 @@ exports.add_page_to_section = async (req, res) => {
       return res.status(404).json(errorResponse('Section not found'));
     }
 
+    
+    const slug = title
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-') 
+      .replace(/^-+|-+$/g, '');   
+
     section.pages.push({ title, content, slug });
     await section.save();
 
     return res.status(201).json(successResponse('Page added to section', section));
   } catch (error) {
     console.error('ERROR::', error);
-    return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    return res.status(500).json(
+      errorResponse(messages.generalError.somethingWentWrong, error.message)
+    );
   }
 };
+
 
 
 
