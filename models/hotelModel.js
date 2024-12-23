@@ -23,7 +23,7 @@ const hotelSchema = new mongoose.Schema({
     inPersonVisitAvailability: { type: String },
     images: [{ type: String }],
     onboardingCompleted: { type: Boolean, default: false },
-    adminVerified: { type: Boolean, default: null },
+    adminVerified: { type: Boolean,default:false },
     paymentStatus: { type: String, enum: ["pending", "completed", "failed"], default: "pending" },
     subscriptionEndDate: { type: Date },
     customerServiceNumber: { type: String },
