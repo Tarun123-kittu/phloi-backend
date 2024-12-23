@@ -208,10 +208,13 @@ exports.delete_page = async (req, res) => {
 
 
 
+
+
 exports.get_page_by_slug = async (req, res) => {
   try {
     const slug = req.query.slug;
 
+    // Validate input
     if (!slug) {
       return res.status(400).json(
         errorResponse(
@@ -221,21 +224,28 @@ exports.get_page_by_slug = async (req, res) => {
       );
     }
 
-    
-    const setting = await SettingModel.findOne()
-    if (!setting || !setting.pages) {
+    // Fetch all sections with their pages
+    const settings = await SettingModel.find();
+
+    if (!settings || settings.length === 0) {
       return res.status(400).json(
         errorResponse(
           messages.generalError.somethingWentWrong,
-          "No pages found"
+          "No sections found"
         )
       );
     }
 
-    
-    const page = setting.pages.find((p) => p.slug === slug);
+    // Search for the page with the matching slug across all sections
+    let foundPage = null;
+    settings.forEach((section) => {
+      const page = section.pages.find((p) => p.slug === slug);
+      if (page) {
+        foundPage = page;
+      }
+    });
 
-    if (!page) {
+    if (!foundPage) {
       return res.status(404).json(
         errorResponse(
           messages.generalError.somethingWentWrong,
@@ -244,8 +254,8 @@ exports.get_page_by_slug = async (req, res) => {
       );
     }
 
-
-    return res.status(200).json(successResponse("Page details retrieved", page));
+    // Return the matching page details
+    return res.status(200).json(successResponse("Page details retrieved", foundPage));
   } catch (error) {
     console.error("ERROR::", error);
     return res
@@ -253,3 +263,4 @@ exports.get_page_by_slug = async (req, res) => {
       .json(errorResponse(messages.generalError.somethingWentWrong, error.message));
   }
 };
+
