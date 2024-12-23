@@ -524,6 +524,7 @@ exports.get_profile_details = async (req, res) => {
 
         const userDetails = {
             username: user.username,
+            bio:user.bio||null,
             age: user.dob,
             gender: user.gender,
             show_gender: user.show_gender,
