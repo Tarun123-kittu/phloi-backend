@@ -12,8 +12,8 @@ let { io } = require("../../index")
 
 exports.get_all_users = async (req, res) => {
     try {
-        const page = req.query?.page || 1;
-        const limit = req.query?.limit || 10;
+        const page = parseInt(req.query?.page) || 1;
+        const limit = parseInt(req.query?.limit) || 10;
         const search = req.query?.search || "";
         const skip = (page - 1) * limit;
         const gender = req.query?.gender;
@@ -28,18 +28,16 @@ exports.get_all_users = async (req, res) => {
             },
         });
 
-
         if (search && search.trim()) {
             const searchFilters = {
                 $or: [
-                    { username: { $regex: search, $options: "i" } },
-                    { email: { $regex: search, $options: "i" } },
-                    { gender: { $regex: search, $options: "i" } },
+                    { username: { $regex: `.*${search}.*`, $options: "i" } }, 
+                    { email: { $regex: `.*${search}.*`, $options: "i" } },
+                    { gender: { $regex: `.*${search}.*`, $options: "i" } },
                 ],
             };
             pipeline.push({ $match: searchFilters });
         }
-
 
         if (gender) {
             pipeline.push({
@@ -49,15 +47,13 @@ exports.get_all_users = async (req, res) => {
             });
         }
 
-
         if (username) {
             pipeline.push({
                 $match: {
-                    username: { $regex: `^${username}$`, $options: "i" },
+                    username: { $regex: `.*${username}.*`, $options: "i" }, 
                 },
             });
         }
-
 
         if (verified !== undefined) {
             const isVerified = verified === "true" || verified == true;
@@ -67,7 +63,6 @@ exports.get_all_users = async (req, res) => {
                 },
             });
         }
-
 
         pipeline.push({
             $project: {
@@ -81,20 +76,17 @@ exports.get_all_users = async (req, res) => {
             },
         });
 
-
         pipeline.push({
             $sort: { _id: -1 },
         });
 
         pipeline.push({ $skip: skip });
-        pipeline.push({ $limit: parseInt(limit) });
-
+        pipeline.push({ $limit: limit });
 
         const countPipeline = [...pipeline];
         countPipeline.pop();
         countPipeline.pop();
         countPipeline.push({ $count: "total" });
-
 
         const [users, totalResult] = await Promise.all([
             userModel.aggregate(pipeline),
@@ -108,7 +100,7 @@ exports.get_all_users = async (req, res) => {
         const totalUsers = totalResult[0]?.total || 0;
         let resultObj = {
             pagination: {
-                currentPage: parseInt(page),
+                currentPage: page,
                 totalPages: Math.ceil(totalUsers / limit),
                 totalUsers,
             },
@@ -121,6 +113,7 @@ exports.get_all_users = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
+
 
 
 

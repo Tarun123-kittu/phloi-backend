@@ -16,7 +16,6 @@ let {
 
 
 
-
 exports.subscribe = async (req, res) => {
     try {
         const { hotelId } = req.query;
