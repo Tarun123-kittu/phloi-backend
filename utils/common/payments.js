@@ -9,7 +9,7 @@ let stripe = require('stripe')(config.development.stripe_secret_key)
 
 const handleCheckoutSessionCompleted = async (session) => {
     try {
-
+       console.log("handle checkout complete------")
         const subscription = await stripe.subscriptions.retrieve(session.subscription);
 
         const subscriptionEndDate = new Date(subscription.current_period_end * 1000);
@@ -43,6 +43,7 @@ const handleCheckoutSessionCompleted = async (session) => {
 
 
 const handleInvoicePaymentSucceeded = async (invoice) => {
+    console.log("Invoice succeed------")
     await hotelPaymentsModel.findOneAndUpdate(
         { subscriptionId: invoice.subscription },
         { paymentStatus: 'completed', paymentDate: new Date() }
@@ -53,6 +54,7 @@ const handleInvoicePaymentSucceeded = async (invoice) => {
 
 
 const handleInvoicePaymentFailed = async (invoice) => {
+    console.log("Invoice failed------")
     await hotelPaymentsModel.findOneAndUpdate(
         { subscriptionId: invoice.subscription },
         { paymentStatus: 'failed', paymentDate: new Date() }
@@ -62,6 +64,7 @@ const handleInvoicePaymentFailed = async (invoice) => {
 
 
 const handleSubscriptionDeleted = async (subscription) => {
+    console.log("Subscription deleted------")
     let hotel = await hotelPaymentsModel.findOneAndUpdate(
         { subscriptionId: subscription.id },
         { paymentStatus: 'cancelled', subscriptionCancelDate: new Date() }
@@ -79,6 +82,7 @@ const handleSubscriptionDeleted = async (subscription) => {
 
 const handleSubscriptionUpdated = async (subscription) => {
     try {
+        console.log("subscription updated------")
         if (subscription.status == 'active') {
             let updatedHotel = await hotelPaymentsModel.findOneAndUpdate(
                 { subscriptionId: subscription.id },
