@@ -15,7 +15,7 @@ const sendEmail = async (email, code) => {
 
 
     let mailDetails = {
-      from: `"Phloii" <${config.development.gmail}>`,
+      from: '"Phloii" <phloiimanagement@gmail.com>',
       to: email,
       subject: 'Forget password verification ',
       text: `We've received a request to reset your password.`,
@@ -91,9 +91,9 @@ const sendHotelVerificationEmail = async (email, status,hotelName,paymentStatus,
 
 
     let mailDetails = {
-      from: `"Phloii" <${config.development.gmail}>`,
+      from: '"Phloii" <phloiimanagement@gmail.com>',
       to: email,
-      subject: 'Regarding Hotel verification ',
+      subject: 'Regarding Establishment verification ',
       text: `We've received a request to reset your password.`,
       html: `<div style="
       padding: 30px; 
@@ -110,7 +110,7 @@ const sendHotelVerificationEmail = async (email, status,hotelName,paymentStatus,
       font-weight: bold;
       color: #333333;
     ">
-    Hotel Verification Status
+    Establishment Verification Status
   </h1>
 
   <p style="
@@ -119,7 +119,7 @@ const sendHotelVerificationEmail = async (email, status,hotelName,paymentStatus,
       line-height: 1.5;
       margin: 20px 0;
     ">
-    We are pleased to inform you that your hotel verification request for "<strong>${hotelName}</strong>".
+    We are pleased to inform you that your establishment verification request for "<strong>${hotelName}</strong>".
   </p>
   <div style="
       font-size: 20px; 
@@ -135,7 +135,7 @@ const sendHotelVerificationEmail = async (email, status,hotelName,paymentStatus,
       margin: 20px 0;
     ">
     ${status ? 
-      `Congratulations! Your hotel has been successfully verified and is now approved on our platform. ${paymentStatus == 'pending'?`Please proceed with the payment by clicking <a href="${config.development.stripe_return_url}api/v1/hotel/subscribe?hotelId=${hotelId}">here</a> to show on Phloii.`:'' }` : 
+      `Congratulations! Your establishment has been successfully verified and is now approved on our platform. ${paymentStatus == 'pending'?`Please proceed with the payment by clicking <a href="${config.development.stripe_return_url}api/v1/hotel/subscribe?hotelId=${hotelId}">here</a> to show on Phloii.`:'' }` : 
       'We regret to inform you that your request has been rejected. For further details, please contact our support team.'}
   </p>
   <p style="
