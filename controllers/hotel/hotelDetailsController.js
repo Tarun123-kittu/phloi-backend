@@ -325,7 +325,7 @@ exports.update_hotel_details = async (req, res) => {
 
         const updatedHotel = await hotelModel.findByIdAndUpdate(
             hotelId,
-            { $set: updatedData, adminVerified: false },
+            { $set: updatedData, adminVerified: null },
             { new: true }
         );
 
