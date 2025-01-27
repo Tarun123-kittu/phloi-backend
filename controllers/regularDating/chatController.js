@@ -573,8 +573,8 @@ exports.get_all_verified_hotels = async (req, res) => {
         if (!isUserExist) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User not exist with this userId")) }
 
 
-        let allVerifiedHotels = await hotelModel.find({ adminVerified: true, subscriptionEndDate: { $gte: new Date() } }).select("establishmentName establishmentType address images customerServiceNumber openCloseTimings").lean()
-
+        // let allVerifiedHotels = await hotelModel.find({ adminVerified: true, subscriptionEndDate: { $gte: new Date() } }).select("establishmentName establishmentType address images customerServiceNumber openCloseTimings").lean()
+        let allVerifiedHotels = await hotelModel.find({ adminVerified: true }).select("establishmentName establishmentType address images customerServiceNumber openCloseTimings").lean()
         return res.status(200).json(successResponse("Data reterived", allVerifiedHotels))
 
     } catch (error) {

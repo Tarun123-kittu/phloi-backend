@@ -35,6 +35,7 @@ exports.saveHotelDetails = async (req, res) => {
             food,
             atmosphere,
             services,
+            atmosphere_description,
             openTiming,
             closeTiming
         } = req.body;
@@ -47,7 +48,7 @@ exports.saveHotelDetails = async (req, res) => {
         const imageUrls = [];
         for (const file of files) {
             file.establishmentName = establishmentName;
-            file.establishmentType = establishmentType;
+            // file.establishmentType = establishmentType;
             const uploadedImage = await uploadFile(file, "Hotels");
             imageUrls.push(uploadedImage.Location);
         }
@@ -55,7 +56,7 @@ exports.saveHotelDetails = async (req, res) => {
         const newAddedHotel = await hotelModel.create({
             hotelAccountId: userId,
             establishmentName,
-            establishmentType,
+            // establishmentType,
             address: {
                 streetAddress,
                 suiteUnitNumber,
@@ -76,9 +77,10 @@ exports.saveHotelDetails = async (req, res) => {
             images: imageUrls,
 
             customerServiceNumber,
-            food,
-            atmosphere,
-            services,
+            // food,
+            // atmosphere,
+            // services,
+            atmosphere_description,
             openCloseTimings: {
                 open: openTiming,
                 close: closeTiming
@@ -253,6 +255,7 @@ exports.update_hotel_details = async (req, res) => {
             food,
             atmosphere,
             services,
+            atmosphere_description,
             openTiming,
             closeTiming
         } = req.body;
@@ -290,7 +293,7 @@ exports.update_hotel_details = async (req, res) => {
 
         const updatedData = {
             establishmentName: establishmentName || existingHotel.establishmentName,
-            establishmentType: establishmentType || existingHotel.establishmentType,
+            // establishmentType: establishmentType || existingHotel.establishmentType,
             address: {
                 streetAddress: streetAddress || existingHotel.address?.streetAddress,
                 suiteUnitNumber: suiteUnitNumber || existingHotel.address?.suiteUnitNumber,
@@ -310,9 +313,10 @@ exports.update_hotel_details = async (req, res) => {
             inPersonVisitAvailability: inPersonVisitAvailability ?? existingHotel.inPersonVisitAvailability,
             images: imageUrls,
             customerServiceNumber: customerServiceNumber || existingHotel.customerServiceNumber,
-            food: food || existingHotel.food,
-            atmosphere: atmosphere || existingHotel.atmosphere,
-            services: services || existingHotel.services,
+            // food: food || existingHotel.food,
+            // atmosphere: atmosphere || existingHotel.atmosphere,
+            // services: services || existingHotel.services,
+            atmosphere_description:atmosphere_description||existingHotel.atmosphere_description,
             openCloseTimings: {
                 open: openTiming || existingHotel.openCloseTimings?.open,
                 close: closeTiming || existingHotel.openCloseTimings?.close

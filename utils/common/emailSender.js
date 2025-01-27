@@ -91,7 +91,7 @@ const sendHotelVerificationEmail = async (email, status,hotelName,paymentStatus,
 
 
     let mailDetails = {
-      from: '"Phloii" <phloiimanagement@gmail.com>',
+      from: `"Phloii" ${config.development.gmail} `,
       to: email,
       subject: 'Regarding Establishment verification ',
       text: `We've received a request to reset your password.`,
@@ -135,7 +135,8 @@ const sendHotelVerificationEmail = async (email, status,hotelName,paymentStatus,
       margin: 20px 0;
     ">
     ${status ? 
-      `Congratulations! Your establishment has been successfully verified and is now approved on our platform. ${paymentStatus == 'pending'?`Please proceed with the payment by clicking <a href="${config.development.stripe_return_url}api/v1/hotel/subscribe?hotelId=${hotelId}">here</a> to show on Phloii.`:'' }` : 
+      // `Congratulations! Your establishment has been successfully verified and is now approved on our platform. ${paymentStatus == 'pending'?`Please proceed with the payment by clicking <a href="${config.development.stripe_return_url}api/v1/hotel/subscribe?hotelId=${hotelId}">here</a> to show on Phloii.`:'' }` :
+      `Congratulations! Your establishment has been successfully verified and is now approved on our platform.` : 
       'We regret to inform you that your request has been rejected. For further details, please contact our support team.'}
   </p>
   <p style="
@@ -153,7 +154,7 @@ const sendHotelVerificationEmail = async (email, status,hotelName,paymentStatus,
  
     return { success: true, message: "Link has been sent to your email" };
   } catch (error) {
-
+       
     return { success: false, message: "Something went wrong", error: error.message };
   }
 };

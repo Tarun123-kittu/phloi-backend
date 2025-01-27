@@ -36,6 +36,7 @@ exports.signIn = async (req, res) => {
         console.log(email, password)
 
         let isEmailExist = await hotelAccountsModel.findOne({ email: email })
+     
         if (!isEmailExist) { return res.status(400).json(errorResponse('This email is not registered')) }
 
         let passwordCheck = await compareHashedPassword(password, isEmailExist.password)

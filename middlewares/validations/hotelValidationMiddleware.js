@@ -89,7 +89,7 @@ const resetPasswordValidator = [
 
 const saveHotelDetailsValidator = [
     check("establishmentName").notEmpty().withMessage("Establishment Name is required"),
-    check("establishmentType").notEmpty().withMessage("Establishment Type is required"),
+    // check("establishmentType").notEmpty().withMessage("Establishment Type is required"),
     check("streetAddress").notEmpty().withMessage("Street Address is required"),
     check("country").notEmpty().withMessage("Country is required"),
     check("state").notEmpty().withMessage("State is required"),
@@ -101,20 +101,20 @@ const saveHotelDetailsValidator = [
     check("inPersonVisitAvailability").notEmpty().withMessage("Please indicate whether you are open to an in-person visit"),
 
     check("customerServiceNumber").notEmpty().withMessage("Please provide a number on which customers can get help to know you more"),
+    check("atmosphere_description").notEmpty().withMessage('Please provide the description of your atmosphere.'),
+    // check("food")
+    //     .customSanitizer(value => (Array.isArray(value) ? value : [value]))
+    //     .isArray({ min: 1 }).withMessage("At least one food option is required"),
+    // check("food.*").isString().withMessage("Each food option must be a string"),
 
-    check("food")
-        .customSanitizer(value => (Array.isArray(value) ? value : [value]))
-        .isArray({ min: 1 }).withMessage("At least one food option is required"),
-    check("food.*").isString().withMessage("Each food option must be a string"),
+    // check("atmosphere")
+    //     .customSanitizer(value => (Array.isArray(value) ? value : [value]))
+    //     .isArray({ min: 1 }).withMessage("At least one atmosphere type is required"),
+    // check("atmosphere.*").isString().withMessage("Each atmosphere type must be a string"),
 
-    check("atmosphere")
-        .customSanitizer(value => (Array.isArray(value) ? value : [value]))
-        .isArray({ min: 1 }).withMessage("At least one atmosphere type is required"),
-    check("atmosphere.*").isString().withMessage("Each atmosphere type must be a string"),
-
-    check("services")
-        .customSanitizer(value => (Array.isArray(value) ? value : [value]))
-        .isArray({ min: 1 }).withMessage("At least one service is required"),
+    // check("services")
+    //     .customSanitizer(value => (Array.isArray(value) ? value : [value]))
+    //     .isArray({ min: 1 }).withMessage("At least one service is required"),
 
     check("openTiming")
         .matches(/^(?:[01]\d|2[0-3]):[0-5]\d$/)

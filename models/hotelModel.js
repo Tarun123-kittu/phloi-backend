@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const hotelSchema = new mongoose.Schema({
     hotelAccountId: { type: mongoose.Schema.Types.ObjectId },
     establishmentName: { type: String },
-    establishmentType: { type: String },
+    establishmentType: { type: String ,default:null},
     address: {
         streetAddress: { type: String },
         suiteUnitNumber: { type: Number },
@@ -27,9 +27,10 @@ const hotelSchema = new mongoose.Schema({
     paymentStatus: { type: String, enum: ["pending", "completed", "failed"], default: "pending" },
     subscriptionEndDate: { type: Date },
     customerServiceNumber: { type: String },
-    food: [{ type: String }],
-    atmosphere: [{ type: String }],
-    services: [{ type: String }],
+    food: [{ type: String,default:null}],
+    atmosphere: [{ type: String,default:null }],
+    services: [{ type: String,default:null }],
+    atmosphere_description:{type:String,default:null},
     openCloseTimings: {
         open: { type: String },
         close: { type: String },
