@@ -306,7 +306,7 @@ exports.update_hotel_details = async (req, res) => {
             },
             ownerDetails: {
                 ownerName: ownerName || existingHotel.ownerDetails?.ownerName,
-                websiteLink: websiteLink || existingHotel.ownerDetails?.websiteLink,
+                websiteLink: websiteLink,
                 ownerPhone: ownerPhone || existingHotel.ownerDetails?.ownerPhone,
                 ownerEmail: ownerEmail || existingHotel.ownerDetails?.ownerEmail,
             },
@@ -316,11 +316,11 @@ exports.update_hotel_details = async (req, res) => {
             inPersonVisitAvailability: inPersonVisitAvailability ?? existingHotel.inPersonVisitAvailability,
             images: imageUrls,
             customerServiceNumber: customerServiceNumber || existingHotel.customerServiceNumber,
-            food: food || existingHotel.food,
+            food: food,
             // atmosphere: atmosphere || existingHotel.atmosphere,
             // services: services || existingHotel.services,
             atmosphere_description:atmosphere_description||existingHotel.atmosphere_description,
-            additional_information:additional_information||existingHotel.additional_information,
+            additional_information:additional_information,
             openCloseTimings: {
                 open: openTiming || existingHotel.openCloseTimings?.open,
                 close: closeTiming || existingHotel.openCloseTimings?.close
