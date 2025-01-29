@@ -27,10 +27,12 @@ const hotelSchema = new mongoose.Schema({
     paymentStatus: { type: String, enum: ["pending", "completed", "failed"], default: "pending" },
     subscriptionEndDate: { type: Date },
     customerServiceNumber: { type: String },
-    food: [{ type: String,default:null}],
+    // food: [{ type: String,default:null}],
     atmosphere: [{ type: String,default:null }],
     services: [{ type: String,default:null }],
     atmosphere_description:{type:String,default:null},
+    food:{type:String,default:null},
+    additional_information:{type:String,default:null},
     openCloseTimings: {
         open: { type: String },
         close: { type: String },

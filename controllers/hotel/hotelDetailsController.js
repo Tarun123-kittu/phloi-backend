@@ -36,6 +36,7 @@ exports.saveHotelDetails = async (req, res) => {
             atmosphere,
             services,
             atmosphere_description,
+            additional_information,
             openTiming,
             closeTiming
         } = req.body;
@@ -77,10 +78,11 @@ exports.saveHotelDetails = async (req, res) => {
             images: imageUrls,
 
             customerServiceNumber,
-            // food,
+            food,
             // atmosphere,
             // services,
             atmosphere_description,
+            additional_information,
             openCloseTimings: {
                 open: openTiming,
                 close: closeTiming
@@ -193,7 +195,7 @@ exports.get_hotel_data = async (req, res) => {
         const hotelId = req.query.hotelId;
 
         const [hotel, payment] = await Promise.all([
-            hotelModel.findById(hotelId).select('establishmentName establishmentType address ownerDetails why_want_phloi uniqueFeatures inPersonVisitAvailability images adminVerified atmosphere_description food atmosphere services openCloseTimings customerServiceNumber safeWord'),
+            hotelModel.findById(hotelId).select('establishmentName establishmentType address ownerDetails why_want_phloi uniqueFeatures inPersonVisitAvailability images adminVerified atmosphere_description additional_information food atmosphere services openCloseTimings customerServiceNumber safeWord'),
             hotelPaymentsModel.findOne({ hotelId }).sort({ createdAt: -1 }).select("paymentStatus paymentAmount paymentDate customerId subscriptionEndDate")
         ]);
 
@@ -256,6 +258,7 @@ exports.update_hotel_details = async (req, res) => {
             atmosphere,
             services,
             atmosphere_description,
+            additional_information,
             openTiming,
             closeTiming
         } = req.body;
@@ -313,10 +316,11 @@ exports.update_hotel_details = async (req, res) => {
             inPersonVisitAvailability: inPersonVisitAvailability ?? existingHotel.inPersonVisitAvailability,
             images: imageUrls,
             customerServiceNumber: customerServiceNumber || existingHotel.customerServiceNumber,
-            // food: food || existingHotel.food,
+            food: food || existingHotel.food,
             // atmosphere: atmosphere || existingHotel.atmosphere,
             // services: services || existingHotel.services,
             atmosphere_description:atmosphere_description||existingHotel.atmosphere_description,
+            additional_information:additional_information||existingHotel.additional_information,
             openCloseTimings: {
                 open: openTiming || existingHotel.openCloseTimings?.open,
                 close: closeTiming || existingHotel.openCloseTimings?.close
