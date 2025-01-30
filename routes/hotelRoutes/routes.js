@@ -22,6 +22,8 @@ router.post("/signIn", signInValidator, hotelAuthController.signIn)
 router.post("/forgetPassword", forgetPasswordValidator, hotelAuthController.forgetPassword)
 router.put("/resetPassword", resetPasswordValidator, hotelAuthController.resetPassword)
 router.put("/changePassword", verifyHotelToken, changePasswordValidator, hotelAuthController.changePassword)
+router.get("/getHotelAccoutDetails", verifyHotelToken, hotelAuthController.getHotelAccoutDetails)
+router.put("/updateAccount", verifyHotelToken, hotelAuthController.updateAccount)
 
 
 // hotel onboarding
@@ -39,7 +41,7 @@ router.get("/subscribe", paymentController.subscribe)
 router.post("/checkout", paymentController.checkout)
 router.get("/success", paymentController.success)
 router.get("/cancel", paymentController.cancel)
-router.put("/delete_subscription",verifyHotelToken, paymentController.delete_subscription)
+router.put("/delete_subscription", verifyHotelToken, paymentController.delete_subscription)
 
 
 

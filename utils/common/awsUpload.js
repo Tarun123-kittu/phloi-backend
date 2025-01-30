@@ -58,6 +58,9 @@ const uploadFile = async (file, data = null) => {
         key = `${data}/${file.establishmentType}/${file.establishmentName}/${filename + code}`
     }
 
+    if(data=='Establishment Accounts'){
+         key = `${data}/${current_time}`
+    }
 
     try {
         const result = await s3.upload({

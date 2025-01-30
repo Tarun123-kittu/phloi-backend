@@ -2,22 +2,33 @@ let hotelModel = require("../../models/hotelModel")
 let { errorResponse, successResponse } = require('../../utils/common/responseHandler')
 const messages = require('../../utils/common/messages')
 const { generateHashedPassword, compareHashedPassword, generateToken, generateOtp, passwordResetToken } = require('../../utils/common/commonFunctions')
-const {sendEmail} = require("../../utils/common/emailSender")
+const { sendEmail } = require("../../utils/common/emailSender")
 const hotelAccountsModel = require("../../models/hotelAccounts")
 const config = require("../../config/config")
+const {uploadFile} =require("../../utils/common/awsUpload")
 
 
 
 exports.signUp = async (req, res) => {
     try {
-        let { username, email, password } = req.body
+        let { username, email, password, phoneNumber } = req.body
+        let image = req.files?.image
+
+        if(!image) {
+            return res.status(400).json(errorResponse("Please add image"))
+        }
+
 
         let isEmailExist = await hotelAccountsModel.findOne({ email: email })
         if (isEmailExist) { return res.status(400).json(errorResponse("This email is already registered.")) }
 
+        
+        let imageData = await uploadFile(image, 'Establishment Accounts');
+        let uploadedImage = imageData.Location
+
         let hashedPassword = await generateHashedPassword(password)
 
-        await hotelAccountsModel.create({ username, email, password: hashedPassword })
+        await hotelAccountsModel.create({ username, email, password: hashedPassword,image: uploadedImage, phoneNumber:phoneNumber})
 
         return res.status(200).json(successResponse("Registration completed!"))
 
@@ -36,7 +47,7 @@ exports.signIn = async (req, res) => {
         console.log(email, password)
 
         let isEmailExist = await hotelAccountsModel.findOne({ email: email })
-     
+
         if (!isEmailExist) { return res.status(400).json(errorResponse('This email is not registered')) }
 
         let passwordCheck = await compareHashedPassword(password, isEmailExist.password)
@@ -48,7 +59,7 @@ exports.signIn = async (req, res) => {
         var onborading
         if (isOnboradingDone) { onborading = true } else { onborading = false }
 
-        return res.status(200).json({type:"success",message:"Login successful",data:token,isOnboradingDone:onborading, email:isEmailExist.email,username:isEmailExist.username })
+        return res.status(200).json({ type: "success", message: "Login successful", data: token, isOnboradingDone: onborading, email: isEmailExist.email, username: isEmailExist.username })
     } catch (error) {
         console.log("ERROR::", error)
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.messages))
@@ -162,3 +173,64 @@ exports.changePassword = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.messages))
     }
 }
+
+
+exports.getHotelAccoutDetails = async(req,res)=>{
+    try{
+       let userId = req.result.userId     
+       
+       let isUserExist = await hotelAccountsModel.findById(userId).select('username email image phoneNumber')
+       if(!isUserExist){
+        return res.status(400).json(errorResponse("Establishment account is not exist"))
+       }
+       return res.status(200).json(successResponse("Details fetched successfully",isUserExist))
+    }catch(error){
+        console.log("ERROR::", error)
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.messages))
+    }
+}
+
+
+exports.updateAccount = async (req, res) => {
+    try {
+        let { username, email, phoneNumber } = req.body;
+        let image = req.files?.image;
+        let userId = req.result.userId;
+
+
+        let user = await hotelAccountsModel.findById(userId).select("username email image phoneNumber ");
+        if (!user) {
+            return res.status(404).json(errorResponse("User not found."));
+        }
+
+        
+        if (email && email !== user.email) {
+            let isEmailExist = await hotelAccountsModel.findOne({ email: email });
+            if (isEmailExist) {
+                return res.status(400).json(errorResponse("This email is already registered."));
+            }
+        }
+
+      
+        let uploadedImage = user.image; 
+        if (image) {
+            let imageData = await uploadFile(image, 'Establishment Accounts');
+            uploadedImage = imageData.Location;
+        }
+
+        
+        user.username = username || user.username;
+        user.email = email || user.email;
+        user.phoneNumber = phoneNumber || user.phoneNumber;
+        user.image = uploadedImage;
+
+        await user.save();
+
+        return res.status(200).json(successResponse("Account updated successfully!", user));
+
+    } catch (error) {
+        console.log("ERROR::", error);
+        return res.status(500).json(errorResponse("Something went wrong.", error.message));
+    }
+};
+

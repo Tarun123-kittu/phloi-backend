@@ -5,6 +5,7 @@ const { check, validationResult, body } = require('express-validator');
 const signUpValidator = [
     check("username", "Please provide username").not().isEmpty(),
     check("email", "Please enter a valid email").isEmail(),
+    check("phoneNumber","Please enter phone number").not().isEmpty(),
     check("password", "Please provide your password").not().isEmpty(),
     check("password", "Password must be at least 6 characters long, include 1 uppercase letter, 1 number, and 1 symbol")
         .isStrongPassword({
