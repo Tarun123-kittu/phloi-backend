@@ -592,7 +592,7 @@ exports.get_hotel_info = async (req, res) => {
     try {
         let hotelId = req.query.hotelId
 
-        let isHotelExist = await hotelModel.findById(hotelId).select("establishmentName establishmentType address images customerServiceNumber openCloseTimings services atmosphere food").lean()
+        let isHotelExist = await hotelModel.findById(hotelId).select("establishmentName establishmentType address images customerServiceNumber openCloseTimings services atmosphere food atmosphere_description additional_information").lean()
         if (!isHotelExist) { return res.status(400).json(errorResponse("Something went wrong.", "hotel not found with this hotelId")) }
 
         return res.status(200).json(successResponse("Data retreived", isHotelExist))
