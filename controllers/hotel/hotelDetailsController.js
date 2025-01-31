@@ -22,6 +22,7 @@ exports.saveHotelDetails = async (req, res) => {
             country,
             state,
             pinCode,
+            city,
             ownerName,
             websiteLink,
             ownerPhone,
@@ -64,6 +65,7 @@ exports.saveHotelDetails = async (req, res) => {
                 country,
                 state,
                 pinCode,
+                city,
             },
             ownerDetails: {
                 ownerName,
@@ -244,6 +246,7 @@ exports.update_hotel_details = async (req, res) => {
             country,
             state,
             pinCode,
+            city,
             ownerName,
             websiteLink,
             ownerPhone,
@@ -303,6 +306,7 @@ exports.update_hotel_details = async (req, res) => {
                 country: country || existingHotel.address?.country,
                 state: state || existingHotel.address?.state,
                 pinCode: pinCode || existingHotel.address?.pinCode,
+                city:city || existingHotel.address?.city,
             },
             ownerDetails: {
                 ownerName: ownerName || existingHotel.ownerDetails?.ownerName,

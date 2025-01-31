@@ -95,6 +95,7 @@ const saveHotelDetailsValidator = [
     check("country").notEmpty().withMessage("Country is required"),
     check("state").notEmpty().withMessage("State is required"),
     check("pinCode").notEmpty().withMessage("Pin Code is required").isPostalCode('any').withMessage("Invalid Pin Code"),
+    check("city").notEmpty().withMessage("City is required"),
     check("ownerName").notEmpty().withMessage("Owner Name is required"),
     check("ownerPhone").isMobilePhone('any').withMessage("Invalid phone number"),
     check("ownerEmail").isEmail().withMessage("Invalid email address"),

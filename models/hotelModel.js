@@ -10,11 +10,12 @@ const hotelSchema = new mongoose.Schema({
         country: { type: String },
         state: { type: String },
         pinCode: { type: Number },
+        city:{ type: String }
     },
     ownerDetails: {
         ownerName: { type: String },
         websiteLink: { type: String },
-        ownerPhone: { type: String },
+        ownerPhone: { type: Number },
         ownerEmail: { type: String },
     },
     why_want_phloi: { type: String },
