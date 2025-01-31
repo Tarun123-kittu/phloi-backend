@@ -6,7 +6,7 @@ const hotelAccountsSchema = new mongoose.Schema({
     password: { type: String, required: true },
     password_reset_token: { type: String },
     forgetPsd_tokenCreatedAt: { type: Date },
-    image:{type:String},
+    image:{type:String,default:null},
     phoneNumber:{type:Number}
 }, { timestamps: true });
 

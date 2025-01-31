@@ -14,17 +14,19 @@ exports.signUp = async (req, res) => {
         let { username, email, password, phoneNumber } = req.body
         let image = req.files?.image
 
-        if(!image) {
-            return res.status(400).json(errorResponse("Please add image"))
-        }
+        // if(!image) {
+        //     return res.status(400).json(errorResponse("Please add image"))
+        // }
 
 
         let isEmailExist = await hotelAccountsModel.findOne({ email: email })
         if (isEmailExist) { return res.status(400).json(errorResponse("This email is already registered.")) }
 
-        
-        let imageData = await uploadFile(image, 'Establishment Accounts');
-        let uploadedImage = imageData.Location
+        let uploadedImage = null
+        if(image){
+            let imageData = await uploadFile(image, 'Establishment Accounts');
+            uploadedImage = imageData.Location
+        }
 
         let hashedPassword = await generateHashedPassword(password)
 
