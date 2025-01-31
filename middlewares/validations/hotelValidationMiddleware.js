@@ -97,7 +97,7 @@ const saveHotelDetailsValidator = [
     check("pinCode").notEmpty().withMessage("Pin Code is required").isPostalCode('any').withMessage("Invalid Pin Code"),
     check("city").notEmpty().withMessage("City is required"),
     check("ownerName").notEmpty().withMessage("Owner Name is required"),
-    check("ownerPhone").isMobilePhone('any').withMessage("Invalid phone number"),
+    check("ownerPhone").notEmpty().withMessage("Phone number required"),
     check("ownerEmail").isEmail().withMessage("Invalid email address"),
     check("why_want_phloi").notEmpty().withMessage("why you choose phloii please add reason"),
     check("inPersonVisitAvailability").notEmpty().withMessage("Please indicate whether you are open to an in-person visit"),
