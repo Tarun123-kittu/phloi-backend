@@ -126,9 +126,10 @@ exports.get_hotel_details = async (req, res) => {
                     preserveNullAndEmptyArrays: true
                 }
             },
-            {
-                $sort: { 'hotelPayments.updatedAt': -1 }
-            },
+            // {
+            //     $sort: { 'hotelPayments.updatedAt': -1 }
+            // },
+        
             {
                 $group: {
                     _id: '$_id',
@@ -156,6 +157,9 @@ exports.get_hotel_details = async (req, res) => {
                     'hotelPayments.subscriptionEndDate': { $ifNull: ['$hotelPayments.subscriptionEndDate', null] },
                     'hotelPayments.receiptUrl': { $ifNull: ['$hotelPayments.receiptUrl', null] }
                 }
+            },
+            {
+                $sort: { createdAt: 1 }
             },
             {
                 $project: {
