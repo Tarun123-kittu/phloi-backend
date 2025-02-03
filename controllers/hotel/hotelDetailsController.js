@@ -113,6 +113,9 @@ exports.get_hotel_details = async (req, res) => {
                 $match: { hotelAccountId: objectId }
             },
             {
+                $sort: { createdAt: -1 } // Ensure the newest hotels are sorted first
+            },
+            {
                 $lookup: {
                     from: 'hotel_payments',
                     localField: '_id',
@@ -126,9 +129,7 @@ exports.get_hotel_details = async (req, res) => {
                     preserveNullAndEmptyArrays: true
                 }
             },
-            // {
-            //     $sort: { 'hotelPayments.updatedAt': -1 }
-            // },
+    
         
             {
                 $group: {
@@ -146,6 +147,7 @@ exports.get_hotel_details = async (req, res) => {
                     uniqueFeatures: { $first: '$uniqueFeatures' },
                     why_want_phloi: { $first: '$why_want_phloi' },
                     adminVerified: { $first: '$adminVerified' },
+                    createdAt: { $first: '$createdAt' }, 
                     hotelPayments: { $first: '$hotelPayments' },
                 }
             },
@@ -159,7 +161,7 @@ exports.get_hotel_details = async (req, res) => {
                 }
             },
             {
-                $sort: { createdAt: 1 }
+                $sort: { createdAt: -1 } 
             },
             {
                 $project: {
@@ -180,7 +182,8 @@ exports.get_hotel_details = async (req, res) => {
                     'hotelPayments.paymentStatus': 1,
                     'hotelPayments.paymentDate': 1,
                     'hotelPayments.subscriptionEndDate': 1,
-                    'hotelPayments.receiptUrl': 1
+                    'hotelPayments.receiptUrl': 1,
+                    createdAt: 1 
 
                 }
             }
