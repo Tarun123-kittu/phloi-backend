@@ -33,6 +33,7 @@ router.get("/get_hotel_data", verifyHotelToken, hotelDetailsController.get_hotel
 router.put("/update_hotel_details", verifyHotelToken, hotelDetailsController.update_hotel_details)
 router.delete("/delete_Hotel_image", verifyHotelToken, deleteHotelImageValidator, hotelDetailsController.delete_Hotel_image)
 router.get("/get_hotel_notifications", verifyHotelToken, hotelDetailsController.get_hotel_notifications)
+router.delete("/delete_my_establishment",verifyHotelToken,hotelDetailsController.delete_my_establishment)
 
 
 

@@ -4,6 +4,7 @@ let messages = require("../../utils/common/messages")
 let { sendHotelVerificationEmail } = require("../../utils/common/emailSender")
 let notificationModel = require("../../models/notificationModel")
 const hotelAccountsModel = require("../../models/hotelAccounts")
+const hotelPaymentsModel = require("../../models/hotelPaymentsModel")
 
 
 
@@ -162,6 +163,27 @@ exports.accept_reject_hotel_verification = async (req, res) => {
         return res.status(500).json(errorResponse("Something went wrong.", error.message));
     }
 }
+
+
+exports.delete_establishment = async(req,res)=>{
+    try{
+    let establishmentId = req.query.establishmentId
+
+    let isEstablishmentExist = await hotelModel.findById(establishmentId)
+    if(!isEstablishmentExist){
+        return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"Establishment not found"))
+    }
+    await hotelPaymentsModel.deleteMany({hotelId:establishmentId})
+    await hotelModel.findByIdAndDelete(establishmentId)
+
+    return res.status(200).json(successResponse("Establishment deleted successfully"))
+
+    }catch(error){
+        console.log('ERROR::',error)
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
+    }
+}
+
 
 
 

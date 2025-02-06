@@ -64,6 +64,7 @@ router.post('/test_pushNotification',dashboardController.test_pushNotification)
 router.get("/get_hotel_verification_requests",verifyAdminToken,hotelController.get_hotel_verification_requests)
 router.get("/get_hotel_details",verifyAdminToken,hotelController.get_hotel_details)
 router.put("/accept_reject_hotel_verification",verifyAdminToken,hotelController.accept_reject_hotel_verification)
+router.delete("/delete_establishment",verifyAdminToken,hotelController.delete_establishment)
 
 
 module.exports = router
