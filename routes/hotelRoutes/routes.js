@@ -52,5 +52,6 @@ router.post('/createEvent',verifyHotelToken,createEventValidator,eventController
 router.get('/getAllEvents',verifyHotelToken,eventController.getAllEvents)
 router.get('/getEvent',verifyHotelToken,eventController.getEvent)
 router.put('/updateEvent',verifyHotelToken,eventController.updateEvent)
+router.delete('/deleteEvent',verifyHotelToken,eventController.deleteEvent)
 
 module.exports = router

@@ -74,13 +74,13 @@ exports.getAllEvents = async (req, res) => {
 
 exports.getEvent = async (req, res) => {
     try {
-      let eventId = req.query.eventId
+        let eventId = req.query.eventId
 
-      let isEventExist = await eventsModel.findById(eventId)
-      if(!isEventExist){
-        return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"Event not found"))
-      }
-      return res.status(200).json(successResponse('Event fetched successfully', isEventExist))
+        let isEventExist = await eventsModel.findById(eventId)
+        if (!isEventExist) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Event not found"))
+        }
+        return res.status(200).json(successResponse('Event fetched successfully', isEventExist))
     } catch (error) {
         console.log("ERROR::", error)
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.messages))
@@ -92,19 +92,19 @@ exports.getEvent = async (req, res) => {
 
 exports.updateEvent = async (req, res) => {
     try {
-        const {eventId, hotelId, eventTitle, eventStartDate, eventStartTime, eventEndDate, eventEndTime, eventDescription } = req.body;
+        const { eventId, hotelId, eventTitle, eventStartDate, eventStartTime, eventEndDate, eventEndTime, eventDescription } = req.body;
         const image = req.files?.image;
 
-  
+
         const existingEvent = await eventsModel.findById(eventId)
         if (!existingEvent) {
-            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong,"Event not found."));
+            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "Event not found."));
         }
 
 
         const isHotelExist = await hotelModel.findById(hotelId);
         if (!isHotelExist) {
-            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"Hotel not found."));
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Hotel not found."));
         }
 
         let uploadedImage = existingEvent.image;
@@ -127,7 +127,7 @@ exports.updateEvent = async (req, res) => {
 
         let updatedEvent = await eventsModel.findByIdAndUpdate(eventId, { $set: updateObject }, { new: true });
 
-        return res.status(200).json(successResponse("Event updated successfully.",updatedEvent));
+        return res.status(200).json(successResponse("Event updated successfully.", updatedEvent));
     } catch (error) {
         console.error("ERROR::", error);
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
@@ -135,3 +135,20 @@ exports.updateEvent = async (req, res) => {
 };
 
 
+
+
+exports.deleteEvent = async (req, res) => {
+    try {
+      let eventId = req.query.eventId
+
+      let isEventExist = await eventsModel.findById(eventId)
+      if(!isEventExist){
+        return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "Event not found."));
+      }
+      await eventsModel.findByIdAndDelete(eventId)
+      return res.status(200).json(successResponse("Event deleted successfully."))
+    } catch (error) {
+        console.error("ERROR::", error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    }
+}
