@@ -415,3 +415,4 @@ exports.delete_user = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
+

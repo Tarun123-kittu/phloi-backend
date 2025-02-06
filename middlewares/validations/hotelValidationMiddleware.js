@@ -178,6 +178,26 @@ const deleteHotelImageValidator = [
     }
 ]
 
+const createEventValidator = [
+    check("eventTitle").notEmpty().withMessage('Please provide title of the Event'),
+    check("eventStartDate").notEmpty().withMessage('Please provide event startDate'),
+    check("eventStartTime")
+    .matches(/^(?:[01]\d|2[0-3]):[0-5]\d$/)
+    .withMessage("Event start time must be in military time format (HH:MM)"),
+    check("eventEndDate").notEmpty().withMessage('Please provide event end date'),
+    check("eventEndTime")
+    .matches(/^(?:[01]\d|2[0-3]):[0-5]\d$/)
+    .withMessage("Event end time must be in military time format (HH:MM)"),
+    check("eventDescription").notEmpty().withMessage("Please provide event description(eventDescription)"),
+    
+    (req, res, next) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ message: errors.array()[0].msg, type: 'error' });
+        }
+        next();
+    }
+]
 
 module.exports = {
     signUpValidator,
@@ -187,5 +207,6 @@ module.exports = {
     resetPasswordValidator,
     saveHotelDetailsValidator,
     changePasswordValidator,
-    deleteHotelImageValidator
+    deleteHotelImageValidator,
+    createEventValidator
 }

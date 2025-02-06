@@ -4,6 +4,7 @@ let verifyHotelToken = require("../../middlewares/authentication/hotelAuthmiddle
 let hotelAuthController = require("../../controllers/hotel/authController")
 let hotelDetailsController = require("../../controllers/hotel/hotelDetailsController")
 let paymentController = require("../../controllers/hotel/paymentsController")
+let eventController = require("../../controllers/hotel/eventsController")
 let {
     signUpValidator,
     signInValidator,
@@ -11,7 +12,8 @@ let {
     resetPasswordValidator,
     saveHotelDetailsValidator,
     changePasswordValidator,
-    deleteHotelImageValidator
+    deleteHotelImageValidator,
+    createEventValidator
 } = require("../../middlewares/validations/hotelValidationMiddleware")
 
 
@@ -45,5 +47,7 @@ router.get("/cancel", paymentController.cancel)
 router.put("/delete_subscription", verifyHotelToken, paymentController.delete_subscription)
 
 
+//events
+router.post('/createEvent',verifyHotelToken,createEventValidator,eventController.createEvent)
 
 module.exports = router
