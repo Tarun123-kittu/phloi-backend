@@ -62,6 +62,10 @@ const uploadFile = async (file, data = null) => {
          key = `${data}/${current_time}`
     }
 
+    if(data == 'Events'){
+        key = `${data}/${userId}/${filename}`
+    }
+
     try {
         const result = await s3.upload({
             Bucket: 'phloii',
