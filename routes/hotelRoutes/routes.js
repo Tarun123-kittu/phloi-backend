@@ -49,5 +49,8 @@ router.put("/delete_subscription", verifyHotelToken, paymentController.delete_su
 
 //events
 router.post('/createEvent',verifyHotelToken,createEventValidator,eventController.createEvent)
+router.get('/getAllEvents',verifyHotelToken,eventController.getAllEvents)
+router.get('/getEvent',verifyHotelToken,eventController.getEvent)
+router.put('/updateEvent',verifyHotelToken,eventController.updateEvent)
 
 module.exports = router
