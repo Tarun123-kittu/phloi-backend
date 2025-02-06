@@ -5,7 +5,13 @@ let questionsModel = require("../../models/questionsModel")
 let userCharactersticsOptionsModel = require("../../models/optionsModel")
 let notificationModel = require('../../models/notificationModel')
 let sendPushNotification = require("../../utils/common/pushNotifications")
+let secretDatingUserModel = require("../../models/secretDatingUserModel")
 let { io } = require("../../index")
+const joinedRoomsModel = require('../../models/joinedRoomsModel')
+const messageModel = require('../../models/messageModel')
+const chatModel = require('../../models/chatModel')
+const likeDislikeLimitModel = require('../../models/likeDislikeLimit')
+const matchesModel = require('../../models/matchesModel')
 
 
 
@@ -31,7 +37,7 @@ exports.get_all_users = async (req, res) => {
         if (search && search.trim()) {
             const searchFilters = {
                 $or: [
-                    { username: { $regex: `.*${search}.*`, $options: "i" } }, 
+                    { username: { $regex: `.*${search}.*`, $options: "i" } },
                     { email: { $regex: `.*${search}.*`, $options: "i" } },
                     { gender: { $regex: `.*${search}.*`, $options: "i" } },
                 ],
@@ -50,7 +56,7 @@ exports.get_all_users = async (req, res) => {
         if (username) {
             pipeline.push({
                 $match: {
-                    username: { $regex: `.*${username}.*`, $options: "i" }, 
+                    username: { $regex: `.*${username}.*`, $options: "i" },
                 },
             });
         }
@@ -368,7 +374,7 @@ exports.approve_or_reject_verification = async (req, res) => {
             type: 'profile_verification_update'
         }
         if (!isUserExist.deviceToken || isUserExist.deviceToken == null) {
-        console.log("no token found")
+            console.log("no token found")
         } else {
             let pushNotification = await sendPushNotification(isUserExist.deviceToken, message, data)
             console.log("notification response ------->", pushNotification)
@@ -382,3 +388,30 @@ exports.approve_or_reject_verification = async (req, res) => {
     }
 }
 
+
+exports.delete_user = async (req, res) => {
+    try {
+        const userId = req.query.deletedUserId;
+
+        const user = await userModel.findById(userId);
+        if (!user) {
+            return res.status(404).json(errorResponse("User not found"));
+        }
+
+        await Promise.all([
+            secretDatingUserModel.deleteOne({ user_id: userId }),
+            joinedRoomsModel.deleteMany({ userId }),
+            notificationModel.deleteMany({ userId }),
+            messageModel.deleteMany({ $or: [{ sender: userId }, { receiver: userId }] }),
+            chatModel.deleteMany({ participants: { $in: [userId] } }),
+            matchesModel.deleteMany({  users: { $in: [userId] }}),
+            likeDislikeLimitModel.deleteMany({ userId }),
+            userModel.findByIdAndDelete(userId)
+        ]);
+
+        return res.status(200).json(successResponse("User deleted successfully"));
+    } catch (error) {
+        console.error("ERROR::", error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    }
+};
