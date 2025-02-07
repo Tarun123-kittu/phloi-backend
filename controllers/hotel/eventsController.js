@@ -16,12 +16,14 @@ exports.createEvent = async (req, res) => {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Hotel not found."))
         }
 
-        let uploadedImage
-        if (image) {
-            image.userId = hotelId
-            let imageData = await uploadFile(image, 'Events');
-            uploadedImage = imageData.Location
+        if (!image) {
+            return res.status(400).json(errorResponse("Please add image of the event or any event related image"))
         }
+
+        image.userId = hotelId
+        let imageData = await uploadFile(image, 'Events');
+        let uploadedImage = imageData.Location
+
 
 
         let eventObject = {
@@ -139,14 +141,14 @@ exports.updateEvent = async (req, res) => {
 
 exports.deleteEvent = async (req, res) => {
     try {
-      let eventId = req.query.eventId
+        let eventId = req.query.eventId
 
-      let isEventExist = await eventsModel.findById(eventId)
-      if(!isEventExist){
-        return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "Event not found."));
-      }
-      await eventsModel.findByIdAndDelete(eventId)
-      return res.status(200).json(successResponse("Event deleted successfully."))
+        let isEventExist = await eventsModel.findById(eventId)
+        if (!isEventExist) {
+            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "Event not found."));
+        }
+        await eventsModel.findByIdAndDelete(eventId)
+        return res.status(200).json(successResponse("Event deleted successfully."))
     } catch (error) {
         console.error("ERROR::", error);
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));

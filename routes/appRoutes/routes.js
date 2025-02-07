@@ -10,6 +10,7 @@ const settingsController = require("../../controllers/common/settingController")
 const secretDatingHomepageController = require("../../controllers/sercretDating/secretDatingHomepageController")
 const secretDatingChatController = require('../../controllers/sercretDating/secretDatingChatController')
 const safetyAndPrivacyController = require('../../controllers/common/safetyAndPrivacyController')
+const eventsController = require('../../controllers/regularDating/eventsController')
 const {
     validateLogin,
     validateSocialLogin,
@@ -148,5 +149,11 @@ router.post('/unmatch_user',authenticateToken,safetyAndPrivacyController.unmatch
 router.get('/get_deleteAccount_reasons',authenticateToken,safetyAndPrivacyController.get_deleteAccount_reasons)
 router.post('/delete_account',authenticateToken,safetyAndPrivacyController.delete_account)
 router.put('/block_user',authenticateToken,safetyAndPrivacyController.block_user)
+
+
+
+//events 
+router.get('/get_events',authenticateToken,eventsController.get_events)
+router.get('/get_eventDetails',authenticateToken,eventsController.get_eventDetails)
 
 module.exports = router
