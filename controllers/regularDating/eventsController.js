@@ -9,6 +9,7 @@ exports.get_events = async (req, res) => {
     try {
         const now = new Date();
 
+
         let availableEvents = await eventsModel.find({
             $or: [
                 { "eventEnd.date": { $gt: now } },
@@ -24,15 +25,27 @@ exports.get_events = async (req, res) => {
         if (availableEvents.length === 0) {
             return res.status(200).json(successResponse("No active events found.", []));
         }
-     
-        const hotelIds = [...new Set(availableEvents.map(event => event.hotelId.toString()))];
-        const hotels = await hotelModel.find({ _id: { $in: hotelIds } }).select('_id establishmentName').lean();
-        const hotelMap = new Map(hotels.map(hotel => [hotel._id.toString(), hotel.establishmentName]));
 
-        availableEvents = availableEvents.map(event => ({
-            ...event,
-            hotelName: hotelMap.get(event.hotelId.toString()) || "Unknown Hotel"
-        }));
+
+        const hotelIds = [...new Set(availableEvents.map(event => event.hotelId.toString()))];
+
+       
+        const hotels = await hotelModel.find({ _id: { $in: hotelIds } })
+            .select('_id establishmentName address')
+            .lean();
+
+
+        const hotelMap = new Map(hotels.map(hotel => [hotel._id.toString(), hotel]));
+
+  
+        availableEvents = availableEvents.map(event => {
+            const hotel = hotelMap.get(event.hotelId.toString());
+            return {
+                ...event,
+                hotelName: hotel ? hotel.establishmentName : "Unknown Hotel",
+                hotelAddress: hotel ? hotel.address : "Address not available"
+            };
+        });
 
         return res.status(200).json(successResponse("Events fetched successfully.", availableEvents));
 
@@ -41,6 +54,7 @@ exports.get_events = async (req, res) => {
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
+
 
 
 
