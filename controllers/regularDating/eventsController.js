@@ -18,7 +18,6 @@ exports.get_events = async (req, res) => {
                 }
             ]
         })
-        .select('eventTitle eventStart eventEnd image hotelId')
         .sort({ createdAt: -1 })
         .lean(); 
 
@@ -46,31 +45,3 @@ exports.get_events = async (req, res) => {
 
 
 
-exports.get_eventDetails = async (req, res) => {
-    try {
-        let eventId = req.query.eventId;
-
-        if (!eventId) {
-            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Event ID is required."));
-        }
-
-        let eventDetails = await eventsModel.findById(eventId)
-            .populate('hotelId' , 'establishmentName address')
-            .lean();
-
-        if (!eventDetails) {
-            return res.status(404).json(errorResponse(messages.generalError.somethingWentWrong, "Event not found with this ID"));
-        }
-
-
-        eventDetails.hotelName = eventDetails.hotelId?.establishmentName || "Unknown Hotel";
-        eventDetails.address = eventDetails.hotelId?.address||"Unknown address"
-        delete eventDetails.hotelId; 
-
-        return res.status(200).json(successResponse("Event fetched successfully.", eventDetails));
-
-    } catch (error) {
-        console.error("ERROR::", error);
-        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
-    }
-};

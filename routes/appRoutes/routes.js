@@ -154,6 +154,6 @@ router.put('/block_user',authenticateToken,safetyAndPrivacyController.block_user
 
 //events 
 router.get('/get_events',authenticateToken,eventsController.get_events)
-router.get('/get_eventDetails',authenticateToken,eventsController.get_eventDetails)
+
 
 module.exports = router
