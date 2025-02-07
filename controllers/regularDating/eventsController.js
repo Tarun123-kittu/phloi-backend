@@ -9,7 +9,7 @@ exports.get_events = async (req, res) => {
     try {
         const now = new Date();
 
-
+  
         let availableEvents = await eventsModel.find({
             $or: [
                 { "eventEnd.date": { $gt: now } },
@@ -26,34 +26,49 @@ exports.get_events = async (req, res) => {
             return res.status(200).json(successResponse("No active events found.", []));
         }
 
-
+ 
         const hotelIds = [...new Set(availableEvents.map(event => event.hotelId.toString()))];
 
-       
+    
         const hotels = await hotelModel.find({ _id: { $in: hotelIds } })
             .select('_id establishmentName address')
             .lean();
 
+        const hotelMap = new Map(hotels.map(hotel => [
+            hotel._id.toString(),
+            { hotelName: hotel.establishmentName, hotelAddress: hotel.address, events: [] }
+        ]));
 
-        const hotelMap = new Map(hotels.map(hotel => [hotel._id.toString(), hotel]));
-
-  
-        availableEvents = availableEvents.map(event => {
-            const hotel = hotelMap.get(event.hotelId.toString());
-            return {
-                ...event,
-                hotelName: hotel ? hotel.establishmentName : "Unknown Hotel",
-                hotelAddress: hotel ? hotel.address : "Address not available"
-            };
+     
+        availableEvents.forEach(event => {
+            const hotelData = hotelMap.get(event.hotelId.toString());
+            if (hotelData) {
+                hotelData.events.push({
+                    _id: event._id,
+                    eventTitle: event.eventTitle,
+                    eventStart: event.eventStart,
+                    eventEnd: event.eventEnd,
+                    eventDescription: event.eventDescription,
+                    image: event.image,
+                    createdAt: event.createdAt,
+                    updatedAt: event.updatedAt
+                });
+            }
         });
 
-        return res.status(200).json(successResponse("Events fetched successfully.", availableEvents));
+  
+        const groupedEvents = Array.from(hotelMap.values());
+
+        return res.status(200).json(successResponse("Events fetched successfully.", groupedEvents));
 
     } catch (error) {
         console.error("ERROR::", error);
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
+
+
+
 
 
 
