@@ -55,7 +55,7 @@ exports.get_eventDetails = async (req, res) => {
         }
 
         let eventDetails = await eventsModel.findById(eventId)
-            .populate('hotelId', 'establishmentName')
+            .populate('hotelId' , 'establishmentName address')
             .lean();
 
         if (!eventDetails) {
@@ -64,6 +64,7 @@ exports.get_eventDetails = async (req, res) => {
 
 
         eventDetails.hotelName = eventDetails.hotelId?.establishmentName || "Unknown Hotel";
+        eventDetails.address = eventDetails.hotelId?.address||"Unknown address"
         delete eventDetails.hotelId; 
 
         return res.status(200).json(successResponse("Event fetched successfully.", eventDetails));
