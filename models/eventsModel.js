@@ -1,7 +1,7 @@
 let mongoose = require('mongoose')
 
 let eventsSchema = new mongoose.Schema({
-    hotelId: { type: mongoose.Schema.Types.ObjectId },
+    hotelId: { type: mongoose.Schema.Types.ObjectId ,ref: 'Hotel'},
     eventTitle: { type: String },
     eventStart: {
         date: { type: Date },
