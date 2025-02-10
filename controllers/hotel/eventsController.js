@@ -60,7 +60,7 @@ exports.getAllEvents = async (req, res) => {
             return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Hotel not found."))
         }
 
-        let events = await eventsModel.find({ hotelId: hotelId }).select('eventTitle image').sort({ createdAt: -1 }).lean()
+        let events = await eventsModel.find({ hotelId: hotelId }).select('eventTitle image eventStart eventEnd').sort({ createdAt: -1 }).lean()
         if (events.length < 1) {
             return res.status(400).json(errorResponse("No events created yet"))
         }
