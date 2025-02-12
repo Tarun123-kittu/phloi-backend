@@ -79,6 +79,7 @@ exports.get_all_users = async (req, res) => {
                 gender: 1,
                 online_status: 1,
                 verified_profile: 1,
+                createdAt:1
             },
         });
 

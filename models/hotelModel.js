@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const hotelSchema = new mongoose.Schema({
     hotelAccountId: { type: mongoose.Schema.Types.ObjectId },
     establishmentName: { type: String },
-    establishmentType: { type: String ,default:null},
     address: {
         streetAddress: { type: String },
         suiteUnitNumber: { type: Number },
