@@ -43,6 +43,7 @@ router.get("/get_page_by_slug",safetyAndPrivacyController.get_page_by_slug)
 // general settings
 router.get('/get_maximum_distance',verifyAdminToken,generalSettingController.get_maximum_distance)
 router.put('/update_maximum_distance_preference', verifyAdminToken, generalSettingController.update_maximum_distance_preference)
+router.put('/searchHotelUnderDistance', verifyAdminToken, generalSettingController.searchHotelUnderDistance)
 router.post('/add_explore_room', verifyAdminToken, generalSettingController.add_explore_room)
 router.get('/get_expore_room', verifyAdminToken, generalSettingController.get_expore_room)
 router.put('/update_explore_room', verifyAdminToken, generalSettingController.update_explore_room)

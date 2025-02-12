@@ -55,7 +55,7 @@ const uploadFile = async (file, data = null) => {
 
     if (data == 'Hotels') {
         let code = generateOtp()
-        key = `${data}/${file.establishmentType}/${file.establishmentName}/${filename + code}`
+        key = `${data}/${file.establishmentName}/${filename + code}`
     }
 
     if(data=='Establishment Accounts'){

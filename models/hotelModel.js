@@ -28,7 +28,6 @@ const hotelSchema = new mongoose.Schema({
     paymentStatus: { type: String, enum: ["pending", "completed", "failed"], default: "pending" },
     subscriptionEndDate: { type: Date },
     customerServiceNumber: { type: String },
-    // food: [{ type: String,default:null}],
     atmosphere: [{ type: String,default:null }],
     services: [{ type: String,default:null }],
     atmosphere_description:{type:String,default:null},
@@ -38,9 +37,10 @@ const hotelSchema = new mongoose.Schema({
         open: { type: String },
         close: { type: String },
     },
+    location: { type: { type: String, enum: ['Point'],  default: 'Point', }, coordinates: { type: [Number],  default: [0, 0], }, },
 
 }, { timestamps: true });
 
-hotelSchema.index({ hotelAccountId: 1, adminVerified: 1, createdAt: -1, updatedAt: -1 });
+hotelSchema.index({location: "2dsphere" , hotelAccountId: 1, adminVerified: 1, createdAt: -1, updatedAt: -1 });
 
 module.exports = mongoose.model('Hotel', hotelSchema);

@@ -23,7 +23,6 @@ exports.update_maximum_distance_preference = async (req, res) => {
 
         const maximum_distance = req.body.maximum_distance;
 
-
         if (typeof maximum_distance !== 'number' || maximum_distance <= 0) {
             return res.status(400).json(errorResponse('Invalid maximum distance value. It must be a positive number.'));
         }
@@ -53,8 +52,37 @@ exports.update_maximum_distance_preference = async (req, res) => {
 };
 
 
+exports.searchHotelUnderDistance = async (req, res) => {
+    try {
+
+        const serchHotelsUnder = req.body.serchHotelsUnder;
+
+        if (typeof serchHotelsUnder !== 'number' || serchHotelsUnder <= 0) {
+            return res.status(400).json(errorResponse('Invalid maximum distance value. It must be a positive number.'));
+        }
 
 
+        const updatedSetting = await generalSettingsModel.findOneAndUpdate(
+            {},
+            { serchHotelsUnder },
+            { new: true }
+        );
+
+
+        if (!updatedSetting) {
+            const newSetting = new generalSettingsModel({ serchHotelsUnder });
+            await newSetting.save();
+            return res.status(201).json(successResponse('New maximum distance preference created successfully', newSetting));
+        }
+
+        return res.status(200).json(successResponse('Maximum distance preference for nearby establishments updated'));
+
+    } catch (error) {
+
+        console.error('ERROR::', error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    }
+};
 
 exports.add_explore_room = async (req, res) => {
     try {

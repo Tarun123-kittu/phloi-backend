@@ -7,13 +7,13 @@ const { uploadFile, deleteFileFromAWS } = require("../../utils/common/awsUpload"
 const { default: mongoose } = require("mongoose");
 const hotelPaymentsModel = require("../../models/hotelPaymentsModel");
 const notificationModel = require("../../models/notificationModel")
+const getLatLongFromAddress = require("../../utils/common/catchCoordinates")
 
 
 
 exports.saveHotelDetails = async (req, res) => {
     try {
         const userId = req.result.userId;
-
         const {
             establishmentName,
             establishmentType,
@@ -50,23 +50,25 @@ exports.saveHotelDetails = async (req, res) => {
         const imageUrls = [];
         for (const file of files) {
             file.establishmentName = establishmentName;
-            // file.establishmentType = establishmentType;
             const uploadedImage = await uploadFile(file, "Hotels");
             imageUrls.push(uploadedImage.Location);
         }
 
+        const address = {
+            streetAddress:streetAddress,
+            suiteUnitNumber: suiteUnitNumber,
+            country: country,
+            state:state,
+            pinCode:pinCode,
+            city: city
+        };
+
+        let coordinates = await getLatLongFromAddress(address)
+        
         const newAddedHotel = await hotelModel.create({
             hotelAccountId: userId,
             establishmentName,
-            // establishmentType,
-            address: {
-                streetAddress,
-                suiteUnitNumber,
-                country,
-                state,
-                pinCode,
-                city,
-            },
+            address: address,
             ownerDetails: {
                 ownerName,
                 websiteLink,
@@ -78,11 +80,9 @@ exports.saveHotelDetails = async (req, res) => {
             safeWord,
             inPersonVisitAvailability,
             images: imageUrls,
-
+            
             customerServiceNumber,
             food,
-            // atmosphere,
-            // services,
             atmosphere_description,
             additional_information,
             openCloseTimings: {
@@ -90,6 +90,10 @@ exports.saveHotelDetails = async (req, res) => {
                 close: closeTiming
             },
             onboardingCompleted: true,
+            location: {
+                type: 'Point',
+                coordinates: [coordinates.lng, coordinates.lat]
+              }
         });
 
         return res.status(200).json(successResponse("Hotel details saved successfully"));
@@ -113,7 +117,7 @@ exports.get_hotel_details = async (req, res) => {
                 $match: { hotelAccountId: objectId }
             },
             {
-                $sort: { createdAt: -1 } // Ensure the newest hotels are sorted first
+                $sort: { createdAt: -1 }
             },
             {
                 $lookup: {
@@ -129,8 +133,8 @@ exports.get_hotel_details = async (req, res) => {
                     preserveNullAndEmptyArrays: true
                 }
             },
-    
-        
+
+
             {
                 $group: {
                     _id: '$_id',
@@ -147,7 +151,7 @@ exports.get_hotel_details = async (req, res) => {
                     uniqueFeatures: { $first: '$uniqueFeatures' },
                     why_want_phloi: { $first: '$why_want_phloi' },
                     adminVerified: { $first: '$adminVerified' },
-                    createdAt: { $first: '$createdAt' }, 
+                    createdAt: { $first: '$createdAt' },
                     hotelPayments: { $first: '$hotelPayments' },
                 }
             },
@@ -161,7 +165,7 @@ exports.get_hotel_details = async (req, res) => {
                 }
             },
             {
-                $sort: { createdAt: -1 } 
+                $sort: { createdAt: -1 }
             },
             {
                 $project: {
@@ -183,7 +187,7 @@ exports.get_hotel_details = async (req, res) => {
                     'hotelPayments.paymentDate': 1,
                     'hotelPayments.subscriptionEndDate': 1,
                     'hotelPayments.receiptUrl': 1,
-                    createdAt: 1 
+                    createdAt: 1
 
                 }
             }
@@ -222,7 +226,7 @@ exports.get_hotel_data = async (req, res) => {
                 paymentStatus: payment?.paymentStatus ?? null,
                 paymentDate: payment?.paymentDate ?? null,
                 subscriptionEndDate: payment?.subscriptionEndDate ?? null,
-                customerId:payment?.customerId ?? null,
+                customerId: payment?.customerId ?? null,
             }
         };
 
@@ -289,10 +293,6 @@ exports.update_hotel_details = async (req, res) => {
         if (images.length > 0) {
             const totalImageCount = currentImageCount + images.length;
 
-            // if (totalImageCount > 5) {
-            //     return res.status(400).json(errorResponse(`You can only upload ${5 - currentImageCount} more image(s) to maintain a total of 5 images.`));
-            // }
-
             console.log("Uploading new images...");
             const uploadPromises = images.map((file) => uploadFile(file, "Hotels"));
             const uploadedImages = await Promise.all(uploadPromises);
@@ -306,14 +306,13 @@ exports.update_hotel_details = async (req, res) => {
 
         const updatedData = {
             establishmentName: establishmentName || existingHotel.establishmentName,
-            // establishmentType: establishmentType || existingHotel.establishmentType,
             address: {
                 streetAddress: streetAddress || existingHotel.address?.streetAddress,
                 suiteUnitNumber: suiteUnitNumber || existingHotel.address?.suiteUnitNumber,
                 country: country || existingHotel.address?.country,
                 state: state || existingHotel.address?.state,
                 pinCode: pinCode || existingHotel.address?.pinCode,
-                city:city || existingHotel.address?.city,
+                city: city || existingHotel.address?.city,
             },
             ownerDetails: {
                 ownerName: ownerName || existingHotel.ownerDetails?.ownerName,
@@ -328,10 +327,8 @@ exports.update_hotel_details = async (req, res) => {
             images: imageUrls,
             customerServiceNumber: customerServiceNumber || existingHotel.customerServiceNumber,
             food: food,
-            // atmosphere: atmosphere || existingHotel.atmosphere,
-            // services: services || existingHotel.services,
-            atmosphere_description:atmosphere_description||existingHotel.atmosphere_description,
-            additional_information:additional_information,
+            atmosphere_description: atmosphere_description || existingHotel.atmosphere_description,
+            additional_information: additional_information,
             openCloseTimings: {
                 open: openTiming || existingHotel.openCloseTimings?.open,
                 close: closeTiming || existingHotel.openCloseTimings?.close
@@ -419,21 +416,21 @@ exports.get_hotel_notifications = async (req, res) => {
 }
 
 
-exports.delete_my_establishment = async(req,res)=>{
-    try{
-    let establishmentId = req.query.establishmentId
+exports.delete_my_establishment = async (req, res) => {
+    try {
+        let establishmentId = req.query.establishmentId
 
-    let isEstablishmentExist = await hotelModel.findById(establishmentId)
-    if(!isEstablishmentExist){
-        return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong,"Establishment not found"))
-    }
-    await hotelPaymentsModel.deleteMany({hotelId:establishmentId})
-    await hotelModel.findByIdAndDelete(establishmentId)
+        let isEstablishmentExist = await hotelModel.findById(establishmentId)
+        if (!isEstablishmentExist) {
+            return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Establishment not found"))
+        }
+        await hotelPaymentsModel.deleteMany({ hotelId: establishmentId })
+        await hotelModel.findByIdAndDelete(establishmentId)
 
-    return res.status(200).json(successResponse("Establishment deleted successfully"))
+        return res.status(200).json(successResponse("Establishment deleted successfully"))
 
-    }catch(error){
-        console.log('ERROR::',error)
+    } catch (error) {
+        console.log('ERROR::', error)
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
     }
 }

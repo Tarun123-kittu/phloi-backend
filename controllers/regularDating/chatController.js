@@ -7,102 +7,8 @@ const { errorResponse, successResponse } = require('../../utils/common/responseH
 const messages = require("../../utils/common/messages")
 const { io } = require("../../index");
 const { uploadFile } = require('../../utils/common/awsUpload')
-const sendPushNotification = require("../../utils/common/pushNotifications")
-
-
-
-
-
-
-// exports.getChats = async (req, res) => {
-//     try {
-//         const userId = req.result.userId;
-//         const page = parseInt(req.query.page) || 1;
-//         const limit = parseInt(req.query.limit) || 10;
-//         const skip = (page - 1) * limit;
-//         const searchQuery = req.query.search || "";
-
-//         if (!userId) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User ID is required")); }
-
-//         const chats = await chatModel.find({ participants: userId, type: 'regular dating' })
-//             .populate({
-//                 path: 'lastMessage',
-//                 populate: {
-//                     path: 'sender',
-//                     select: 'username'
-//                 }
-//             })
-//             .populate({
-//                 path: 'participants',
-//                 select: 'username images online_status',
-//             })
-//             .sort({ updatedAt: -1 })
-//             .skip(skip)
-//             .limit(limit);
-
-//         if (!chats || chats.length === 0) {
-//             return res.status(200).json(successResponse("No chats found", []));
-//         }
-
-//         const filteredChats = chats.filter(chat => {
-//             const otherParticipant = chat.participants.find(participant => participant._id.toString() !== userId);
-//             return otherParticipant && otherParticipant.username.toLowerCase().includes(searchQuery.toLowerCase());
-//         });
-
-//         let chatDetails = await Promise.all(filteredChats.map(async chat => {
-//             const otherParticipant = chat.participants.find(participant => participant._id.toString() !== userId);
-
-
-//             const otherParticipantId = otherParticipant ? otherParticipant._id : null;
-
-//             const imageObj = otherParticipant?.images?.find(img => img.position === 1);
-//             const otherParticipantImage = imageObj ? imageObj.url : null;
-
-//             const unreadCount = await messageModel.countDocuments({
-//                 chat: chat._id,
-//                 receiver: userId,
-//                 read_chat: false
-//             });
-
-//             const lastMessageText = chat.lastMessage ? chat.lastMessage.text : null;
-//             const lastMessageSenderName = chat.lastMessage && chat.lastMessage.sender ? chat.lastMessage.sender.username : null;
-//             const messageSentAt = chat.lastMessage ? chat.lastMessage.createdAt : null;
-
-//             return {
-//                 chatId: chat._id,
-//                 otherParticipantId: otherParticipantId,
-//                 otherParticipantName: otherParticipant ? otherParticipant.username : null,
-//                 otherParticipantImage: otherParticipantImage,
-//                 lastMessage: lastMessageText,
-//                 lastMessageSender: lastMessageSenderName,
-//                 unreadCount: unreadCount,
-//                 messageSentAt: messageSentAt,
-//                 onlineStatus: otherParticipant ? otherParticipant.online_status : null
-//             };
-//         }));
-
-
-
-//         const totalChatsCount = await chatModel.countDocuments({
-//             participants: userId,
-//             'participants.username': { $regex: searchQuery, $options: "i" }
-//         });
-
-
-
-//         res.status(200).json(successResponse("Chats retrieved successfully", {
-//             chats: chatDetails,
-//             currentPage: page,
-//             totalChats: totalChatsCount,
-//             totalPages: Math.ceil(totalChatsCount / limit)
-//         }));
-
-//     } catch (error) {
-//         console.error("ERROR::", error);
-//         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
-//     }
-// };
-
+const sendPushNotification = require("../../utils/common/pushNotifications");
+const generalSettingModel = require('../../models/generalSettingModel');
 
 
 exports.getChats = async (req, res) => {
@@ -567,21 +473,52 @@ exports.get_hotelInviations = async (req, res) => {
 
 exports.get_all_verified_hotels = async (req, res) => {
     try {
-        let userId = req.result.userId
-
-        let isUserExist = await userModel.findById(userId)
-        if (!isUserExist) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "User not exist with this userId")) }
-
-
-        // let allVerifiedHotels = await hotelModel.find({ adminVerified: true, subscriptionEndDate: { $gte: new Date() } }).select("establishmentName establishmentType address images customerServiceNumber openCloseTimings").lean()
-        let allVerifiedHotels = await hotelModel.find({ adminVerified: true }).select("establishmentName establishmentType address images customerServiceNumber openCloseTimings").lean()
-        return res.status(200).json(successResponse("Data reterived", allVerifiedHotels))
-
+      const userId = req.result.userId;
+      
+      const user = await userModel.findById(userId);
+      if (!user) {
+        return res.status(400).json(errorResponse(
+          messages.generalError.somethingWentWrong, 
+          "User not exist with this userId"
+        ));
+      }
+  
+      const userCoordinates = user.location && user.location.coordinates;
+      if (!userCoordinates || userCoordinates.length !== 2) {
+        return res.status(400).json(errorResponse(
+          "User location is not set properly."
+        ));
+      }
+      let distanceSetByAdmin = await generalSettingModel.findOne()
+      let maxDistance = distanceSetByAdmin.serchHotelsUnder * 1000
+  
+    
+      const hotels = await hotelModel.find({
+        adminVerified: true,
+        location: {
+          $near: {
+            $geometry: {
+              type: "Point",
+              coordinates: userCoordinates
+            },
+            $maxDistance: maxDistance 
+          }
+        }
+      })
+      .select("establishmentName establishmentType address images customerServiceNumber openCloseTimings")
+      .lean();
+  
+      return res.status(200).json(successResponse("Data retrieved", hotels));
+      
     } catch (error) {
-        console.log("ERROR::", error)
-        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message))
+      console.error("ERROR::", error);
+      return res.status(500).json(errorResponse(
+        messages.generalError.somethingWentWrong, 
+        error.message
+      ));
     }
-}
+  };
+  
 
 
 
