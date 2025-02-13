@@ -5,6 +5,7 @@ let secretDatingModel = require("../../models/secretDatingUserModel")
 let exploreRoomsModel = require("../../models/exploreRoomsModel")
 let uploadFile = require("../../utils/common/awsUpload")
 const hotelModel = require("../../models/hotelModel")
+const eventsModel = require("../../models/eventsModel")
 
 
 
@@ -311,6 +312,16 @@ exports.get_all_sercretDating_users_count = async (req, res) => {
     try {
         let secretDatingUsers = await secretDatingModel.countDocuments()
         return res.status(200).json(successResponse("Secret dating users count", secretDatingUsers))
+    } catch (error) {
+        console.log("ERROR::", error);
+        return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+    }
+}
+
+exports.get_all_events_count = async (req, res) => {
+    try {
+        let allEvents = await eventsModel.countDocuments()
+        return res.status(200).json(successResponse("Events count", allEvents))
     } catch (error) {
         console.log("ERROR::", error);
         return res.status(500).json(errorResponse(messages.generalError.somethingWentWrong, error.message));
