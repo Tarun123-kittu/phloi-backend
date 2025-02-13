@@ -57,6 +57,7 @@ router.get("/secretDating_monthly_joined_users",verifyAdminToken,dashboardContro
 router.get("/explore_rooms_joinedUsers",verifyAdminToken,dashboardController.explore_rooms_joinedUsers)
 router.get("/active_inactive_users",verifyAdminToken,dashboardController.active_inactive_users)
 router.get("/get_all_sercretDating_users_count",verifyAdminToken,dashboardController.get_all_sercretDating_users_count)
+router.get("/get_all_establishments_count",verifyAdminToken,dashboardController.get_all_establishments_count)
 router.post('/test_pushNotification',dashboardController.test_pushNotification)
 
 
