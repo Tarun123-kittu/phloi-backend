@@ -121,7 +121,7 @@ exports.monthly_joined_users = async (req, res) => {
                 $project: {
                     label: start && end || isWeekly
                         ? "$_id"  
-                        : { $arrayElemAt: [monthNames, "$_id"] }, 
+                        : { $arrayElemAt: [monthNames, "$_id"] },
                     count: 1,
                     _id: 0
                 }
@@ -133,6 +133,45 @@ exports.monthly_joined_users = async (req, res) => {
 
         let userStats = await userModel.aggregate(aggregationPipeline);
 
+        if (start && end || isWeekly) {
+            let dateMap = new Map(userStats.map(({ label, count }) => [label, count]));
+
+            let filledStats = [];
+            let current = new Date(startDate);
+
+            while (current <= endDate) {
+                let dateString = current.toISOString().split('T')[0];
+                filledStats.push({
+                    label: dateString,
+                    count: dateMap.get(dateString) || 0
+                });
+
+                current.setDate(current.getDate() + 1);
+            }
+
+            userStats = filledStats;
+        }
+
+        else if (year) {
+            const monthNames = [
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            ];
+        
+            let requestedYear = parseInt(year);  
+            let currentYear = new Date().getFullYear();
+            let currentMonthIndex = new Date().getMonth(); 
+            let monthMap = new Map(userStats.map(({ label, count }) => [label, count]));
+        
+            let monthsToInclude = requestedYear === currentYear 
+                ? monthNames.slice(0, currentMonthIndex + 1) 
+                : monthNames; 
+        
+            userStats = monthsToInclude.map(month => ({
+                label: month,
+                count: monthMap.get(month) || 0
+            }));
+        }
         return res
             .status(200)
             .json(successResponse('Data retrieved successfully', userStats));
@@ -144,9 +183,6 @@ exports.monthly_joined_users = async (req, res) => {
             .json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
-
-
-
 
 
 
