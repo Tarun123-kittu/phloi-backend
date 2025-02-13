@@ -8,20 +8,99 @@ const hotelModel = require("../../models/hotelModel")
 
 
 
+// exports.monthly_joined_users = async (req, res) => {
+//     try {
+//         const year = req.query.year || new Date().getFullYear();
+
+//         const startDate = new Date(`${year}-01-01T00:00:00Z`);
+//         const endDate = new Date(`${year}-12-31T23:59:59Z`);
+
+//         const monthNames = [
+//             null,
+//             "January", "February", "March", "April", "May", "June",
+//             "July", "August", "September", "October", "November", "December"
+//         ];
+
+//         let monthlyJoinedUsers = await userModel.aggregate([
+//             {
+//                 $match: {
+//                     createdAt: {
+//                         $gte: startDate,
+//                         $lte: endDate
+//                     }
+//                 }
+//             },
+//             {
+//                 $group: {
+//                     _id: { $month: "$createdAt" },
+//                     count: { $sum: 1 }
+//                 }
+//             },
+//             {
+//                 $project: {
+//                     month: { $arrayElemAt: [monthNames, "$_id"] },
+//                     count: 1,
+//                     _id: 0
+//                 }
+//             },
+//             {
+//                 $sort: { month: 1 }
+//             }
+//         ]);
+
+//         monthlyJoinedUsers.reverse()
+
+
+//         return res
+//             .status(200)
+//             .json(successResponse('Data retrieved successfully', monthlyJoinedUsers));
+
+//     } catch (error) {
+//         console.log("ERROR::", error);
+//         return res
+//             .status(500)
+//             .json(errorResponse(messages.generalError.somethingWentWrong, error.message));
+//     }
+// };
+
+
 exports.monthly_joined_users = async (req, res) => {
     try {
-        const year = req.query.year || new Date().getFullYear();
+        const { year, weekly, startDate: start, endDate: end } = req.query;
+        const isWeekly = weekly === 'true';
 
-        const startDate = new Date(`${year}-01-01T00:00:00Z`);
-        const endDate = new Date(`${year}-12-31T23:59:59Z`);
+        const now = new Date();
+        const currentYear = year || now.getFullYear();
+        let startDate, endDate;
+
+        if (start && end) {
+            startDate = new Date(start);
+            startDate.setHours(0, 0, 0, 0);
+
+            endDate = new Date(end);
+            endDate.setHours(23, 59, 59, 999);
+        } 
+        else if (isWeekly) {
+            const dayOfWeek = now.getDay();
+            const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+            startDate = new Date(now);
+            startDate.setDate(now.getDate() - daysToMonday);
+            startDate.setHours(0, 0, 0, 0);
+
+            endDate = new Date();
+            endDate.setHours(23, 59, 59, 999);
+        } 
+        else {
+            startDate = new Date(`${currentYear}-01-01T00:00:00Z`);
+            endDate = new Date(`${currentYear}-12-31T23:59:59Z`);
+        }
 
         const monthNames = [
-            null,
-            "January", "February", "March", "April", "May", "June",
+            null, "January", "February", "March", "April", "May", "June",
             "July", "August", "September", "October", "November", "December"
         ];
 
-        let monthlyJoinedUsers = await userModel.aggregate([
+        let aggregationPipeline = [
             {
                 $match: {
                     createdAt: {
@@ -32,28 +111,31 @@ exports.monthly_joined_users = async (req, res) => {
             },
             {
                 $group: {
-                    _id: { $month: "$createdAt" },
+                    _id: start && end || isWeekly
+                        ? { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } } 
+                        : { $month: "$createdAt" }, 
                     count: { $sum: 1 }
                 }
             },
             {
                 $project: {
-                    month: { $arrayElemAt: [monthNames, "$_id"] },
+                    label: start && end || isWeekly
+                        ? "$_id"  
+                        : { $arrayElemAt: [monthNames, "$_id"] }, 
                     count: 1,
                     _id: 0
                 }
             },
             {
-                $sort: { month: 1 }
+                $sort: { label: 1 } 
             }
-        ]);
+        ];
 
-        monthlyJoinedUsers.reverse()
-
+        let userStats = await userModel.aggregate(aggregationPipeline);
 
         return res
             .status(200)
-            .json(successResponse('Data retrieved successfully', monthlyJoinedUsers));
+            .json(successResponse('Data retrieved successfully', userStats));
 
     } catch (error) {
         console.log("ERROR::", error);
@@ -62,6 +144,7 @@ exports.monthly_joined_users = async (req, res) => {
             .json(errorResponse(messages.generalError.somethingWentWrong, error.message));
     }
 };
+
 
 
 
