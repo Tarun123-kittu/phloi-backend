@@ -77,7 +77,7 @@ const sendEmail = async (email, code) => {
 };
 
 
-const sendHotelVerificationEmail = async (email, status,hotelName,paymentStatus,hotelId) => {
+const sendHotelVerificationEmail = async (email, status,hotelName,paymentStatus,hotelId,rejectionReason) => {
 
   try {
  console.log("payment status ----",paymentStatus,email)
@@ -137,7 +137,7 @@ const sendHotelVerificationEmail = async (email, status,hotelName,paymentStatus,
     ${status ? 
       // `Congratulations! Your establishment has been successfully verified and is now approved on our platform. ${paymentStatus == 'pending'?`Please proceed with the payment by clicking <a href="${config.development.stripe_return_url}api/v1/hotel/subscribe?hotelId=${hotelId}">here</a> to show on Phloii.`:'' }` :
       `Congratulations! Your establishment has been successfully verified and is now approved on our platform.` : 
-      'We regret to inform you that your request has been rejected. For further details, please contact our support team.'}
+      `We regret to inform you that your request has been rejected. Due to ${rejectionReason} For further details, please contact our support team.`}
   </p>
   <p style="
       font-size: 16px; 

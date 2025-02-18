@@ -118,6 +118,7 @@ exports.accept_reject_hotel_verification = async (req, res) => {
         let adminId = req.result.userId
         let hotelId = req.body.hotelId
         let requestResponse = req.body.requestResponse
+        let rejectionReason = req.body.rejectionReason
 
 
         if (!hotelId) { return res.status(400).json(errorResponse(messages.generalError.somethingWentWrong, "Provide hotel Id in the query params")) }
@@ -135,6 +136,7 @@ exports.accept_reject_hotel_verification = async (req, res) => {
                 )
             );
         }
+   
 
         await hotelModel.findByIdAndUpdate(hotelId, {
             $set: {
@@ -148,9 +150,10 @@ exports.accept_reject_hotel_verification = async (req, res) => {
             notification_text: `Your hotel verification request is ${requestResponse==true?"accepted":'rejected'} for ${isHotelExist.establishmentName}`,
             type:'hotel'
         }); 
-         console.log("hrere ------")
-        const emailResponse = await sendHotelVerificationEmail(isHotelExist.ownerDetails.ownerEmail, requestResponse, isHotelExist.establishmentName, isHotelExist.paymentStatus,hotelId);
+  
+        const emailResponse = await sendHotelVerificationEmail(isHotelExist.ownerDetails.ownerEmail, requestResponse, isHotelExist.establishmentName, isHotelExist.paymentStatus,hotelId,rejectionReason);
         if (emailResponse.success) {
+            console.log("email response ----",emailResponse)
             return res.status(200).json(successResponse('Verification email has been sent successfully'));
         } else {
             console.log("Error::",emailResponse)
