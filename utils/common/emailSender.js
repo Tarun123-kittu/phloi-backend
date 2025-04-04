@@ -78,7 +78,6 @@ const sendEmail = async (email, code) => {
 
 
 const sendHotelVerificationEmail = async (email, status,hotelName,paymentStatus,hotelId,rejectionReason) => {
-
   try {
  console.log("payment status ----",paymentStatus,email)
     let transporter = nodemailer.createTransport({
@@ -154,7 +153,7 @@ const sendHotelVerificationEmail = async (email, status,hotelName,paymentStatus,
  
     return { success: true, message: "Link has been sent to your email" };
   } catch (error) {
-       
+    
     return { success: false, message: "Something went wrong", error: error.message };
   }
 };

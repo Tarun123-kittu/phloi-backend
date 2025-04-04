@@ -44,7 +44,7 @@ const userSchema = new mongoose.Schema({
   sexual_orientation_preference_id: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Options' }],
   show_sexual_orientation: { type: Boolean, default: true },
   relationship_type_preference_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Options' },
-  distance_preference: { type: Number, default: 0 },
+  distance_preference: { type: Number, default: 50 },
   user_characterstics: {
     step_11: [{
       questionId: mongoose.Schema.Types.ObjectId,

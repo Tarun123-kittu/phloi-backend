@@ -132,7 +132,6 @@ const exploreRoomMatchAlgorithm = async (currentUser, page = 1, limit = 10) => {
             }
         ]).exec();
 
-        console.log("users ------", users.length);
 
         return users;
     } catch (error) {

@@ -9,61 +9,6 @@ const eventsModel = require("../../models/eventsModel")
 
 
 
-// exports.monthly_joined_users = async (req, res) => {
-//     try {
-//         const year = req.query.year || new Date().getFullYear();
-
-//         const startDate = new Date(`${year}-01-01T00:00:00Z`);
-//         const endDate = new Date(`${year}-12-31T23:59:59Z`);
-
-//         const monthNames = [
-//             null,
-//             "January", "February", "March", "April", "May", "June",
-//             "July", "August", "September", "October", "November", "December"
-//         ];
-
-//         let monthlyJoinedUsers = await userModel.aggregate([
-//             {
-//                 $match: {
-//                     createdAt: {
-//                         $gte: startDate,
-//                         $lte: endDate
-//                     }
-//                 }
-//             },
-//             {
-//                 $group: {
-//                     _id: { $month: "$createdAt" },
-//                     count: { $sum: 1 }
-//                 }
-//             },
-//             {
-//                 $project: {
-//                     month: { $arrayElemAt: [monthNames, "$_id"] },
-//                     count: 1,
-//                     _id: 0
-//                 }
-//             },
-//             {
-//                 $sort: { month: 1 }
-//             }
-//         ]);
-
-//         monthlyJoinedUsers.reverse()
-
-
-//         return res
-//             .status(200)
-//             .json(successResponse('Data retrieved successfully', monthlyJoinedUsers));
-
-//     } catch (error) {
-//         console.log("ERROR::", error);
-//         return res
-//             .status(500)
-//             .json(errorResponse(messages.generalError.somethingWentWrong, error.message));
-//     }
-// };
-
 
 exports.monthly_joined_users = async (req, res) => {
     try {

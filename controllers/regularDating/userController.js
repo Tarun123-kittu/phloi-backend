@@ -966,6 +966,9 @@ exports.update_user_profile = async (req, res) => {
             case 9: updateStep(9, 'study', study); break;
             case 10: updateStep(10, 'distance_preference', distance_preference); break;
             case 11:
+                if(step_11_answer== undefined || step_11_answer.length<2){
+                    return res.status(400).json({message:'Please provide all the step 11 answers',type:"error"})
+                }
                 if (Array.isArray(step_11_answer) && step_11_answer.length > 0) {
                     const validOptions = await userCharactersticsOptionsModel.find({}, 'question_id _id').lean();
 
@@ -991,9 +994,10 @@ exports.update_user_profile = async (req, res) => {
 
                 break;
             case 12:
+                if(step_12_answer== undefined || step_12_answer.length<3){
+                    return res.status(400).json({message:'Please provide all the step 12 fields',type:"error"})
+                }
                 if (Array.isArray(step_12_answer) && step_12_answer.length > 0) {
-
-
                     const validOptions = await userCharactersticsOptionsModel.find({}, 'question_id _id').lean();
                     const validPairs = validOptions.map(option => ({
                         questionId: option.question_id.toString(),
@@ -1019,10 +1023,12 @@ exports.update_user_profile = async (req, res) => {
                 }
                 break;
             case 13:
+                if(step_13_answers== undefined || step_13_answers.length<1){
+                    return res.status(400).json({message:'Please provide all the step 13 fields',type:"error"})
+                }
                 if (Array.isArray(step_13_answers) && step_13_answers.length > 0) {
 
                     const validOptions = await userCharactersticsOptionsModel.find({}, 'question_id _id').lean();
-
 
                     const validPairs = validOptions.map(option => ({
                         questionId: option.question_id.toString(),
@@ -1033,7 +1039,6 @@ exports.update_user_profile = async (req, res) => {
                     const invalidAnswers = step_13_answers.filter(answer => {
 
                         const validForQuestion = validPairs.filter(pair => pair.questionId === answer.questionId);
-
 
                         return answer.answerIds.some(answerId => !validForQuestion.some(pair => pair.answerId === answerId));
                     });

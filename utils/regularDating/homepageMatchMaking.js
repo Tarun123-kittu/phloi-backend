@@ -22,13 +22,6 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
             }
         };
 
-        // if (sexual_orientation_preference_id && sexual_orientation_preference_id.length > 0) {
-        //     console.log("inside sexual orientaion -----")
-        //     matchQuery['sexual_orientation_preference_id'] = {
-        //         $in: sexual_orientation_preference_id
-        //     };
-        // }
-
         let distanceInMetersFiltered
         if (filter) {
            
@@ -49,8 +42,6 @@ const homepageMatchAlgorithm = async (currentUser, page = 1, limit = 10, filter 
                 // } else {
                     matchQuery.intrested_to_see = { $in: [gender] };
                 // }
-
-
                 
             }
 
